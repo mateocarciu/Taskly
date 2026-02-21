@@ -37,7 +37,10 @@ services:
       - ./docker-compose/nginx:/etc/nginx/conf.d/
     networks:
       - nginx-network
+      - proxy_default
 
 networks:
   nginx-network:
+    external: true
+  proxy_default:
     external: true
