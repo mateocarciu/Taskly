@@ -89,7 +89,6 @@ const deleteTask = () => {
                         task.completed && 'text-muted-foreground line-through',
                     ]"
                 >
-                    tot
                     {{ task.title }}
                 </p>
                 <div
