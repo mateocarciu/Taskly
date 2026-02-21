@@ -45,7 +45,7 @@ const submit = () => {
         <DialogTrigger as-child>
             <Button>
                 <Plus class="size-4" />
-                New azzzz
+                New Task
             </Button>
         </DialogTrigger>
         <DialogContent>
