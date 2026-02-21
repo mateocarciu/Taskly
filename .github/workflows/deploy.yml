@@ -2,7 +2,7 @@ name: Deploy to Debian
 
 on:
   push:
-    branches: [ main ] # Se déclenche dès que tu push sur main
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -17,5 +17,21 @@ jobs:
           script: |
             cd ~/app/test_technique
             git pull origin main
+            
+            # Reconstruction des containers avec le nouveau Dockerfile (PHP 8.4 + Node)
             docker compose up -d --build
+            
+            # 2. Installer les dépendances PHP
+            docker exec laravel-app composer install --no-dev --optimize-autoloader
+            
+            # 3. Installer et compiler les assets (CSS/JS)
+            docker exec laravel-app npm install
+            docker exec laravel-app npm run build
+            
+            # 4. Appliquer les migrations de base de données (si SQLite existe déjà)
+            # On ajoute --force car on est en mode production
+            docker exec laravel-app php artisan migrate --force
+            
+            # 5. Nettoyage des droits et des images
+            docker exec laravel-app chown -R www-data:www-data storage bootstrap/cache database
             docker image prune -f
