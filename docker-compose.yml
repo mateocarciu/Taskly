@@ -11,6 +11,21 @@ services:
     networks:
       - nginx-network
 
+  queue-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: laravel-queue-worker
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    networks:
+      - nginx-network
+    depends_on:
+      - app
+
   webserver:
     image: nginx:alpine
     container_name: laravel-webserver
