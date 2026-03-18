@@ -8,6 +8,13 @@ services:
     working_dir: /var/www
     volumes:
       - ./:/var/www
+    command: >
+      sh -lc "
+      chown -R 1000:33 /var/www/storage /var/www/bootstrap/cache /var/www/database &&
+      find /var/www/storage /var/www/bootstrap/cache /var/www/database -type d -exec chmod 2775 {} + &&
+      find /var/www/storage /var/www/bootstrap/cache /var/www/database -type f -exec chmod 664 {} + &&
+      php-fpm
+      "
     networks:
       - nginx-network
 
@@ -20,7 +27,13 @@ services:
     working_dir: /var/www
     volumes:
       - ./:/var/www
-    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    command: >
+      sh -lc "
+      chown -R 1000:33 /var/www/storage /var/www/bootstrap/cache /var/www/database &&
+      find /var/www/storage /var/www/bootstrap/cache /var/www/database -type d -exec chmod 2775 {} + &&
+      find /var/www/storage /var/www/bootstrap/cache /var/www/database -type f -exec chmod 664 {} + &&
+      php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+      "
     networks:
       - nginx-network
     depends_on:
