@@ -15,7 +15,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/app/test_technique
+            cd ~/app/Taskly
             git pull origin main
             
             # Reconstruction des containers avec le nouveau Dockerfile (PHP 8.4 + Node)

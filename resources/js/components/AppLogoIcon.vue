@@ -13,9 +13,5 @@ defineProps<Props>();
 </script>
 
 <template>
-    <img
-        src="https://static.root-me.pro/svg/rmp_vertical_light.svg"
-        :class="className"
-        alt="App Logo"
-    />
+    <img src="/favicon.svg" :class="className" alt="App Logo" />
 </template>

@@ -15,7 +15,7 @@ withDefaults(
 </script>
 
 <template>
-    <Head title="Root Me PRO - Task Manager">
+    <Head title="Taskly - Welcome">
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
@@ -55,12 +55,10 @@ withDefaults(
         >
             <main class="flex w-full max-w-4xl flex-col items-center gap-12">
                 <div class="flex flex-col items-center gap-6 text-center">
-                    <div
-                        class="flex h-20 w-20 items-center justify-center rounded-2xl bg-gray-900 shadow-xl dark:bg-gray-800"
-                    >
+                    <div class="flex h-20 w-20 items-center justify-center">
                         <img
-                            src="https://static.root-me.pro/svg/rmp_vertical_light.svg"
-                            alt="Root Me PRO"
+                            src="/favicon.svg"
+                            alt="Taskly"
                             class="h-12 w-12"
                         />
                     </div>
@@ -68,7 +66,7 @@ withDefaults(
                         <h1
                             class="mb-3 text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100"
                         >
-                            Root Me PRO Task Manager
+                            Taskly
                         </h1>
                     </div>
                 </div>
