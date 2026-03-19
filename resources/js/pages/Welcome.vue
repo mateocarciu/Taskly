@@ -1,8 +1,24 @@
 <script setup lang="ts">
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { dashboard, login, register } from '@/routes';
 import { Head, Link } from '@inertiajs/vue3';
-import { CheckCircle, ListCheck, Users } from 'lucide-vue-next';
+import {
+    ArrowRight,
+    CheckCircle2,
+    ListChecks,
+    Sparkles,
+    Users2,
+} from 'lucide-vue-next';
 
 withDefaults(
     defineProps<{
@@ -12,134 +28,175 @@ withDefaults(
         canRegister: true,
     },
 );
+
+const features = [
+    {
+        icon: Users2,
+        title: 'Team Workspace',
+        description:
+            'Collaborate with your team in one organized workspace and stay aligned.',
+    },
+    {
+        icon: ListChecks,
+        title: 'Task Tracking',
+        description:
+            'Create, assign, and track progress with a clean workflow built for focus.',
+    },
+    {
+        icon: CheckCircle2,
+        title: 'Clear Progress',
+        description:
+            'Understand what is done, what is next, and where your team needs support.',
+    },
+];
 </script>
 
 <template>
-    <Head title="Taskly - Welcome">
-        <link rel="preconnect" href="https://rsms.me/" />
-        <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-    </Head>
+    <Head title="Welcome" />
     <div
-        class="flex min-h-screen flex-col items-center bg-[#FDFDFC] p-6 text-[#1b1b18] lg:justify-center lg:p-8 dark:bg-[#0a0a0a]"
+        class="relative min-h-screen overflow-hidden bg-background text-foreground"
     >
-        <header
-            class="mb-6 w-full max-w-[335px] text-sm not-has-[nav]:hidden lg:max-w-4xl"
-        >
-            <nav class="flex items-center justify-end gap-4">
-                <Link
-                    v-if="$page.props.auth.user"
-                    :href="dashboard()"
-                    class="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
-                >
-                    Dashboard
-                </Link>
-                <template v-else>
-                    <Link
-                        :href="login()"
-                        class="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
-                    >
-                        Log in
-                    </Link>
-                    <Link
-                        v-if="canRegister"
-                        :href="register()"
-                        class="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
-                    >
-                        Register
-                    </Link>
-                </template>
-            </nav>
-        </header>
         <div
-            class="flex w-full items-center justify-center opacity-100 transition-opacity duration-500 lg:grow"
+            class="pointer-events-none absolute -top-28 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-slate-300/30 blur-3xl dark:bg-slate-700/30"
+        />
+
+        <div
+            class="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-6 md:px-8"
         >
-            <main class="flex w-full max-w-4xl flex-col items-center gap-12">
-                <div class="flex flex-col items-center gap-6 text-center">
-                    <div class="flex h-20 w-20 items-center justify-center">
-                        <img
-                            src="/favicon.svg"
-                            alt="Taskly"
-                            class="h-12 w-12"
-                        />
+            <header class="mb-10 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="rounded-lg p-2">
+                        <AppLogoIcon class-name="h-7 w-7" />
                     </div>
-                    <div>
-                        <h1
-                            class="mb-3 text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100"
-                        >
-                            Taskly
-                        </h1>
-                    </div>
-                </div>
-
-                <div class="grid w-full gap-6 md:grid-cols-3">
-                    <Card>
-                        <CardHeader>
-                            <div
-                                class="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30"
-                            >
-                                <Users
-                                    class="h-5 w-5 text-blue-600 dark:text-blue-400"
-                                />
-                            </div>
-                            <CardTitle>Travail en équipe</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p class="text-sm text-muted-foreground">
-                                Gérez vos tâches de manière collaborative au
-                                sein de votre équipe
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <div
-                                class="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30"
-                            >
-                                <ListCheck
-                                    class="h-5 w-5 text-green-600 dark:text-green-400"
-                                />
-                            </div>
-                            <CardTitle>Suivi des tâches</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p class="text-sm text-muted-foreground">
-                                Créez, modifiez et suivez l'avancement de vos
-                                tâches en temps réel
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <div
-                                class="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30"
-                            >
-                                <CheckCircle
-                                    class="h-5 w-5 text-purple-600 dark:text-purple-400"
-                                />
-                            </div>
-                            <CardTitle>Statistiques</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p class="text-sm text-muted-foreground">
-                                Visualisez les performances de votre équipe avec
-                                des statistiques détaillées
-                            </p>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <div class="flex flex-wrap items-center justify-center gap-4">
-                    <Link
-                        v-if="!$page.props.auth.user"
-                        :href="login()"
-                        class="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                    <span class="text-md font-semibold tracking-wide"
+                        >Taskly</span
                     >
-                        Get Started
-                    </Link>
                 </div>
+
+                <nav class="flex items-center gap-2">
+                    <Button
+                        v-if="$page.props.auth.user"
+                        variant="outline"
+                        as-child
+                    >
+                        <Link :href="dashboard()">Dashboard</Link>
+                    </Button>
+                    <template v-else>
+                        <Button variant="ghost" as-child>
+                            <Link :href="login()">Sign in</Link>
+                        </Button>
+                        <Button v-if="canRegister" as-child>
+                            <Link :href="register()">Create account</Link>
+                        </Button>
+                    </template>
+                </nav>
+            </header>
+
+            <main class="flex flex-1 flex-col gap-10">
+                <section
+                    class="mx-auto flex w-full max-w-3xl flex-col items-center text-center"
+                >
+                    <Badge variant="secondary" class="mb-5 gap-1.5 px-3 py-1">
+                        <Sparkles class="h-3.5 w-3.5" />
+                        Team productivity made clear
+                    </Badge>
+
+                    <h1
+                        class="text-4xl font-semibold tracking-tight text-balance sm:text-5xl"
+                    >
+                        Plan less. Deliver more.
+                    </h1>
+
+                    <p
+                        class="mt-4 max-w-2xl text-base text-pretty text-muted-foreground sm:text-lg"
+                    >
+                        Taskly keeps your team focused with simple task flows,
+                        clear ownership, and real progress visibility.
+                    </p>
+
+                    <div
+                        class="mt-7 flex flex-wrap items-center justify-center gap-3"
+                    >
+                        <Button v-if="$page.props.auth.user" size="lg" as-child>
+                            <Link
+                                :href="dashboard()"
+                                class="inline-flex items-center gap-2"
+                            >
+                                Open dashboard
+                                <ArrowRight class="h-4 w-4" />
+                            </Link>
+                        </Button>
+
+                        <template v-else>
+                            <Button size="lg" as-child>
+                                <Link
+                                    :href="login()"
+                                    class="inline-flex items-center gap-2"
+                                >
+                                    Get started
+                                    <ArrowRight class="h-4 w-4" />
+                                </Link>
+                            </Button>
+                            <Button
+                                v-if="canRegister"
+                                size="lg"
+                                variant="outline"
+                                as-child
+                            >
+                                <Link :href="register()"
+                                    >Create free account</Link
+                                >
+                            </Button>
+                        </template>
+                    </div>
+                </section>
+
+                <section class="grid gap-4 md:grid-cols-3">
+                    <Card
+                        v-for="feature in features"
+                        :key="feature.title"
+                        class="border-border/70 bg-card/70 backdrop-blur-sm"
+                    >
+                        <CardHeader>
+                            <div
+                                class="mb-2 flex h-10 w-10 items-center justify-center rounded-lg border bg-background"
+                            >
+                                <component
+                                    :is="feature.icon"
+                                    class="h-5 w-5 text-muted-foreground"
+                                />
+                            </div>
+                            <CardTitle>{{ feature.title }}</CardTitle>
+                            <CardDescription>{{
+                                feature.description
+                            }}</CardDescription>
+                        </CardHeader>
+                        <CardContent />
+                    </Card>
+                </section>
+
+                <Card class="border-dashed bg-muted/30">
+                    <CardHeader class="gap-2">
+                        <CardTitle class="text-lg"
+                            >Built for fast-moving teams</CardTitle
+                        >
+                        <CardDescription>
+                            No clutter, no noise, just what you need to plan,
+                            execute, and follow through.
+                        </CardDescription>
+                    </CardHeader>
+                </Card>
             </main>
+
+            <footer class="mt-10">
+                <Separator class="mb-4" />
+                <div
+                    class="flex flex-col items-center justify-between gap-2 text-center text-sm text-muted-foreground sm:flex-row sm:text-left"
+                >
+                    <p>Taskly</p>
+                    <p>Simple task management for modern teams.</p>
+                </div>
+            </footer>
         </div>
     </div>
 </template>
