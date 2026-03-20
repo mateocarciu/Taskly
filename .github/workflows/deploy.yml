@@ -16,7 +16,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/app/Taskly
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
             
             # Reconstruction des containers avec le nouveau Dockerfile (PHP 8.4 + Node)
             docker compose up -d --build
@@ -25,7 +26,7 @@ jobs:
             docker exec laravel-app composer install --ignore-platform-reqs
             
             # 3. Installer et compiler les assets (CSS/JS)
-            docker exec laravel-app npm install
+            docker exec laravel-app npm ci
             docker exec laravel-app npm run build
             
             # 4. Appliquer les migrations de base de données (si SQLite existe déjà)
