@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import Pagination from '@/components/Pagination.vue';
+import KanbanBoard from '@/components/tasks/KanbanBoard.vue';
 import TaskCreateDialog from '@/components/tasks/TaskCreateDialog.vue';
 import TaskEditDialog from '@/components/tasks/TaskEditDialog.vue';
-import TaskList from '@/components/tasks/TaskList.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index } from '@/routes/tasks';
-import type { BreadcrumbItem, PaginatedTasks, Task } from '@/types';
+import type { BreadcrumbItem, Column, Task } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 defineProps<{
-    tasks: PaginatedTasks;
+    columns: Column[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -44,26 +43,8 @@ const openEditModal = (task: Task) => {
                 <TaskCreateDialog />
             </div>
 
-            <div class="flex-1">
-                <div class="mb-4 flex items-center">
-                    <span
-                        v-if="tasks.total > 0"
-                        class="text-sm text-muted-foreground"
-                    >
-                        {{ tasks.from }}-{{ tasks.to }} of
-                        {{ tasks.total }}
-                    </span>
-                </div>
-
-                <TaskList :tasks="tasks.data" @edit="openEditModal" />
-
-                <Pagination
-                    :current-page="tasks.current_page"
-                    :last-page="tasks.last_page"
-                    :prev-page-url="tasks.prev_page_url"
-                    :next-page-url="tasks.next_page_url"
-                    :links="tasks.links"
-                />
+            <div class="flex-1 overflow-hidden h-[calc(100vh-[breadcrumbs height]-header)]">
+                <KanbanBoard :columns="columns" @edit="openEditModal" />
             </div>
         </div>
 

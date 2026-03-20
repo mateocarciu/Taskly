@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import TaskDeleteDialog from '@/components/tasks/TaskDeleteDialog.vue';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useInitials } from '@/composables/useInitials';
 import { destroy, update } from '@/routes/tasks';
 import type { Task } from '@/types';
 import { router } from '@inertiajs/vue3';
@@ -25,6 +27,8 @@ const props = defineProps<{
 const emit = defineEmits<{
     edit: [task: Task];
 }>();
+
+const { getInitials } = useInitials();
 
 const showDeleteDialog = ref(false);
 
@@ -105,9 +109,16 @@ const deleteTask = () => {
                         }}
                     </span>
                 </div>
-                <span v-if="task.creator" class="flex text-xs">
-                    Created by
-                    <p class="ml-1 font-semibold">{{ task.creator.name }}</p>
+                <span v-if="task.creator">
+                    <!-- Created by -->
+                    <!-- <p class="ml-1 font-semibold">{{ task.creator.name }}</p> -->
+                    <Avatar class="h-8 w-8 overflow-hidden rounded-lg">
+                        <AvatarFallback
+                            class="rounded-lg text-black dark:text-white"
+                        >
+                            {{ getInitials(task.creator.name) }}
+                        </AvatarFallback>
+                    </Avatar>
                 </span>
             </div>
 

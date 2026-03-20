@@ -41,6 +41,8 @@ export interface User {
 export interface Task {
     id: number;
     team_id: number;
+    column_id: number | null;
+    order: number;
     title: string;
     completed: boolean;
     due_date: string;
@@ -49,6 +51,14 @@ export interface Task {
         id: number;
         name: string;
     };
+}
+
+export interface Column {
+    id: number;
+    team_id: number;
+    name: string;
+    order: number;
+    tasks: Task[];
 }
 
 export interface TaskForm {

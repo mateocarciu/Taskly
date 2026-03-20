@@ -21,6 +21,8 @@ class Task extends Model
         'completed',
         'team_id',
         'created_by',
+        'column_id',
+        'order',
     ];
 
     /**
@@ -49,5 +51,13 @@ class Task extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get the column that owns the task.
+     */
+    public function column(): BelongsTo
+    {
+        return $this->belongsTo(Column::class);
     }
 }
