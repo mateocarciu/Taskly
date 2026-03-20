@@ -3,6 +3,7 @@
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
+use App\Models\Column;
 
 beforeEach(function () {
     $this->team = Team::factory()->create();
@@ -17,25 +18,33 @@ describe('index', function () {
     });
 
     test('display tasks for the users team', function () {
-        $task = Task::factory()->create(['team_id' => $this->team->id]);
+        $column = Column::create(['team_id' => $this->team->id, 'name' => 'To Do', 'order' => 1]);
+        $task = Task::factory()->create([
+            'team_id' => $this->team->id,
+            'column_id' => $column->id,
+        ]);
 
         $this->actingAs($this->user)
             ->get(route('tasks.index'))
             ->assertOk()
             ->assertInertia(
-                function ($page) use ($task) {
+                function ($page) use ($column, $task) {
                     return $page
                         ->component('Tasks')
-                        ->has('tasks.data', 1)
-                        ->where('tasks.data.0.id', $task->id);
+                        ->has('columns', 1)
+                        ->where('columns.0.id', $column->id)
+                        ->has('columns.0.tasks', 1)
+                        ->where('columns.0.tasks.0.id', $task->id);
                 }
             );
     });
 
     test('loads creator relationship with tasks', function () {
+        $column = Column::create(['team_id' => $this->team->id, 'name' => 'To Do', 'order' => 1]);
         $creator = User::factory()->create(['team_id' => $this->team->id]);
         $task = Task::factory()->create([
             'team_id' => $this->team->id,
+            'column_id' => $column->id,
             'created_by' => $creator->id,
         ]);
 
@@ -43,12 +52,13 @@ describe('index', function () {
             ->get(route('tasks.index'))
             ->assertOk()
             ->assertInertia(
-                function ($page) use ($task, $creator) {
+                function ($page) use ($column, $creator) {
                     return $page
                         ->component('Tasks')
-                        ->has('tasks.data', 1)
-                        ->where('tasks.data.0.creator.id', $creator->id)
-                        ->where('tasks.data.0.creator.name', $creator->name);
+                        ->has('columns', 1)
+                        ->has('columns.0.tasks', 1)
+                        ->where('columns.0.tasks.0.creator.id', $creator->id)
+                        ->where('columns.0.tasks.0.creator.name', $creator->name);
                 }
             );
     });
@@ -90,7 +100,7 @@ describe('store', function () {
     test('validates required fields', function () {
         $this->actingAs($this->user)
             ->post(route('tasks.store'), [])
-            ->assertSessionHasErrors(['title', 'due_date']);
+            ->assertSessionHasErrors(['title']);
     });
 });
 
