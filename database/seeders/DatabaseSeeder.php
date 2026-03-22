@@ -2,14 +2,13 @@
 
 namespace Database\Seeders;
 
-use App\Models\Task;
-use App\Models\Team;
+use Illuminate\Database\Seeder;
 use App\Models\User;
+use App\Models\Team;
+use App\Models\Task;
 use App\Models\Column;
 use Illuminate\Support\Str;
-use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,7 +17,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $teams = Team::factory(3)->create(['count_completed_tasks' => 0]);
+        $teams = Team::factory(3)->create();
 
         $usersPerTeam = [3, 2, 1];
         $userIndex = 1;
@@ -37,17 +36,19 @@ class DatabaseSeeder extends Seeder
             $todoColumn = Column::create([
                 'team_id' => $team->id,
                 'name' => 'To Do',
-                'order' => 0,
+                'order' => 1
             ]);
-            $inProgressColumn = Column::create([
+            
+            $progressColumn = Column::create([
                 'team_id' => $team->id,
                 'name' => 'In Progress',
-                'order' => 1,
+                'order' => 2
             ]);
+            
             $doneColumn = Column::create([
                 'team_id' => $team->id,
                 'name' => 'Done',
-                'order' => 2,
+                'order' => 3
             ]);
 
             $teamUsers = User::where('team_id', $team->id)->pluck('id');
@@ -62,14 +63,14 @@ class DatabaseSeeder extends Seeder
             $doneOrder = 0;
 
             foreach ($tasks as $task) {
+                // Randomly assign to a column
                 $rand = rand(0, 2);
                 if ($rand === 0) {
-                    $task->update(['column_id' => $todoColumn->id, 'order' => $todoOrder++, 'completed' => false]);
+                    $task->update(['column_id' => $todoColumn->id, 'order' => $todoOrder++, 'column_updated_at' => now()]);
                 } elseif ($rand === 1) {
-                    $task->update(['column_id' => $inProgressColumn->id, 'order' => $progressOrder++, 'completed' => false]);
+                    $task->update(['column_id' => $progressColumn->id, 'order' => $progressOrder++, 'column_updated_at' => now()->subDays(rand(1, 5))]);
                 } else {
-                    $task->update(['column_id' => $doneColumn->id, 'order' => $doneOrder++, 'completed' => true]);
-                    DB::table('teams')->where('id', $team->id)->increment('count_completed_tasks');
+                    $task->update(['column_id' => $doneColumn->id, 'order' => $doneOrder++, 'column_updated_at' => now()->subDays(rand(2, 10))]);
                 }
             }
         }

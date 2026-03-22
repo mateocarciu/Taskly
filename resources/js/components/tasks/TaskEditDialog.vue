@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
     DialogContent,
@@ -28,8 +27,8 @@ const isOpen = defineModel<boolean>('open', { default: false });
 
 const form = useForm({
     title: '',
+    description: '',
     due_date: '',
-    completed: false,
 });
 
 const submit = () => {
@@ -47,8 +46,8 @@ const submit = () => {
 watch([() => props.task, isOpen], ([task, open]) => {
     if (task && open) {
         form.title = task.title;
-        form.due_date = new Date(task.due_date).toISOString().slice(0, 16);
-        form.completed = Boolean(task.completed);
+        form.description = task.description || '';
+        form.due_date = task.due_date ? new Date(task.due_date).toISOString().slice(0, 16) : '';
         form.clearErrors();
     }
 });
@@ -58,7 +57,7 @@ watch([() => props.task, isOpen], ([task, open]) => {
     <Dialog v-model:open="isOpen">
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Edit task</DialogTitle>
+                <DialogTitle>Task details</DialogTitle>
                 <DialogDescription> Update the task details </DialogDescription>
             </DialogHeader>
 
@@ -75,6 +74,17 @@ watch([() => props.task, isOpen], ([task, open]) => {
                 </div>
 
                 <div class="grid gap-2">
+                    <Label for="edit-task-description">Description</Label>
+                    <textarea
+                        id="edit-task-description"
+                        class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                        placeholder="Add more details..."
+                        v-model="form.description"
+                    ></textarea>
+                    <InputError :message="form.errors.description" />
+                </div>
+
+                <div class="grid gap-2">
                     <Label for="edit-task-due-date">Due date</Label>
                     <Input
                         id="edit-task-due-date"
@@ -82,13 +92,6 @@ watch([() => props.task, isOpen], ([task, open]) => {
                         v-model="form.due_date"
                     />
                     <InputError :message="form.errors.due_date" />
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <Checkbox id="completed" v-model="form.completed" />
-                    <Label for="completed" class="cursor-pointer">
-                        Completed
-                    </Label>
                 </div>
 
                 <DialogFooter>

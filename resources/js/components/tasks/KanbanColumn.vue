@@ -3,6 +3,7 @@ import { ref, watch } from 'vue';
 import draggable from 'vuedraggable';
 import type { Column, Task } from '@/types';
 import TaskItem from './TaskItem.vue';
+import ColumnDeleteDialog from './ColumnDeleteDialog.vue';
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash2 } from 'lucide-vue-next';
 import { router } from '@inertiajs/vue3';
@@ -39,17 +40,18 @@ const saveColumnName = () => {
     }
 };
 
+const isDeleteColumnOpen = ref(false);
+
 const deleteColumn = () => {
-    if (confirm('Are you sure you want to delete this column?')) {
-        router.delete(`/columns/${props.column.id}`, {
-            preserveScroll: true,
-            onSuccess: () => toast.success('Column deleted'),
-            onError: (err) => {
-                if (err.message) toast.error(err.message);
-                else toast.error('Failed to delete column');
-            }
-        });
-    }
+    isDeleteColumnOpen.value = false;
+    router.delete(`/columns/${props.column.id}`, {
+        preserveScroll: true,
+        onSuccess: () => toast.success('Column deleted'),
+        onError: (err) => {
+            if (err.column) toast.error(err.column);
+            else toast.error('Failed to delete column');
+        }
+    });
 };
 
 const onDragChange = (event: any) => {
@@ -88,7 +90,7 @@ const onDragChange = (event: any) => {
                 <Button variant="ghost" size="icon-sm" class="h-6 w-6 text-muted-foreground" @click="isEditingColumn = true">
                     <Pencil class="size-3" />
                 </Button>
-                <Button variant="ghost" size="icon-sm" class="h-6 w-6 text-destructive hover:bg-destructive/10 hover:text-destructive" @click="deleteColumn">
+                <Button variant="ghost" size="icon-sm" class="h-6 w-6 text-destructive hover:bg-destructive/10 hover:text-destructive" @click="isDeleteColumnOpen = true">
                     <Trash2 class="size-3" />
                 </Button>
             </div>
@@ -110,6 +112,12 @@ const onDragChange = (event: any) => {
                 </template>
             </draggable>
         </div>
+
+        <ColumnDeleteDialog 
+            v-model:open="isDeleteColumnOpen" 
+            :column="column"
+            @confirm="deleteColumn" 
+        />
     </div>
 </template>
 

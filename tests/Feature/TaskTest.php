@@ -102,6 +102,22 @@ describe('store', function () {
             ->post(route('tasks.store'), [])
             ->assertSessionHasErrors(['title']);
     });
+
+    test('can create a task with a description', function () {
+        $taskData = [
+            'title' => 'New task with description',
+            'description' => 'This is a detailed narrative.',
+        ];
+
+        $this->actingAs($this->user)
+            ->post(route('tasks.store'), $taskData)
+            ->assertRedirect(route('tasks.index'));
+
+        $this->assertDatabaseHas('tasks', [
+            'title' => 'New task with description',
+            'description' => 'This is a detailed narrative.',
+        ]);
+    });
 });
 
 describe('update', function () {
@@ -111,14 +127,12 @@ describe('update', function () {
         $this->actingAs($this->user)
             ->put(route('tasks.update', $task), [
                 'title' => 'Updated title',
-                'completed' => true,
             ])
             ->assertRedirect();
 
         $this->assertDatabaseHas('tasks', [
             'id' => $task->id,
             'title' => 'Updated title',
-            'completed' => true,
         ]);
     });
 
@@ -135,17 +149,19 @@ describe('update', function () {
         ]);
     });
 
-    test('can toggle completed status', function () {
-        $task = Task::factory()->create([
-            'team_id' => $this->team->id,
-            'completed' => false,
-        ]);
+    test('updates a task description', function () {
+        $task = Task::factory()->create(['team_id' => $this->team->id]);
 
         $this->actingAs($this->user)
-            ->put(route('tasks.update', $task), ['completed' => true])
+            ->put(route('tasks.update', $task), [
+                'description' => 'Updated description detail.',
+            ])
             ->assertRedirect();
 
-        expect($task->fresh()->completed)->toBeTruthy();
+        $this->assertDatabaseHas('tasks', [
+            'id' => $task->id,
+            'description' => 'Updated description detail.',
+        ]);
     });
 });
 

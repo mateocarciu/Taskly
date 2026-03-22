@@ -18,7 +18,6 @@ class TeamFactory extends Factory
     {
         return [
             'name' => fake()->company(),
-            'count_completed_tasks' => 0,
         ];
     }
 }

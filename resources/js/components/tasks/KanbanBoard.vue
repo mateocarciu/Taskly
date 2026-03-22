@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import type { Column, Task } from '@/types';
-import { router } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-import { toast } from 'vue-sonner';
 import KanbanColumn from './KanbanColumn.vue';
+import ColumnCreateDialog from './ColumnCreateDialog.vue';
 
 const props = defineProps<{
     columns: Column[];
@@ -25,19 +24,7 @@ watch(
     { immediate: true, deep: true },
 );
 
-const createColumn = () => {
-    const name = prompt('Enter column name:');
-    if (name) {
-        router.post(
-            '/columns',
-            { name },
-            {
-                preserveScroll: true,
-                onSuccess: () => toast.success('Column created'),
-            },
-        );
-    }
-};
+const isCreateColumnOpen = ref(false);
 </script>
 
 <template>
@@ -51,15 +38,17 @@ const createColumn = () => {
             @edit="emit('edit', $event)"
         />
 
-        <div class="w-[350px] shrink-0 pr-4">
+        <div class="mt-0 shrink-0">
             <Button
                 variant="outline"
-                class="h-12 w-full border-dashed bg-background/50 hover:bg-background/80"
-                @click="createColumn"
+                class="shadow-sm border-dashed text-muted-foreground hover:text-foreground hover:border-foreground transition-all"
+                @click="isCreateColumnOpen = true"
             >
                 <Plus class="mr-2 size-4" />
                 Add Column
             </Button>
         </div>
+
+        <ColumnCreateDialog v-model:open="isCreateColumnOpen" />
     </div>
 </template>

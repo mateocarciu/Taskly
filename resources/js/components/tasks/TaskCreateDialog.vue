@@ -24,6 +24,7 @@ const isOpen = ref(false);
 
 const form = useForm<TaskForm>({
     title: '',
+    description: '',
     due_date: '',
 });
 
@@ -66,6 +67,16 @@ const submit = () => {
                         v-model="form.title"
                     />
                     <InputError :message="form.errors.title" />
+                </div>
+                <div class="grid gap-2">
+                    <Label for="task-description">Description</Label>
+                    <textarea
+                        id="task-description"
+                        class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        placeholder="Add more details..."
+                        v-model="form.description"
+                    ></textarea>
+                    <InputError :message="form.errors.description" />
                 </div>
                 <div class="grid gap-2">
                     <Label for="task-due-date">Due date</Label>

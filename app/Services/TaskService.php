@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Task;
 use App\Models\Column;
 use App\Models\User;
-use App\Jobs\IncrementTeamCompletedTasks;
 use Illuminate\Support\Facades\DB;
 
 class TaskService
@@ -31,6 +30,7 @@ class TaskService
             'created_by' => $user->id,
             'column_id' => $columnId,
             'order' => $order,
+            'column_updated_at' => now(), // Initialize column timing
         ]));
     }
 
@@ -39,13 +39,7 @@ class TaskService
      */
     public function updateTask(Task $task, array $data): bool
     {
-        $updated = $task->update($data);
-
-        if ($updated && isset($data['completed']) && $data['completed']) {
-            IncrementTeamCompletedTasks::dispatch($task->team_id);
-        }
-
-        return $updated;
+        return $task->update($data);
     }
 
     /**
@@ -55,9 +49,10 @@ class TaskService
     {
         $oldColumnId = $task->column_id;
         $oldOrder = $task->order;
+        $isDifferentColumn = $oldColumnId != $newColumnId;
 
-        DB::transaction(function () use ($task, $newColumnId, $newOrder, $oldColumnId, $oldOrder) {
-            if ($oldColumnId == $newColumnId) {
+        DB::transaction(function () use ($task, $newColumnId, $newOrder, $oldColumnId, $oldOrder, $isDifferentColumn) {
+            if (!$isDifferentColumn) {
                 // Moving within the same column
                 if ($oldOrder < $newOrder) {
                     Task::where('column_id', $newColumnId)
@@ -79,10 +74,17 @@ class TaskService
                     ->increment('order');
             }
 
-            $task->update([
+            $updateData = [
                 'column_id' => $newColumnId,
                 'order' => $newOrder,
-            ]);
+            ];
+
+            // If it moved to a new column, reset its timer
+            if ($isDifferentColumn) {
+                $updateData['column_updated_at'] = now();
+            }
+
+            $task->update($updateData);
         });
     }
 
