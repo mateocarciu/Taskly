@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Column;
 use App\Models\User;
+use Illuminate\Validation\ValidationException;
 
 class ColumnService
 {
@@ -35,6 +36,12 @@ class ColumnService
      */
     public function deleteColumn(Column $column): ?bool
     {
+        if ($column->tasks()->exists()) {
+            throw ValidationException::withMessages([
+                'column' => 'Cannot delete a column that contains tasks. Please move or delete the tasks first.',
+            ]);
+        }
+
         return $column->delete();
     }
 }

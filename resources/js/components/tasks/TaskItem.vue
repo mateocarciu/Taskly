@@ -5,15 +5,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useInitials } from '@/composables/useInitials';
-import { destroy, update } from '@/routes/tasks';
+import { destroy } from '@/routes/tasks';
 import type { Task } from '@/types';
 import { router } from '@inertiajs/vue3';
 import {
+    AlignLeft,
     Calendar,
-    CheckCircle,
-    Circle,
     ClockAlert,
-    Loader,
     Pencil,
     Trash2,
 } from 'lucide-vue-next';
@@ -33,24 +31,7 @@ const { getInitials } = useInitials();
 const showDeleteDialog = ref(false);
 
 const isOverdue = (task: Task) => {
-    return new Date(task.due_date) < new Date() && !task.completed;
-};
-
-const toggleCompleted = () => {
-    router.put(
-        update(props.task.id).url,
-        { completed: !props.task.completed },
-        {
-            preserveScroll: true,
-            onSuccess: () => {
-                toast.success(
-                    props.task.completed
-                        ? 'Task marked as complete'
-                        : 'Task marked as incomplete',
-                );
-            },
-        },
-    );
+    return task.due_date ? new Date(task.due_date) < new Date() : false;
 };
 
 const deleteTask = () => {
@@ -66,97 +47,108 @@ const deleteTask = () => {
 
 <template>
     <Card
-        :class="[
-            'transition-all hover:shadow-md',
-            task.completed && 'opacity-60',
-        ]"
+        @click.stop="emit('edit', task)"
+        class="group relative cursor-pointer border-border transition-all hover:border-primary/40 hover:bg-accent/5 hover:shadow-sm"
     >
-        <CardContent class="flex items-center gap-4 p-4">
-            <button
-                @click="toggleCompleted"
-                class="text-muted-foreground transition-colors hover:text-primary"
-                :title="
-                    task.completed ? 'Mark as incomplete' : 'Mark as completed'
-                "
-            >
-                <CheckCircle
-                    v-if="task.completed"
-                    class="size-5 text-green-500"
-                />
-                <Circle v-else class="size-5" />
-            </button>
-
-            <div class="min-w-0 flex-1">
+        <CardContent class="flex flex-col gap-3 p-3.5">
+            <!-- Header: Title and Actions -->
+            <div class="flex items-start justify-between gap-2">
                 <p
-                    :class="[
-                        'truncate font-medium',
-                        task.completed && 'text-muted-foreground line-through',
-                    ]"
+                    class="line-clamp-2 text-sm leading-snug font-medium"
+                    :title="task.title"
                 >
                     {{ task.title }}
                 </p>
                 <div
-                    class="mt-1 flex items-center gap-2 text-sm text-muted-foreground"
+                    class="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100"
                 >
-                    <Calendar class="size-3.5" />
-                    <span
-                        :class="
-                            isOverdue(task) && 'font-medium text-destructive'
-                        "
+                    <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        class="h-6 w-6 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        @click.stop="emit('edit', task)"
+                        title="Edit task"
                     >
-                        {{
-                            new Date(task.due_date).toLocaleDateString('fr-FR')
-                        }}
-                    </span>
+                        <Pencil class="size-3" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        class="h-6 w-6 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        @click.stop="showDeleteDialog = true"
+                        title="Delete task"
+                    >
+                        <Trash2 class="size-3" />
+                    </Button>
                 </div>
-                <span v-if="task.creator">
-                    <!-- Created by -->
-                    <!-- <p class="ml-1 font-semibold">{{ task.creator.name }}</p> -->
-                    <Avatar class="h-8 w-8 overflow-hidden rounded-lg">
+            </div>
+
+            <!-- Description Preview -->
+            <div
+                v-if="task.description"
+                class="flex items-center gap-1.5 text-[12px] text-muted-foreground"
+                :title="task.description"
+            >
+                <AlignLeft class="size-3.5 shrink-0" />
+                <p class="truncate leading-relaxed">
+                    {{ task.description }}
+                </p>
+            </div>
+
+            <!-- Footer: Meta tags & Avatar -->
+            <div class="mt-1 flex items-end justify-between gap-2">
+                <!-- Tags -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <Badge
+                        v-if="
+                            task.days_in_column !== null &&
+                            task.days_in_column !== undefined
+                        "
+                        variant="secondary"
+                        class="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium"
+                        title="Time in column"
+                    >
+                        <ClockAlert class="size-3 text-muted-foreground" />
+                        <span>{{
+                            task.days_in_column === 0
+                                ? 'Today'
+                                : `${task.days_in_column}d`
+                        }}</span>
+                    </Badge>
+
+                    <Badge
+                        v-if="task.due_date"
+                        :variant="isOverdue(task) ? 'destructive' : 'secondary'"
+                        class="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium"
+                        title="Due date"
+                    >
+                        <Calendar
+                            class="size-3"
+                            :class="!isOverdue(task) && 'text-muted-foreground'"
+                        />
+                        <span>{{
+                            new Date(task.due_date).toLocaleDateString(
+                                'en-US',
+                                { day: 'numeric', month: 'short' },
+                            )
+                        }}</span>
+                    </Badge>
+                </div>
+
+                <!-- Avatar -->
+                <div
+                    v-if="task.creator"
+                    class="shrink-0"
+                    :title="`Created by ${task.creator.name}`"
+                >
+                    <Avatar class="h-6 w-6 border border-background shadow-sm">
                         <AvatarFallback
-                            class="rounded-lg text-black dark:text-white"
+                            class="bg-primary/10 text-[9px] font-semibold text-primary"
                         >
                             {{ getInitials(task.creator.name) }}
                         </AvatarFallback>
                     </Avatar>
-                </span>
-            </div>
-
-            <Badge v-if="task.completed" class="gap-1 bg-green-500">
-                <CheckCircle class="size-3" />
-                Done
-            </Badge>
-            <Badge
-                v-else-if="isOverdue(task)"
-                variant="destructive"
-                class="gap-1"
-            >
-                <ClockAlert class="size-3" />
-                Overdue
-            </Badge>
-            <Badge v-else class="gap-1 bg-amber-500">
-                <Loader class="size-3" />
-                Pending
-            </Badge>
-
-            <div class="flex items-center gap-1">
-                <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    @click="emit('edit', task)"
-                    title="Edit task"
-                >
-                    <Pencil class="size-4" />
-                </Button>
-                <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    @click="showDeleteDialog = true"
-                    class="text-destructive hover:text-destructive"
-                    title="Delete task"
-                >
-                    <Trash2 class="size-4" />
-                </Button>
+                </div>
             </div>
         </CardContent>
     </Card>

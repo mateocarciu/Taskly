@@ -16,13 +16,14 @@ class Task extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'title',
-        'due_date',
-        'completed',
         'team_id',
-        'created_by',
         'column_id',
+        'column_updated_at',
         'order',
+        'title',
+        'description',
+        'due_date',
+        'created_by',
     ];
 
     /**
@@ -33,6 +34,7 @@ class Task extends Model
     protected function casts(): array
     {
         return [
+            'column_updated_at' => 'datetime',
             'due_date' => 'datetime',
         ];
     }

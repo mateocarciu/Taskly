@@ -44,7 +44,8 @@ export interface Task {
     column_id: number | null;
     order: number;
     title: string;
-    completed: boolean;
+    description?: string | null;
+    days_in_column: number;
     due_date: string;
     created_by: number;
     creator?: {
@@ -63,13 +64,14 @@ export interface Column {
 
 export interface TaskForm {
     title: string;
+    description?: string | null;
     due_date: string;
 }
 
 export interface Team {
     id: number;
     name: string;
-    count_completed_tasks?: number;
+    count_days_in_column_tasks?: number;
 }
 
 export interface PaginationLink {
