@@ -14,8 +14,13 @@ class TaskResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // Calculate days cleanly or fallback to 0 if null
-        $daysInColumn = $this->column_updated_at ? (int) $this->column_updated_at->diffInDays(now()) : 0;
+        // Calculate historical + active seconds for current column properly
+        $currentSeconds = $this->column_updated_at ? (int) abs($this->column_updated_at->diffInSeconds(now())) : 0;
+        $history = $this->time_spent_in_columns ?? [];
+        $historicalSeconds = $history[$this->column_id] ?? 0;
+        
+        $totalSeconds = $historicalSeconds + $currentSeconds;
+        $daysInColumn = (int) floor($totalSeconds / 86400);
 
         return [
             'id' => $this->id,

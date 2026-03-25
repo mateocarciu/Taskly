@@ -19,6 +19,7 @@ class Task extends Model
         'team_id',
         'column_id',
         'column_updated_at',
+        'time_spent_in_columns',
         'order',
         'title',
         'description',
@@ -36,6 +37,7 @@ class Task extends Model
         return [
             'column_updated_at' => 'datetime',
             'due_date' => 'datetime',
+            'time_spent_in_columns' => 'array',
         ];
     }
 

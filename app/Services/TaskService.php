@@ -79,8 +79,13 @@ class TaskService
                 'order' => $newOrder,
             ];
 
-            // If it moved to a new column, reset its timer
+            // If it moved to a new column, reset its timer and accumulate the history
             if ($isDifferentColumn) {
+                $timeInOldColumn = $task->column_updated_at ? (int) abs($task->column_updated_at->diffInSeconds(now())) : 0;
+                $history = $task->time_spent_in_columns ?? [];
+                $history[$oldColumnId] = ($history[$oldColumnId] ?? 0) + $timeInOldColumn;
+
+                $updateData['time_spent_in_columns'] = $history;
                 $updateData['column_updated_at'] = now();
             }
 
