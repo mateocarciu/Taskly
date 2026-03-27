@@ -21,14 +21,13 @@ class TaskController extends Controller
     public function index(Request $request): Response
     {
         $columns = Column::query()
-            ->with([
-                'tasks' => function ($query) {
-                    $query->with('creator:id,name')->orderBy('order');
-                }
-            ])
             ->where('team_id', $request->user()->team_id)
             ->orderBy('order')
             ->get();
+
+        $columns->each(function ($column) {
+            $column->setRelation('tasks', $column->tasks()->with('creator:id,name')->orderBy('order')->paginate(10));
+        });
 
         return Inertia::render('Tasks', [
             'columns' => ColumnResource::collection($columns),

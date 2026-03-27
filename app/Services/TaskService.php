@@ -20,8 +20,8 @@ class TaskService
             $columnId = Column::where('team_id', $user->team_id)->orderBy('order')->value('id');
         }
 
-        $order = Task::where('column_id', $columnId)->max('order');
-        $order = $order !== null ? $order + 1 : 0;
+        Task::where('column_id', $columnId)->increment('order');
+        $order = 0;
 
         unset($data['column_id']);
 
