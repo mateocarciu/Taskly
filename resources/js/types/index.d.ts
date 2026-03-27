@@ -60,6 +60,12 @@ export interface Column {
     name: string;
     order: number;
     tasks: Task[];
+    pagination?: {
+        current_page: number;
+        last_page: number;
+        total: number;
+        has_more: boolean;
+    };
 }
 
 export interface TaskForm {
