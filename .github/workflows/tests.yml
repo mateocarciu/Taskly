@@ -1,7 +1,9 @@
 name: tests
 
 on:
-  push:
+  workflow_run:
+    workflows: ["linter"]
+    types: [completed]
     branches:
       - develop
       - main
@@ -12,6 +14,7 @@ on:
 
 jobs:
   ci:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
 
     steps:
