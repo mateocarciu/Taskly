@@ -36,12 +36,6 @@ const submit = () => {
                 isOpen.value = false;
                 toast.success('Task created');
             },
-            onError: (errors) => {
-                if (errors.column_id) {
-                    toast.error(errors.column_id);
-                    isOpen.value = false;
-                }
-            },
         });
     }
 };
@@ -78,7 +72,7 @@ const submit = () => {
                     <Label for="task-description">Description</Label>
                     <textarea
                         id="task-description"
-                        class="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                        class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         placeholder="Add more details..."
                         v-model="form.description"
                     ></textarea>
