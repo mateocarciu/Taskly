@@ -5,6 +5,7 @@ import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
 import { Users } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -14,7 +15,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const page = usePage();
-const user = page.props.auth.user;
+const user = computed(() => page.props.auth.user); 
 </script>
 
 <template>

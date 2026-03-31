@@ -23,6 +23,8 @@ export type AppPageProps<
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
+    currentTeam?: Team | null;
+    teams?: Team[];
     sidebarOpen: boolean;
 };
 

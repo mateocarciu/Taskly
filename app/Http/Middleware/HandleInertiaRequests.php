@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Team;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -45,6 +46,10 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user()?->load('team:id,name'),
             ],
+            'currentTeam' => $request->user()?->team,
+            'teams' => $request->user()
+                ? Team::query()->orderBy('name')->get(['id', 'name'])
+                : [],
             'sidebarOpen' => !$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

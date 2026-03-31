@@ -24,6 +24,10 @@ const sidebarNavItems: NavItem[] = [
         href: show(),
     },
     {
+        title: 'Teams',
+        href: '/settings/teams',
+    },
+    {
         title: 'Appearance',
         href: editAppearance(),
     },
