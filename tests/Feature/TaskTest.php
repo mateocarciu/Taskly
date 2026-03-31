@@ -65,6 +65,14 @@ describe('index', function () {
 });
 
 describe('store', function () {
+    beforeEach(function () {
+        Column::create([
+            'team_id' => $this->team->id,
+            'name' => 'To Do',
+            'order' => 1,
+        ]);
+    });
+
     test('creates a task for the user team', function () {
         $taskData = [
             'title' => 'New task',
