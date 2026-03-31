@@ -65,7 +65,7 @@ describe('index', function () {
 });
 
 describe('store', function () {
-    test('creates a task for theuser team', function () {
+    test('creates a task for the user team', function () {
         $taskData = [
             'title' => 'New task',
             'due_date' => now()->addDays(7)->format('Y-m-d H:i:s'),
