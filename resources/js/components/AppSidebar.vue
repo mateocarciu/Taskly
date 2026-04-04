@@ -2,7 +2,7 @@
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
-import TeamSwitcher from '@/components/TeamSwitcher.vue';
+import TeamSwitcher from '@/components/teams/TeamSwitcher.vue';
 import {
     Sidebar,
     SidebarContent,
