@@ -17,6 +17,9 @@ const page = usePage();
 
 const currentTeam = computed(() => page.props.currentTeam as Team | null);
 const teams = computed(() => (page.props.teams as Team[]) ?? []);
+const isTeamsSettingsPage = computed(() =>
+    page.url.startsWith('/settings/teams'),
+);
 
 const switchTeam = (team: Team) => {
     router.post(`/settings/teams/${team.id}/switch`);
@@ -67,8 +70,8 @@ const switchTeam = (team: Team) => {
                     class="ml-auto h-4 w-4"
                 />
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem as-child>
+            <DropdownMenuSeparator v-if="!isTeamsSettingsPage" />
+            <DropdownMenuItem as-child v-if="!isTeamsSettingsPage">
                 <a href="/settings/teams" class="w-full">Manage teams</a>
             </DropdownMenuItem>
         </DropdownMenuContent>
