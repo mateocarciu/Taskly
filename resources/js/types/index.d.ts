@@ -50,7 +50,12 @@ export interface Task {
     days_in_column: number;
     due_date: string;
     created_by: number;
+    assigned_to?: number | null;
     creator?: {
+        id: number;
+        name: string;
+    };
+    assignee?: {
         id: number;
         name: string;
     };
@@ -74,6 +79,12 @@ export interface TaskForm {
     title: string;
     description?: string | null;
     due_date: string;
+    assigned_to?: number | null;
+}
+
+export interface TeamMember {
+    id: number;
+    name: string;
 }
 
 export interface Team {

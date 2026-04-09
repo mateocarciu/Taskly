@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class TaskUpdateRequest extends FormRequest
 {
@@ -17,6 +18,13 @@ class TaskUpdateRequest extends FormRequest
             'title' => ['sometimes', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
             'due_date' => ['sometimes', 'nullable', 'date'],
+            'assigned_to' => [
+                'sometimes',
+                'nullable',
+                Rule::exists('users', 'id')->where(
+                    fn($query) => $query->where('team_id', $this->user()?->team_id)
+                ),
+            ],
         ];
     }
 }

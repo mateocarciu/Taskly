@@ -4,12 +4,13 @@ import TaskCreateDialog from '@/components/tasks/TaskCreateDialog.vue';
 import TaskEditDialog from '@/components/tasks/TaskEditDialog.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index } from '@/routes/tasks';
-import type { BreadcrumbItem, Column, Task } from '@/types';
+import type { BreadcrumbItem, Column, Task, TeamMember } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 defineProps<{
     columns: Column[];
+    teamMembers: TeamMember[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -40,14 +41,20 @@ const openEditModal = (task: Task) => {
                         Manage your team's tasks
                     </p>
                 </div>
-                <TaskCreateDialog />
+                <TaskCreateDialog :team-members="teamMembers" />
             </div>
 
-            <div class="flex-1 overflow-hidden h-[calc(100vh-[breadcrumbs height]-header)]">
+            <div
+                class="h-[calc(100vh-[breadcrumbs height]-header)] flex-1 overflow-hidden"
+            >
                 <KanbanBoard :columns="columns" @edit="openEditModal" />
             </div>
         </div>
 
-        <TaskEditDialog v-model:open="isEditModalOpen" :task="taskToEdit" />
+        <TaskEditDialog
+            v-model:open="isEditModalOpen"
+            :task="taskToEdit"
+            :team-members="teamMembers"
+        />
     </AppLayout>
 </template>

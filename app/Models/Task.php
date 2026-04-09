@@ -25,6 +25,7 @@ class Task extends Model
         'description',
         'due_date',
         'created_by',
+        'assigned_to',
     ];
 
     /**
@@ -55,6 +56,14 @@ class Task extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get the user assigned to the task.
+     */
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
     }
 
     /**

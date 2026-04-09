@@ -137,15 +137,24 @@ const deleteTask = () => {
 
                 <!-- Avatar -->
                 <div
-                    v-if="task.creator"
+                    v-if="task.assignee"
                     class="shrink-0"
-                    :title="`Created by ${task.creator.name}`"
+                    :title="`Assigned to ${task.assignee.name}`"
                 >
                     <Avatar class="h-6 w-6 border border-background shadow-sm">
                         <AvatarFallback
                             class="bg-primary/10 text-[9px] font-semibold text-primary"
                         >
-                            {{ getInitials(task.creator.name) }}
+                            {{ getInitials(task.assignee.name) }}
+                        </AvatarFallback>
+                    </Avatar>
+                </div>
+                <div v-else class="shrink-0" title="Unassigned task">
+                    <Avatar class="h-6 w-6 border border-background shadow-sm">
+                        <AvatarFallback
+                            class="bg-muted/10 text-[9px] font-semibold text-muted-foreground"
+                        >
+                            --
                         </AvatarFallback>
                     </Avatar>
                 </div>
