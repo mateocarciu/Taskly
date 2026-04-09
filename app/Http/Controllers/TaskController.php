@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\Column;
+use App\Models\User;
 use App\Services\TaskService;
 use App\Http\Resources\ColumnResource;
 use Inertia\Inertia;
@@ -16,7 +17,9 @@ use App\Http\Requests\TaskUpdateRequest;
 
 class TaskController extends Controller
 {
-    public function __construct(private TaskService $taskService) {}
+    public function __construct(private TaskService $taskService)
+    {
+    }
 
     public function index(Request $request): Response
     {
@@ -26,11 +29,17 @@ class TaskController extends Controller
             ->get();
 
         $columns->each(function ($column) {
-            $column->setRelation('tasks', $column->tasks()->with('creator:id,name')->orderBy('order')->paginate(10));
+            $column->setRelation('tasks', $column->tasks()->with('creator:id,name', 'assignee:id,name')->orderBy('order')->paginate(10));
         });
+
+        $teamMembers = User::query()
+            ->where('team_id', $request->user()->team_id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
         return Inertia::render('Tasks', [
             'columns' => ColumnResource::collection($columns),
+            'teamMembers' => $teamMembers,
         ]);
     }
 

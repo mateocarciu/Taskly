@@ -38,13 +38,13 @@ class DatabaseSeeder extends Seeder
                 'name' => 'To Do',
                 'order' => 1
             ]);
-            
+
             $progressColumn = Column::create([
                 'team_id' => $team->id,
                 'name' => 'In Progress',
                 'order' => 2
             ]);
-            
+
             $doneColumn = Column::create([
                 'team_id' => $team->id,
                 'name' => 'Done',
@@ -56,6 +56,7 @@ class DatabaseSeeder extends Seeder
             $tasks = Task::factory(10)->create([
                 'team_id' => $team->id,
                 'created_by' => fn() => $teamUsers->random(),
+                'assigned_to' => fn() => rand(0, 100) < 80 ? $teamUsers->random() : null,
             ]);
 
             $todoOrder = 0;

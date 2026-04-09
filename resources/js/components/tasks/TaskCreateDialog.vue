@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import TaskAssigneeSelect from '@/components/tasks/TaskAssigneeSelect.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -14,18 +15,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { store } from '@/routes/tasks';
-import type { TaskForm } from '@/types';
-import { useForm } from '@inertiajs/vue3';
+import type { AppPageProps, TaskForm, TeamMember } from '@/types';
+import { useForm, usePage } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
+defineProps<{
+    teamMembers: TeamMember[];
+}>();
+
+const page = usePage<AppPageProps>();
 const isOpen = ref(false);
+const currentUserId = computed(() => page.props.auth.user.id ?? null);
 
 const form = useForm<TaskForm>({
     title: '',
     description: '',
     due_date: '',
+    assigned_to: currentUserId.value,
 });
 
 const submit = () => {
@@ -33,6 +41,7 @@ const submit = () => {
         form.submit(store(), {
             onSuccess: () => {
                 form.reset();
+                form.assigned_to = currentUserId.value;
                 isOpen.value = false;
                 toast.success('Task created');
             },
@@ -92,6 +101,15 @@ const submit = () => {
                         v-model="form.due_date"
                     />
                     <InputError :message="form.errors.due_date" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label>Assigned to</Label>
+                    <TaskAssigneeSelect
+                        v-model="form.assigned_to"
+                        :team-members="teamMembers"
+                    />
+                    <InputError :message="form.errors.assigned_to" />
                 </div>
 
                 <DialogFooter>

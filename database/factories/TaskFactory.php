@@ -21,7 +21,9 @@ class TaskFactory extends Factory
         return [
             'team_id' => Team::factory(),
             'created_by' => User::factory(),
+            'assigned_to' => null,
             'title' => fake()->sentence(),
+            'description' => fake()->optional()->paragraph(),
             'due_date' => fake()->dateTimeThisYear(),
         ];
     }
