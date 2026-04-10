@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import TaskAssigneeSelect from '@/components/tasks/TaskAssigneeSelect.vue';
+import TaskRichTextEditor from '@/components/tasks/TaskRichTextEditor.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -64,7 +65,7 @@ const submit = () => {
                 New Task
             </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent @open-auto-focus.prevent>
             <DialogHeader>
                 <DialogTitle>Create a new task</DialogTitle>
                 <DialogDescription>
@@ -85,12 +86,10 @@ const submit = () => {
                 </div>
                 <div class="grid gap-2">
                     <Label for="task-description">Description</Label>
-                    <textarea
-                        id="task-description"
-                        class="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                        placeholder="Add more details..."
+                    <TaskRichTextEditor
                         v-model="form.description"
-                    ></textarea>
+                        placeholder="Add more details..."
+                    />
                     <InputError :message="form.errors.description" />
                 </div>
                 <div class="grid gap-2">

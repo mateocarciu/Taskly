@@ -41,7 +41,7 @@ const submit = () => {
 
 <template>
     <Dialog v-model:open="isOpen">
-        <DialogContent class="sm:max-w-[425px]">
+        <DialogContent class="sm:max-w-[425px]" @open-auto-focus.prevent>
             <DialogHeader>
                 <DialogTitle>Create new column</DialogTitle>
             </DialogHeader>
@@ -54,7 +54,6 @@ const submit = () => {
                             type="text"
                             placeholder="e.g. Backlog, Review..."
                             v-model="form.name"
-                            autofocus
                         />
                         <InputError :message="form.errors.name" />
                     </div>

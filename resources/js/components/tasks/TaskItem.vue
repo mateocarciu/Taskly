@@ -8,13 +8,7 @@ import { useInitials } from '@/composables/useInitials';
 import { destroy } from '@/routes/tasks';
 import type { Task } from '@/types';
 import { router } from '@inertiajs/vue3';
-import {
-    AlignLeft,
-    Calendar,
-    ClockAlert,
-    Pencil,
-    Trash2,
-} from 'lucide-vue-next';
+import { Calendar, ClockAlert, Pencil, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -32,6 +26,18 @@ const showDeleteDialog = ref(false);
 
 const isOverdue = (task: Task) => {
     return task.due_date ? new Date(task.due_date) < new Date() : false;
+};
+
+const descriptionToText = (description?: string | null) => {
+    if (!description) return '';
+
+    const text = description
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    return text;
 };
 
 const deleteTask = () => {
@@ -87,12 +93,12 @@ const deleteTask = () => {
             <div
                 v-if="task.description"
                 class="flex items-center gap-1.5 text-[12px] text-muted-foreground"
-                :title="task.description"
+                :title="descriptionToText(task.description)"
             >
-                <AlignLeft class="size-3.5 shrink-0" />
-                <p class="truncate leading-relaxed">
-                    {{ task.description }}
-                </p>
+                <div
+                    class="task-description-preview max-h-24 min-w-0 overflow-hidden leading-relaxed"
+                    v-html="task.description"
+                ></div>
             </div>
 
             <!-- Footer: Meta tags & Avatar -->
@@ -168,3 +174,38 @@ const deleteTask = () => {
         @confirm="deleteTask"
     />
 </template>
+
+<style scoped>
+.task-description-preview {
+    font-size: 12px;
+}
+
+.task-description-preview :deep(p) {
+    margin: 0;
+}
+
+.task-description-preview :deep(p + p) {
+    margin-top: 0.25rem;
+}
+
+.task-description-preview :deep(ul),
+.task-description-preview :deep(ol) {
+    margin: 0.25rem 0 0 1rem;
+    padding: 0;
+}
+
+.task-description-preview :deep(ul) {
+    list-style: disc;
+}
+
+.task-description-preview :deep(ol) {
+    list-style: decimal;
+}
+
+.task-description-preview :deep(pre) {
+    margin-top: 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre-wrap;
+}
+</style>

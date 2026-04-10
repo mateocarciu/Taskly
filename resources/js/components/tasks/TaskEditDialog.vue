@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import TaskAssigneeSelect from '@/components/tasks/TaskAssigneeSelect.vue';
+import TaskRichTextEditor from '@/components/tasks/TaskRichTextEditor.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -61,7 +62,7 @@ watch([() => props.task, isOpen], ([task, open]) => {
 
 <template>
     <Dialog v-model:open="isOpen">
-        <DialogContent>
+        <DialogContent @open-auto-focus.prevent>
             <DialogHeader>
                 <DialogTitle>Task details</DialogTitle>
                 <DialogDescription> Update the task details </DialogDescription>
@@ -81,12 +82,10 @@ watch([() => props.task, isOpen], ([task, open]) => {
 
                 <div class="grid gap-2">
                     <Label for="edit-task-description">Description</Label>
-                    <textarea
-                        id="edit-task-description"
-                        class="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                        placeholder="Add more details..."
+                    <TaskRichTextEditor
                         v-model="form.description"
-                    ></textarea>
+                        placeholder="Add more details..."
+                    />
                     <InputError :message="form.errors.description" />
                 </div>
 
