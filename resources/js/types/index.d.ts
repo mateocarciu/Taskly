@@ -77,9 +77,9 @@ export interface Column {
 
 export interface TaskForm {
     title: string;
-    description?: string | null;
+    description: string;
     due_date: string;
-    assigned_to?: number | null;
+    assigned_to: number | null;
 }
 
 export interface TeamMember {
