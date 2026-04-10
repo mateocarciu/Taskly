@@ -41,6 +41,17 @@ class TaskResource extends JsonResource
                 'id' => $this->assignee->id,
                 'name' => $this->assignee->name,
             ]),
+            'comments' => $this->whenLoaded('comments', fn() => $this->comments->map(
+                fn($comment) => [
+                    'id' => $comment->id,
+                    'body' => $comment->body,
+                    'created_at' => $comment->created_at?->toIso8601String(),
+                    'user' => [
+                        'id' => $comment->user->id,
+                        'name' => $comment->user->name,
+                    ],
+                ]
+            )->values()),
         ];
     }
 }

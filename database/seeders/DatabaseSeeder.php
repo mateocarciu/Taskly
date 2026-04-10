@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Team;
 use App\Models\Task;
+use App\Models\TaskComment;
 use App\Models\Column;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
@@ -72,6 +73,16 @@ class DatabaseSeeder extends Seeder
                     $task->update(['column_id' => $progressColumn->id, 'order' => $progressOrder++, 'column_updated_at' => now()->subDays(rand(1, 5))]);
                 } else {
                     $task->update(['column_id' => $doneColumn->id, 'order' => $doneOrder++, 'column_updated_at' => now()->subDays(rand(2, 10))]);
+                }
+
+                $commentCount = rand(0, 3);
+
+                for ($commentIndex = 0; $commentIndex < $commentCount; $commentIndex++) {
+                    TaskComment::create([
+                        'task_id' => $task->id,
+                        'user_id' => $teamUsers->random(),
+                        'body' => fake()->sentences(rand(1, 2), true),
+                    ]);
                 }
             }
         }

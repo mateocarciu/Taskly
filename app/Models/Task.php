@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -72,5 +73,13 @@ class Task extends Model
     public function column(): BelongsTo
     {
         return $this->belongsTo(Column::class);
+    }
+
+    /**
+     * Get the comments for the task.
+     */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(TaskComment::class)->orderBy('created_at');
     }
 }
