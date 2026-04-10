@@ -29,7 +29,7 @@ class TaskController extends Controller
             ->get();
 
         $columns->each(function ($column) {
-            $column->setRelation('tasks', $column->tasks()->with('creator:id,name', 'assignee:id,name')->orderBy('order')->paginate(10));
+            $column->setRelation('tasks', $column->tasks()->with('creator:id,name', 'assignee:id,name', 'comments.user:id,name')->orderBy('order')->paginate(10));
         });
 
         $teamMembers = User::query()
@@ -68,6 +68,24 @@ class TaskController extends Controller
         }
 
         $this->taskService->deleteTask($task);
+
+        return back();
+    }
+
+    public function storeComment(Request $request, Task $task): RedirectResponse
+    {
+        if ($task->team_id !== $request->user()->team_id) {
+            abort(403, 'You are not authorized to comment on this task.');
+        }
+
+        $validated = $request->validate([
+            'body' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $task->comments()->create([
+            'user_id' => $request->user()->id,
+            'body' => $validated['body'],
+        ]);
 
         return back();
     }

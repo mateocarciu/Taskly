@@ -23,7 +23,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 const isEditModalOpen = ref(false);
 const taskToEdit = ref<Task | null>(null);
 
-const openEditModal = (task: Task) => {
+const openTaskDetails = (task: Task) => {
     taskToEdit.value = task;
     isEditModalOpen.value = true;
 };
@@ -47,7 +47,7 @@ const openEditModal = (task: Task) => {
             <div
                 class="h-[calc(100vh-[breadcrumbs height]-header)] flex-1 overflow-hidden"
             >
-                <KanbanBoard :columns="columns" @edit="openEditModal" />
+                <KanbanBoard :columns="columns" @edit="openTaskDetails" />
             </div>
         </div>
 

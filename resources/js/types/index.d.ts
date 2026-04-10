@@ -59,6 +59,7 @@ export interface Task {
         id: number;
         name: string;
     };
+    comments?: TaskComment[];
 }
 
 export interface Column {
@@ -85,6 +86,16 @@ export interface TaskForm {
 export interface TeamMember {
     id: number;
     name: string;
+}
+
+export interface TaskComment {
+    id: number;
+    body: string;
+    created_at: string;
+    user: {
+        id: number;
+        name: string;
+    };
 }
 
 export interface Team {
