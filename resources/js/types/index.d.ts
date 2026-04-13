@@ -91,11 +91,13 @@ export interface TeamMember {
 export interface TaskComment {
     id: number;
     body: string;
+    parent_id?: number | null;
     created_at: string;
     user: {
         id: number;
         name: string;
     };
+    replies?: TaskComment[];
 }
 
 export interface Team {
