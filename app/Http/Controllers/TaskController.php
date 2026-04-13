@@ -12,9 +12,9 @@ use Inertia\Response;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TaskCreateRequest;
+use App\Http\Requests\TaskCommentStoreRequest;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\TaskUpdateRequest;
-use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
 {
@@ -85,20 +85,13 @@ class TaskController extends Controller
         return back();
     }
 
-    public function storeComment(Request $request, Task $task): RedirectResponse
+    public function storeComment(TaskCommentStoreRequest $request, Task $task): RedirectResponse
     {
         if ($task->team_id !== $request->user()->team_id) {
             abort(403, 'You are not authorized to comment on this task.');
         }
 
-        $validated = $request->validate([
-            'body' => ['required', 'string', 'max:2000'],
-            'parent_id' => [
-                'nullable',
-                'integer',
-                Rule::exists('task_comments', 'id')->where('task_id', $task->id),
-            ],
-        ]);
+        $validated = $request->validated();
 
         $task->comments()->create([
             'user_id' => $request->user()->id,

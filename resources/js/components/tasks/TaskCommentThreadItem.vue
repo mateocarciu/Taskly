@@ -4,6 +4,7 @@ import TaskRichTextEditor from '@/components/tasks/TaskRichTextEditor.vue';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import type { TaskComment } from '@/types';
+import { computed, ref } from 'vue';
 
 defineOptions({
     name: 'TaskCommentThreadItem',
@@ -34,6 +35,24 @@ const emit = defineEmits<{
 }>();
 
 const isReplying = () => props.activeReplyToId === props.comment.id;
+const repliesExpanded = ref(false);
+const allReplies = computed(() => props.comment.replies ?? []);
+const canToggleReplies = computed(() => props.depth === 0);
+const visibleReplies = computed(() => {
+    if (!canToggleReplies.value) {
+        return allReplies.value;
+    }
+
+    return repliesExpanded.value ? allReplies.value : [];
+});
+
+const showMoreReplies = () => {
+    repliesExpanded.value = true;
+};
+
+const showLessReplies = () => {
+    repliesExpanded.value = false;
+};
 </script>
 
 <template>
@@ -69,7 +88,7 @@ const isReplying = () => props.activeReplyToId === props.comment.id;
                 <Button
                     v-if="!isReplying()"
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     class="h-8 px-2 text-xs"
                     @click="emit('startReply', comment.id)"
@@ -79,12 +98,43 @@ const isReplying = () => props.activeReplyToId === props.comment.id;
                 <Button
                     v-else
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     class="h-8 px-2 text-xs"
                     @click="emit('cancelReply')"
                 >
                     Cancel
+                </Button>
+
+                <Button
+                    v-if="
+                        canToggleReplies &&
+                        allReplies.length > 0 &&
+                        !repliesExpanded
+                    "
+                    type="button"
+                    variant="link"
+                    size="sm"
+                    class="h-8 px-2 text-xs text-muted-foreground"
+                    @click="showMoreReplies"
+                >
+                    Show {{ allReplies.length }}
+                    {{ allReplies.length === 1 ? 'reply' : 'replies' }}
+                </Button>
+
+                <Button
+                    v-if="
+                        canToggleReplies &&
+                        allReplies.length > 0 &&
+                        repliesExpanded
+                    "
+                    type="button"
+                    variant="link"
+                    size="sm"
+                    class="h-8 px-2 text-xs text-muted-foreground"
+                    @click="showLessReplies"
+                >
+                    Hide replies
                 </Button>
             </div>
         </div>
@@ -113,9 +163,9 @@ const isReplying = () => props.activeReplyToId === props.comment.id;
             </div>
         </div>
 
-        <div v-if="(comment.replies?.length ?? 0) > 0" class="space-y-3">
+        <div v-if="allReplies.length > 0" class="space-y-3">
             <TaskCommentThreadItem
-                v-for="reply in comment.replies"
+                v-for="reply in visibleReplies"
                 :key="reply.id"
                 :comment="reply"
                 :depth="depth + 1"
