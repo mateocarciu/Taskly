@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import TaskAssigneeSelect from '@/components/tasks/TaskAssigneeSelect.vue';
+import TaskCommentThreadItem from '@/components/tasks/TaskCommentThreadItem.vue';
 import TaskRichTextEditor from '@/components/tasks/TaskRichTextEditor.vue';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -52,6 +52,41 @@ const commentForm = useForm({
     body: '',
 });
 
+const replyForm = useForm({
+    body: '',
+    parent_id: null as number | null,
+});
+
+const activeReplyToId = ref<number | null>(null);
+
+const stripRichText = (value: string) => {
+    return value
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+};
+
+const syncCommentsFromLatestPage = () => {
+    if (!props.task) return false;
+
+    const pageColumns = ((page.props as unknown as { columns?: unknown[] })
+        .columns ?? []) as Array<{ tasks?: Task[] }>;
+
+    for (const column of pageColumns) {
+        const foundTask = column.tasks?.find((candidate) => {
+            return candidate.id === props.task?.id;
+        });
+
+        if (foundTask) {
+            commentsList.value = [...(foundTask.comments ?? [])];
+            return true;
+        }
+    }
+
+    return false;
+};
+
 const isOverdue = computed(() => {
     return props.task?.due_date
         ? new Date(props.task.due_date) < new Date()
@@ -82,30 +117,47 @@ const submit = () => {
 const submitComment = () => {
     if (!props.task) return;
 
-    const bodyText = commentForm.body
-        .replace(/<[^>]*>/g, ' ')
-        .replace(/&nbsp;/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+    const bodyText = stripRichText(commentForm.body);
 
     if (!bodyText) return;
-
-    const body = commentForm.body;
 
     commentForm.post(comments.store(props.task.id).url, {
         preserveScroll: true,
         onSuccess: () => {
-            commentsList.value.push({
-                id: Date.now(),
-                body,
-                created_at: new Date().toISOString(),
-                user: {
-                    id: page.props.auth.user.id,
-                    name: page.props.auth.user.name,
-                },
-            });
+            syncCommentsFromLatestPage();
             commentForm.reset('body');
             toast.success('Comment posted');
+        },
+    });
+};
+
+const startReply = (commentId: number) => {
+    activeReplyToId.value = commentId;
+    replyForm.parent_id = commentId;
+    replyForm.reset('body');
+    replyForm.clearErrors();
+};
+
+const cancelReply = () => {
+    activeReplyToId.value = null;
+    replyForm.reset('body');
+    replyForm.clearErrors();
+    replyForm.parent_id = null;
+};
+
+const submitReply = (commentId: number) => {
+    if (!props.task) return;
+
+    const bodyText = stripRichText(replyForm.body);
+    if (!bodyText) return;
+
+    replyForm.parent_id = commentId;
+    replyForm.post(comments.store(props.task.id).url, {
+        preserveScroll: true,
+        onSuccess: () => {
+            syncCommentsFromLatestPage();
+            cancelReply();
+            toast.success('Reply posted');
         },
     });
 };
@@ -120,8 +172,10 @@ watch([() => props.task, isOpen], ([task, open]) => {
         form.assigned_to = task.assigned_to ?? null;
         form.clearErrors();
         commentsList.value = [...(task.comments ?? [])];
+        syncCommentsFromLatestPage();
         commentForm.reset('body');
         commentForm.clearErrors();
+        cancelReply();
     }
 });
 </script>
@@ -292,72 +346,24 @@ watch([() => props.task, isOpen], ([task, open]) => {
                             No comments yet. Start the discussion.
                         </div>
 
-                        <div
+                        <TaskCommentThreadItem
                             v-for="comment in commentsList"
                             :key="comment.id"
-                            class="rounded-lg border border-border bg-background p-4"
-                        >
-                            <div class="mb-3 flex items-start gap-3">
-                                <Avatar class="h-8 w-8 border border-border">
-                                    <AvatarFallback
-                                        class="text-xs font-semibold"
-                                    >
-                                        {{ getInitials(comment.user.name) }}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div class="min-w-0 flex-1">
-                                    <div
-                                        class="flex flex-wrap items-center gap-2"
-                                    >
-                                        <p class="text-sm font-medium">
-                                            {{ comment.user.name }}
-                                        </p>
-                                        <span
-                                            class="text-xs text-muted-foreground"
-                                        >
-                                            {{ formatDate(comment.created_at) }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div
-                                class="comment-rich-text text-sm leading-relaxed text-foreground"
-                                v-html="comment.body"
-                            ></div>
-                        </div>
+                            :comment="comment"
+                            :active-reply-to-id="activeReplyToId"
+                            :reply-body="replyForm.body"
+                            :reply-error="replyForm.errors.body"
+                            :posting-reply="replyForm.processing"
+                            :format-date="formatDate"
+                            :get-initials="getInitials"
+                            @start-reply="startReply"
+                            @cancel-reply="cancelReply"
+                            @update-reply-body="replyForm.body = $event"
+                            @submit-reply="submitReply"
+                        />
                     </div>
                 </div>
             </div>
         </DialogContent>
     </Dialog>
 </template>
-
-<style scoped>
-.comment-rich-text :deep(p) {
-    margin: 0;
-}
-
-.comment-rich-text :deep(p + p) {
-    margin-top: 0.25rem;
-}
-
-.comment-rich-text :deep(ul),
-.comment-rich-text :deep(ol) {
-    margin: 0.25rem 0 0 1rem;
-    padding: 0;
-}
-
-.comment-rich-text :deep(ul) {
-    list-style: disc;
-}
-
-.comment-rich-text :deep(ol) {
-    list-style: decimal;
-}
-
-.comment-rich-text :deep(pre) {
-    margin-top: 0.25rem;
-    overflow-x: auto;
-}
-</style>

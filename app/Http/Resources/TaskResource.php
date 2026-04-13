@@ -8,6 +8,28 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class TaskResource extends JsonResource
 {
     /**
+     * Serialize a comment and its nested replies.
+     *
+     * @return array<string, mixed>
+     */
+    private function serializeComment($comment): array
+    {
+        return [
+            'id' => $comment->id,
+            'body' => $comment->body,
+            'parent_id' => $comment->parent_id,
+            'created_at' => $comment->created_at?->toIso8601String(),
+            'user' => [
+                'id' => $comment->user->id,
+                'name' => $comment->user->name,
+            ],
+            'replies' => $comment->relationLoaded('replies')
+                ? $comment->replies->map(fn($reply) => $this->serializeComment($reply))->values()
+                : [],
+        ];
+    }
+
+    /**
      * Transform the resource into an array.
      *
      * @return array<string, mixed>
@@ -41,17 +63,12 @@ class TaskResource extends JsonResource
                 'id' => $this->assignee->id,
                 'name' => $this->assignee->name,
             ]),
-            'comments' => $this->whenLoaded('comments', fn() => $this->comments->map(
-                fn($comment) => [
-                    'id' => $comment->id,
-                    'body' => $comment->body,
-                    'created_at' => $comment->created_at?->toIso8601String(),
-                    'user' => [
-                        'id' => $comment->user->id,
-                        'name' => $comment->user->name,
-                    ],
-                ]
-            )->values()),
+            'comments' => $this->whenLoaded(
+                'comments',
+                fn() => $this->comments
+                    ->map(fn($comment) => $this->serializeComment($comment))
+                    ->values()
+            ),
         ];
     }
 }

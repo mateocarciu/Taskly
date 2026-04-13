@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\TaskCreateRequest;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\TaskUpdateRequest;
+use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
 {
@@ -29,7 +30,19 @@ class TaskController extends Controller
             ->get();
 
         $columns->each(function ($column) {
-            $column->setRelation('tasks', $column->tasks()->with('creator:id,name', 'assignee:id,name', 'comments.user:id,name')->orderBy('order')->paginate(10));
+            $column->setRelation(
+                'tasks',
+                $column->tasks()
+                    ->with([
+                        'creator:id,name',
+                        'assignee:id,name',
+                        'comments' => fn($query) => $query
+                            ->whereNull('parent_id')
+                            ->with(['user:id,name', 'replies']),
+                    ])
+                    ->orderBy('order')
+                    ->paginate(10)
+            );
         });
 
         $teamMembers = User::query()
@@ -80,10 +93,16 @@ class TaskController extends Controller
 
         $validated = $request->validate([
             'body' => ['required', 'string', 'max:2000'],
+            'parent_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('task_comments', 'id')->where('task_id', $task->id),
+            ],
         ]);
 
         $task->comments()->create([
             'user_id' => $request->user()->id,
+            'parent_id' => $validated['parent_id'] ?? null,
             'body' => $validated['body'],
         ]);
 

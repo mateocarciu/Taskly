@@ -10,7 +10,6 @@ export default defineConfig({
     plugins: [
         VueDevTools({
             appendTo: /resources\/js\/app\.ts$/,
-            launchEditor: 'code',
         }),
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.ts'],

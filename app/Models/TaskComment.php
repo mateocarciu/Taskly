@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
 class TaskComment extends Model
@@ -19,6 +20,7 @@ class TaskComment extends Model
     protected $fillable = [
         'task_id',
         'user_id',
+        'parent_id',
         'body',
     ];
 
@@ -36,5 +38,23 @@ class TaskComment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the parent comment when this is a reply.
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    /**
+     * Get direct replies for this comment.
+     */
+    public function replies(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id')
+            ->with(['user:id,name', 'replies'])
+            ->orderBy('created_at');
     }
 }
