@@ -21,7 +21,7 @@ class TaskSequenceController extends Controller
 
         $validated = $request->validated();
 
-        $this->taskService->updateSequence($task, $validated['column_id'], $validated['order']);
+        $this->taskService->updateSequence($task, $validated['column_id'], $validated['order'], $request->user());
 
         return back();
     }

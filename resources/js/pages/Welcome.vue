@@ -83,7 +83,7 @@ const features = [
                     </Button>
                     <template v-else>
                         <Button variant="ghost" as-child>
-                            <Link :href="login()">Sign in</Link>
+                            <Link :href="login()">Log in</Link>
                         </Button>
                         <Button v-if="canRegister" as-child>
                             <Link :href="register()">Create account</Link>

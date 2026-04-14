@@ -69,6 +69,21 @@ class TaskResource extends JsonResource
                     ->map(fn($comment) => $this->serializeComment($comment))
                     ->values()
             ),
+            'events' => $this->whenLoaded(
+                'events',
+                fn() => $this->events->map(fn($event) => [
+                    'id' => $event->id,
+                    'type' => $event->type,
+                    'created_at' => $event->created_at?->toIso8601String(),
+                    'actor' => $event->relationLoaded('actor') && $event->actor
+                        ? [
+                            'id' => $event->actor->id,
+                            'name' => $event->actor->name,
+                        ]
+                        : null,
+                    'metadata' => $event->metadata ?? [],
+                ])->values(),
+            ),
         ];
     }
 }

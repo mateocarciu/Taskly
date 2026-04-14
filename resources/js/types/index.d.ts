@@ -60,6 +60,7 @@ export interface Task {
         name: string;
     };
     comments?: TaskComment[];
+    events?: TaskEvent[];
 }
 
 export interface Column {
@@ -98,6 +99,17 @@ export interface TaskComment {
         name: string;
     };
     replies?: TaskComment[];
+}
+
+export interface TaskEvent {
+    id: number;
+    type: 'created' | 'moved' | 'assigned' | string;
+    created_at: string;
+    actor?: {
+        id: number;
+        name: string;
+    } | null;
+    metadata?: Record<string, unknown>;
 }
 
 export interface Team {
