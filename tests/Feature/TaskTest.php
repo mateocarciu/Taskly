@@ -103,6 +103,15 @@ describe('store', function () {
             'title' => 'New task',
             'created_by' => $this->user->id,
         ]);
+
+        $task = Task::query()->where('title', 'New task')->firstOrFail();
+
+        $this->assertDatabaseHas('task_events', [
+            'task_id' => $task->id,
+            'team_id' => $this->team->id,
+            'actor_id' => $this->user->id,
+            'type' => 'created',
+        ]);
     });
 
     test('validates required fields', function () {
@@ -169,6 +178,27 @@ describe('update', function () {
         $this->assertDatabaseHas('tasks', [
             'id' => $task->id,
             'description' => 'Updated description detail.',
+        ]);
+    });
+
+    test('records assigned event when assignment changes', function () {
+        $task = Task::factory()->create([
+            'team_id' => $this->team->id,
+            'assigned_to' => null,
+        ]);
+        $assignee = User::factory()->create(['team_id' => $this->team->id]);
+
+        $this->actingAs($this->user)
+            ->put(route('tasks.update', $task), [
+                'assigned_to' => $assignee->id,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('task_events', [
+            'task_id' => $task->id,
+            'team_id' => $this->team->id,
+            'actor_id' => $this->user->id,
+            'type' => 'assigned',
         ]);
     });
 });

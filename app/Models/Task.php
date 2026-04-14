@@ -82,4 +82,12 @@ class Task extends Model
     {
         return $this->hasMany(TaskComment::class)->orderBy('created_at');
     }
+
+    /**
+     * Get the activity events for the task.
+     */
+    public function events(): HasMany
+    {
+        return $this->hasMany(TaskEvent::class)->orderBy('created_at');
+    }
 }

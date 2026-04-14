@@ -16,6 +16,7 @@ import { onBeforeUnmount, watch } from 'vue';
 const props = defineProps<{
     modelValue: string;
     placeholder?: string;
+    minHeight?: string;
 }>();
 
 const emit = defineEmits<{
@@ -32,7 +33,8 @@ const editor = useEditor({
     ],
     editorProps: {
         attributes: {
-            class: 'min-h-24 w-full bg-background px-3 py-2 text-sm focus-visible:outline-none',
+            class: 'w-full bg-background px-3 py-2 text-sm focus-visible:outline-none',
+            style: `min-height: ${props.minHeight ?? '6rem'}; height: ${props.minHeight ?? '6rem'};`,
         },
     },
     onUpdate: ({ editor }) => {
@@ -133,14 +135,21 @@ onBeforeUnmount(() => {
             </Button>
         </div>
 
-        <EditorContent :editor="editor" class="task-rich-text rounded-b-md" />
+        <EditorContent
+            :editor="editor"
+            class="task-rich-text rounded-b-md"
+            :style="{ '--task-editor-min-height': props.minHeight ?? '6rem' }"
+        />
     </div>
 </template>
 
 <style scoped>
 .task-rich-text :deep(.ProseMirror) {
-    min-height: 6rem;
+    min-height: var(--task-editor-min-height, 6rem);
+    height: var(--task-editor-min-height, 6rem);
     margin: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .task-rich-text :deep(.ProseMirror p.is-editor-empty:first-child::before) {

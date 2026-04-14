@@ -74,5 +74,12 @@ describe('sequence updates', function () {
 
         // Column A should now have 86400 + 10 = 86410 seconds
         $this->assertEquals(86410, $task->time_spent_in_columns[$this->columnA->id]);
+
+        $this->assertDatabaseHas('task_events', [
+            'task_id' => $task->id,
+            'team_id' => $this->team->id,
+            'actor_id' => $this->user->id,
+            'type' => 'moved',
+        ]);
     });
 });

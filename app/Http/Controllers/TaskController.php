@@ -39,6 +39,7 @@ class TaskController extends Controller
                         'comments' => fn($query) => $query
                             ->whereNull('parent_id')
                             ->with(['user:id,name', 'replies']),
+                        'events.actor:id,name',
                     ])
                     ->orderBy('order')
                     ->paginate(10)
@@ -69,7 +70,7 @@ class TaskController extends Controller
             abort(403, 'You are not authorized to update this task.');
         }
 
-        $this->taskService->updateTask($task, $request->validated());
+        $this->taskService->updateTask($task, $request->validated(), $request->user());
 
         return back();
     }
