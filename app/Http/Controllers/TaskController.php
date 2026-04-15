@@ -7,12 +7,14 @@ use App\Models\Column;
 use App\Models\User;
 use App\Services\TaskService;
 use App\Http\Resources\ColumnResource;
+use App\Http\Resources\TaskResource;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TaskCreateRequest;
 use App\Http\Requests\TaskCommentStoreRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\TaskUpdateRequest;
 
@@ -36,10 +38,6 @@ class TaskController extends Controller
                     ->with([
                         'creator:id,name',
                         'assignee:id,name',
-                        'comments' => fn($query) => $query
-                            ->whereNull('parent_id')
-                            ->with(['user:id,name', 'replies']),
-                        'events.actor:id,name',
                     ])
                     ->orderBy('order')
                     ->paginate(10)
@@ -55,6 +53,24 @@ class TaskController extends Controller
             'columns' => ColumnResource::collection($columns),
             'teamMembers' => $teamMembers,
         ]);
+    }
+
+    public function show(Request $request, Task $task): JsonResponse
+    {
+        if ($task->team_id !== $request->user()->team_id) {
+            abort(403, 'You are not authorized to view this task.');
+        }
+
+        $task->load([
+            'creator:id,name',
+            'assignee:id,name',
+            'comments' => fn($query) => $query
+                ->whereNull('parent_id')
+                ->with(['user:id,name', 'replies']),
+            'events.actor:id,name',
+        ]);
+
+        return response()->json((new TaskResource($task))->resolve());
     }
 
     public function store(TaskCreateRequest $request): RedirectResponse

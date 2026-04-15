@@ -148,4 +148,14 @@ export interface PaginationLink {
     active: boolean;
 }
 
+export interface TaskEditFormState {
+    title: string;
+    description: string;
+    due_date: string;
+    assigned_to: number | null;
+    errors: Record<string, string | undefined>;
+    isDirty: boolean;
+    processing: boolean;
+}
+
 export type BreadcrumbItemType = BreadcrumbItem;

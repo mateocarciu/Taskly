@@ -5,7 +5,6 @@ use App\Models\Task;
 use App\Models\TaskComment;
 use App\Models\Team;
 use App\Models\User;
-use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->team = Team::factory()->create();
@@ -100,7 +99,7 @@ describe('comments', function () {
             ->assertSessionHasErrors('parent_id');
     });
 
-    test('includes threaded replies in tasks page payload', function () {
+    test('includes threaded replies in task details payload', function () {
         $task = Task::factory()->create([
             'team_id' => $this->team->id,
             'column_id' => $this->column->id,
@@ -120,12 +119,9 @@ describe('comments', function () {
         ]);
 
         $this->actingAs($this->user)
-            ->get(route('tasks.index'))
-            ->assertInertia(
-                fn(Assert $page) => $page
-                    ->component('Tasks')
-                    ->where('columns.0.tasks.0.comments.0.body', 'Top level comment')
-                    ->where('columns.0.tasks.0.comments.0.replies.0.body', 'Nested reply')
-            );
+            ->get(route('tasks.show', $task))
+            ->assertOk()
+            ->assertJsonPath('comments.0.body', 'Top level comment')
+            ->assertJsonPath('comments.0.replies.0.body', 'Nested reply');
     });
 });

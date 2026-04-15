@@ -28,18 +28,6 @@ const isOverdue = (task: Task) => {
     return task.due_date ? new Date(task.due_date) < new Date() : false;
 };
 
-const descriptionToText = (description?: string | null) => {
-    if (!description) return '';
-
-    const text = description
-        .replace(/<[^>]*>/g, ' ')
-        .replace(/&nbsp;/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-    return text;
-};
-
 const deleteTask = () => {
     router.delete(destroy(props.task.id).url, {
         preserveScroll: true,
@@ -92,11 +80,10 @@ const deleteTask = () => {
             <!-- Description Preview -->
             <div
                 v-if="task.description"
-                class="flex items-center gap-1.5 text-[12px] text-muted-foreground"
-                :title="descriptionToText(task.description)"
+                class="max-h-16 min-w-0 overflow-hidden text-[12px] leading-relaxed text-muted-foreground"
             >
                 <div
-                    class="task-description-preview max-h-24 min-w-0 overflow-hidden leading-relaxed"
+                    class="task-description-preview"
                     v-html="task.description"
                 ></div>
             </div>
@@ -200,12 +187,5 @@ const deleteTask = () => {
 
 .task-description-preview :deep(ol) {
     list-style: decimal;
-}
-
-.task-description-preview :deep(pre) {
-    margin-top: 0.25rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: pre-wrap;
 }
 </style>
