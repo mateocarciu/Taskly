@@ -1,39 +1,19 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
-import TaskAssigneeSelect from '@/components/tasks/TaskAssigneeSelect.vue';
-import TaskCommentThreadItem from '@/components/tasks/TaskCommentThreadItem.vue';
-import TaskRichTextEditor from '@/components/tasks/TaskRichTextEditor.vue';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import TaskActivityDiscussionPanel from '@/components/tasks/TaskActivityDiscussionPanel.vue';
+import TaskEditFormPanel from '@/components/tasks/TaskEditFormPanel.vue';
 import {
     Dialog,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
 import { useInitials } from '@/composables/useInitials';
-import { update } from '@/routes/tasks';
+import { show, update } from '@/routes/tasks';
 import comments from '@/routes/tasks/comments';
-import type {
-    AppPageProps,
-    Task,
-    TaskComment,
-    TaskEvent,
-    TeamMember,
-} from '@/types';
-import { useForm, usePage } from '@inertiajs/vue3';
-import {
-    Calendar,
-    ClockAlert,
-    MessageSquarePlus,
-    Save,
-    X,
-} from 'lucide-vue-next';
+import type { Task, TaskComment, TaskEvent, TeamMember } from '@/types';
+import { useForm } from '@inertiajs/vue3';
+import { X } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -42,10 +22,13 @@ const props = defineProps<{
     teamMembers: TeamMember[];
 }>();
 
-const page = usePage<AppPageProps>();
 const { getInitials } = useInitials();
 const isOpen = defineModel<boolean>('open', { default: false });
+const taskDetails = ref<Task | null>(null);
+const isLoadingDetails = ref(false);
 const commentsList = ref<TaskComment[]>([]);
+
+const activeTask = computed(() => taskDetails.value ?? props.task);
 
 const form = useForm({
     title: '',
@@ -73,29 +56,45 @@ const stripRichText = (value: string) => {
         .trim();
 };
 
-const syncCommentsFromLatestPage = () => {
-    if (!props.task) return false;
+const hydrateFormsFromTask = (task: Task) => {
+    form.title = task.title;
+    form.description = task.description || '';
+    form.due_date = task.due_date
+        ? new Date(task.due_date).toISOString().slice(0, 16)
+        : '';
+    form.assigned_to = task.assigned_to ?? null;
+    commentsList.value = [...(task.comments ?? [])];
+};
 
-    const pageColumns = ((page.props as unknown as { columns?: unknown[] })
-        .columns ?? []) as Array<{ tasks?: Task[] }>;
+const loadTaskDetails = async (taskId: number) => {
+    isLoadingDetails.value = true;
 
-    for (const column of pageColumns) {
-        const foundTask = column.tasks?.find((candidate) => {
-            return candidate.id === props.task?.id;
+    try {
+        const response = await fetch(show(taskId).url, {
+            headers: {
+                Accept: 'application/json',
+            },
         });
 
-        if (foundTask) {
-            commentsList.value = [...(foundTask.comments ?? [])];
-            return true;
+        if (!response.ok) {
+            throw new Error('Could not load task details');
         }
-    }
 
-    return false;
+        const task = (await response.json()) as Task;
+        taskDetails.value = task;
+        hydrateFormsFromTask(task);
+        return true;
+    } catch {
+        toast.error('Unable to load task details');
+        return false;
+    } finally {
+        isLoadingDetails.value = false;
+    }
 };
 
 const isOverdue = computed(() => {
-    return props.task?.due_date
-        ? new Date(props.task.due_date) < new Date()
+    return activeTask.value?.due_date
+        ? new Date(activeTask.value.due_date) < new Date()
         : false;
 });
 
@@ -119,7 +118,7 @@ const formatTimelineDate = (value: string) => {
 };
 
 const timelineEvents = computed(() => {
-    return [...(props.task?.events ?? [])].sort((a, b) => {
+    return [...(activeTask.value?.events ?? [])].sort((a, b) => {
         return (
             new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         );
@@ -157,9 +156,9 @@ const getEventLabel = (event: TaskEvent) => {
 };
 
 const submit = () => {
-    if (!props.task) return;
+    if (!activeTask.value) return;
 
-    form.put(update(props.task.id).url, {
+    form.put(update(activeTask.value.id).url, {
         preserveScroll: true,
         onSuccess: () => {
             isOpen.value = false;
@@ -169,17 +168,18 @@ const submit = () => {
 };
 
 const submitComment = () => {
-    if (!props.task) return;
+    if (!activeTask.value) return;
+    const taskId = activeTask.value.id;
 
     const bodyText = stripRichText(commentForm.body);
 
     if (!bodyText) return;
 
-    commentForm.post(comments.store(props.task.id).url, {
+    commentForm.post(comments.store(taskId).url, {
         preserveScroll: true,
         onSuccess: () => {
-            syncCommentsFromLatestPage();
             commentForm.reset('body');
+            void loadTaskDetails(taskId);
             toast.success('Comment posted');
         },
     });
@@ -200,17 +200,18 @@ const cancelReply = () => {
 };
 
 const submitReply = (commentId: number) => {
-    if (!props.task) return;
+    if (!activeTask.value) return;
+    const taskId = activeTask.value.id;
 
     const bodyText = stripRichText(replyForm.body);
     if (!bodyText) return;
 
     replyForm.parent_id = commentId;
-    replyForm.post(comments.store(props.task.id).url, {
+    replyForm.post(comments.store(taskId).url, {
         preserveScroll: true,
         onSuccess: () => {
-            syncCommentsFromLatestPage();
             cancelReply();
+            void loadTaskDetails(taskId);
             toast.success('Reply posted');
         },
     });
@@ -218,18 +219,18 @@ const submitReply = (commentId: number) => {
 
 watch([() => props.task, isOpen], ([task, open]) => {
     if (task && open) {
-        form.title = task.title;
-        form.description = task.description || '';
-        form.due_date = task.due_date
-            ? new Date(task.due_date).toISOString().slice(0, 16)
-            : '';
-        form.assigned_to = task.assigned_to ?? null;
+        taskDetails.value = null;
+        hydrateFormsFromTask(task);
+        void loadTaskDetails(task.id);
         form.clearErrors();
-        commentsList.value = [...(task.comments ?? [])];
-        syncCommentsFromLatestPage();
         commentForm.reset('body');
         commentForm.clearErrors();
         cancelReply();
+    }
+
+    if (!open) {
+        taskDetails.value = null;
+        commentsList.value = [];
     }
 });
 </script>
@@ -266,201 +267,42 @@ watch([() => props.task, isOpen], ([task, open]) => {
                 <div
                     class="grid xl:h-[calc(92vh-96px)] xl:grid-cols-[minmax(0,1.1fr)_minmax(420px,0.9fr)]"
                 >
-                    <div class="p-6 xl:pr-8">
-                        <form class="space-y-4" @submit.prevent="submit">
-                            <div class="grid gap-2">
-                                <Label for="edit-task-title">Title</Label>
-                                <Input
-                                    id="edit-task-title"
-                                    type="text"
-                                    placeholder="Enter task title..."
-                                    v-model="form.title"
-                                />
-                                <InputError :message="form.errors.title" />
-                            </div>
+                    <TaskEditFormPanel
+                        :form="form"
+                        :team-members="teamMembers"
+                        :is-loading-details="isLoadingDetails"
+                        @submit="submit"
+                        @cancel="isOpen = false"
+                        @update:title="form.title = $event"
+                        @update:description="form.description = $event"
+                        @update:due-date="form.due_date = $event"
+                        @update:assigned-to="form.assigned_to = $event"
+                    />
 
-                            <div class="grid gap-2">
-                                <Label for="edit-task-description"
-                                    >Description</Label
-                                >
-                                <TaskRichTextEditor
-                                    v-model="form.description"
-                                    placeholder="Add more details..."
-                                    min-height="20rem"
-                                />
-                                <InputError
-                                    :message="form.errors.description"
-                                />
-                            </div>
-
-                            <div class="grid gap-2 sm:grid-cols-2">
-                                <div class="grid gap-2">
-                                    <Label for="edit-task-due-date"
-                                        >Due date</Label
-                                    >
-                                    <Input
-                                        id="edit-task-due-date"
-                                        type="datetime-local"
-                                        v-model="form.due_date"
-                                    />
-                                    <InputError
-                                        :message="form.errors.due_date"
-                                    />
-                                </div>
-
-                                <div class="grid gap-2">
-                                    <Label>Assigned to</Label>
-                                    <TaskAssigneeSelect
-                                        v-model="form.assigned_to"
-                                        :team-members="teamMembers"
-                                    />
-                                    <InputError
-                                        :message="form.errors.assigned_to"
-                                    />
-                                </div>
-                            </div>
-
-                            <DialogFooter class="pt-2">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    @click="isOpen = false"
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    :disabled="!form.isDirty || form.processing"
-                                >
-                                    <Spinner v-if="form.processing" />
-                                    <Save v-else class="size-4" />
-                                    Save changes
-                                </Button>
-                            </DialogFooter>
-                        </form>
-                    </div>
-
-                    <div
-                        class="border-t border-border p-6 pt-4 xl:overflow-y-auto xl:overscroll-contain xl:border-t-0 xl:border-l xl:pl-8"
-                    >
-                        <div class="mb-6 space-y-3">
-                            <h3 class="text-base font-semibold">Activity</h3>
-
-                            <div
-                                v-if="timelineEvents.length === 0"
-                                class="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground"
-                            >
-                                No activity yet.
-                            </div>
-
-                            <ol v-else class="space-y-2">
-                                <li
-                                    v-for="event in timelineEvents"
-                                    :key="event.id"
-                                    class="rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-sm"
-                                >
-                                    <p class="font-medium text-foreground">
-                                        {{ getEventLabel(event) }}
-                                    </p>
-                                    <p class="text-xs text-muted-foreground">
-                                        {{
-                                            formatTimelineDate(event.created_at)
-                                        }}
-                                    </p>
-                                </li>
-                            </ol>
-                        </div>
-
-                        <div class="mb-4 space-y-3">
-                            <h3 class="text-base font-semibold">Discussion</h3>
-                            <div
-                                class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
-                            >
-                                <Badge
-                                    v-if="task?.due_date"
-                                    :variant="
-                                        isOverdue ? 'destructive' : 'secondary'
-                                    "
-                                    class="gap-1"
-                                >
-                                    <Calendar class="size-3" />
-                                    {{
-                                        new Date(
-                                            task.due_date,
-                                        ).toLocaleDateString('en-US', {
-                                            day: 'numeric',
-                                            month: 'short',
-                                        })
-                                    }}
-                                </Badge>
-                                <Badge
-                                    v-if="task?.days_in_column !== null"
-                                    variant="secondary"
-                                    class="gap-1"
-                                >
-                                    <ClockAlert class="size-3" />
-                                    {{
-                                        task?.days_in_column === 0
-                                            ? 'Today'
-                                            : `${task?.days_in_column}d`
-                                    }}
-                                </Badge>
-                            </div>
-                        </div>
-
-                        <form class="space-y-3" @submit.prevent="submitComment">
-                            <div class="grid gap-2">
-                                <Label>Leave a comment</Label>
-                                <TaskRichTextEditor
-                                    v-model="commentForm.body"
-                                    placeholder="Share progress, blockers, or next steps..."
-                                />
-                                <InputError
-                                    :message="commentForm.errors.body"
-                                />
-                            </div>
-
-                            <Button
-                                type="submit"
-                                :disabled="
-                                    commentForm.processing ||
-                                    !commentForm.body
-                                        .replace(/<[^>]*>/g, ' ')
-                                        .replace(/&nbsp;/g, ' ')
-                                        .replace(/\s+/g, ' ')
-                                        .trim()
-                                "
-                            >
-                                <MessageSquarePlus class="size-4" />
-                                Post comment
-                            </Button>
-                        </form>
-
-                        <div class="mt-4 space-y-3">
-                            <div
-                                v-if="commentsList.length === 0"
-                                class="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground"
-                            >
-                                No comments yet. Start the discussion.
-                            </div>
-
-                            <TaskCommentThreadItem
-                                v-for="comment in commentsList"
-                                :key="comment.id"
-                                :comment="comment"
-                                :active-reply-to-id="activeReplyToId"
-                                :reply-body="replyForm.body"
-                                :reply-error="replyForm.errors.body"
-                                :posting-reply="replyForm.processing"
-                                :format-date="formatDate"
-                                :get-initials="getInitials"
-                                @start-reply="startReply"
-                                @cancel-reply="cancelReply"
-                                @update-reply-body="replyForm.body = $event"
-                                @submit-reply="submitReply"
-                            />
-                        </div>
-                    </div>
+                    <TaskActivityDiscussionPanel
+                        :is-loading-details="isLoadingDetails"
+                        :timeline-events="timelineEvents"
+                        :get-event-label="getEventLabel"
+                        :format-timeline-date="formatTimelineDate"
+                        :active-task="activeTask"
+                        :is-overdue="isOverdue"
+                        :comments-list="commentsList"
+                        :comment-body="commentForm.body"
+                        :comment-error="commentForm.errors.body"
+                        :comment-processing="commentForm.processing"
+                        :active-reply-to-id="activeReplyToId"
+                        :reply-body="replyForm.body"
+                        :reply-error="replyForm.errors.body"
+                        :posting-reply="replyForm.processing"
+                        :format-date="formatDate"
+                        :get-initials="getInitials"
+                        @submit-comment="submitComment"
+                        @update-comment-body="commentForm.body = $event"
+                        @start-reply="startReply"
+                        @cancel-reply="cancelReply"
+                        @update-reply-body="replyForm.body = $event"
+                        @submit-reply="submitReply"
+                    />
                 </div>
             </div>
         </DialogContent>

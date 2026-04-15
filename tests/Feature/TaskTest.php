@@ -4,6 +4,7 @@ use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Column;
+use App\Models\TaskComment;
 
 beforeEach(function () {
     $this->team = Team::factory()->create();
@@ -61,6 +62,38 @@ describe('index', function () {
                         ->where('columns.0.tasks.0.creator.name', $creator->name);
                 }
             );
+    });
+});
+
+describe('show', function () {
+    test('returns full task details for the same team', function () {
+        $column = Column::create(['team_id' => $this->team->id, 'name' => 'To Do', 'order' => 1]);
+        $task = Task::factory()->create([
+            'team_id' => $this->team->id,
+            'column_id' => $column->id,
+            'created_by' => $this->user->id,
+        ]);
+
+        TaskComment::create([
+            'task_id' => $task->id,
+            'user_id' => $this->user->id,
+            'body' => 'First comment',
+        ]);
+
+        $this->actingAs($this->user)
+            ->get(route('tasks.show', $task))
+            ->assertOk()
+            ->assertJsonPath('id', $task->id)
+            ->assertJsonPath('creator.id', $this->user->id)
+            ->assertJsonPath('comments.0.body', 'First comment');
+    });
+
+    test('forbids showing a task from another team', function () {
+        $task = Task::factory()->create(['team_id' => $this->otherTeam->id]);
+
+        $this->actingAs($this->user)
+            ->get(route('tasks.show', $task))
+            ->assertStatus(403);
     });
 });
 
