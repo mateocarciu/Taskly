@@ -3,7 +3,14 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import type { Column, Task } from '@/types';
 import { router } from '@inertiajs/vue3';
-import { ChevronDown, Pencil, Trash2 } from 'lucide-vue-next';
+import {
+    Check,
+    ChevronDown,
+    GripVertical,
+    Pencil,
+    Trash2,
+    X,
+} from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import draggable from 'vuedraggable';
@@ -23,7 +30,7 @@ const editName = ref(props.column.name);
 
 const localTasks = ref<Task[]>([...(props.column.tasks || [])]);
 const pagination = ref<Column['pagination']>(
-    props.column.pagination ? { ...props.column.pagination } : undefined
+    props.column.pagination ? { ...props.column.pagination } : undefined,
 );
 const isLoadingMore = ref(false);
 
@@ -34,7 +41,7 @@ watch(
         if (props.column.pagination) {
             pagination.value = { ...props.column.pagination };
         }
-    }
+    },
 );
 
 const loadMoreTasks = async () => {
@@ -136,12 +143,35 @@ const onDragChange = (event: any) => {
                     @blur="saveColumnName"
                     autoFocus
                 />
+                <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    class="h-8 w-8 text-muted-foreground hover:bg-primary/10"
+                    @click="isEditingColumn = false"
+                >
+                    <X class="size-3" />
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    class="h-8 w-8 text-green-600 hover:bg-green-100 dark:text-green-400 dark:hover:bg-green-900/20"
+                    @click="saveColumnName"
+                >
+                    <Check class="size-3" />
+                </Button>
             </div>
             <h3
                 v-else
                 class="flex items-center font-semibold"
                 @dblclick="isEditingColumn = true"
             >
+                <button
+                    type="button"
+                    class="column-drag-handle mr-1 rounded p-0.5 text-muted-foreground hover:cursor-grab hover:bg-accent hover:text-foreground active:cursor-grabbing"
+                    title="Drag to reorder column"
+                >
+                    <GripVertical class="size-3" />
+                </button>
                 {{ column.name }}
                 <span
                     class="ml-2 min-w-[20px] rounded-full bg-secondary px-1.5 py-0.5 text-center text-xs font-medium text-secondary-foreground"
