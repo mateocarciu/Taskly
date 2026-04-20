@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ColumnSequenceUpdateRequest;
 use App\Http\Requests\ColumnStoreRequest;
 use App\Http\Requests\ColumnUpdateRequest;
 use App\Models\Column;
@@ -40,6 +41,17 @@ class ColumnController extends Controller
         }
 
         $this->columnService->deleteColumn($column);
+
+        return back();
+    }
+
+    public function updateSequence(ColumnSequenceUpdateRequest $request, Column $column): RedirectResponse
+    {
+        if ($column->team_id !== $request->user()->team_id) {
+            abort(403);
+        }
+
+        $this->columnService->updateSequence($column, $request->validated()['order']);
 
         return back();
     }

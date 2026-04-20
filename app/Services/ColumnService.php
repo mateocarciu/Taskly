@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Column;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ColumnService
@@ -29,6 +30,42 @@ class ColumnService
     public function updateColumn(Column $column, array $data): bool
     {
         return $column->update($data);
+    }
+
+    /**
+     * Update the sequence order of a column.
+     */
+    public function updateSequence(Column $column, int $newOrder): void
+    {
+        DB::transaction(function () use ($column, $newOrder): void {
+            $columns = Column::query()
+                ->where('team_id', $column->team_id)
+                ->orderBy('order')
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get(['id']);
+
+            $orderedIds = $columns->pluck('id')->values()->all();
+
+            $currentIndex = array_search($column->id, $orderedIds, true);
+            if ($currentIndex === false) {
+                return;
+            }
+
+            $targetIndex = max(0, min($newOrder, count($orderedIds) - 1));
+            if ($targetIndex === $currentIndex) {
+                return;
+            }
+
+            array_splice($orderedIds, $currentIndex, 1);
+            array_splice($orderedIds, $targetIndex, 0, [$column->id]);
+
+            foreach ($orderedIds as $index => $columnId) {
+                Column::query()
+                    ->whereKey($columnId)
+                    ->update(['order' => $index]);
+            }
+        });
     }
 
     /**

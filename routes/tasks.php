@@ -20,6 +20,7 @@ Route::middleware(['auth', 'verified', 'hasTeam'])
         Route::controller(ColumnController::class)->group(function () {
             Route::post('columns', 'store')->name('columns.store');
             Route::put('columns/{column}', 'update')->name('columns.update');
+            Route::put('columns/{column}/sequence', 'updateSequence')->name('columns.sequence.update');
             Route::delete('columns/{column}', 'destroy')->name('columns.destroy');
         });
 
