@@ -12,9 +12,7 @@ class ColumnTaskController extends Controller
 {
     public function index(Request $request, Column $column): AnonymousResourceCollection
     {
-        if ($column->team_id !== $request->user()->team_id) {
-            abort(403);
-        }
+        $this->authorize('view', $column);
 
         $tasks = $column->tasks()
             ->with('creator:id,name')
