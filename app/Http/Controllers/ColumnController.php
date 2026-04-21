@@ -25,9 +25,7 @@ class ColumnController extends Controller
 
     public function update(ColumnUpdateRequest $request, Column $column): RedirectResponse
     {
-        if ($column->team_id !== $request->user()->team_id) {
-            abort(403);
-        }
+        $this->authorize('update', $column);
 
         $this->columnService->updateColumn($column, $request->validated());
 
@@ -36,9 +34,7 @@ class ColumnController extends Controller
 
     public function destroy(Request $request, Column $column): RedirectResponse
     {
-        if ($column->team_id !== $request->user()->team_id) {
-            abort(403);
-        }
+        $this->authorize('delete', $column);
 
         $this->columnService->deleteColumn($column);
 
@@ -47,9 +43,7 @@ class ColumnController extends Controller
 
     public function updateSequence(ColumnSequenceUpdateRequest $request, Column $column): RedirectResponse
     {
-        if ($column->team_id !== $request->user()->team_id) {
-            abort(403);
-        }
+        $this->authorize('updateSequence', $column);
 
         $this->columnService->updateSequence($column, $request->validated()['order']);
 

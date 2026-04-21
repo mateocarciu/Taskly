@@ -57,9 +57,7 @@ class TaskController extends Controller
 
     public function show(Request $request, Task $task): JsonResponse
     {
-        if ($task->team_id !== $request->user()->team_id) {
-            abort(403, 'You are not authorized to view this task.');
-        }
+        $this->authorize('view', $task);
 
         $task->load([
             'creator:id,name',
@@ -82,9 +80,7 @@ class TaskController extends Controller
 
     public function update(TaskUpdateRequest $request, Task $task): RedirectResponse
     {
-        if ($task->team_id !== $request->user()->team_id) {
-            abort(403, 'You are not authorized to update this task.');
-        }
+        $this->authorize('update', $task);
 
         $this->taskService->updateTask($task, $request->validated(), $request->user());
 
@@ -93,9 +89,7 @@ class TaskController extends Controller
 
     public function destroy(Request $request, Task $task): RedirectResponse
     {
-        if ($task->team_id !== $request->user()->team_id) {
-            abort(403, 'You are not authorized to delete this task.');
-        }
+        $this->authorize('delete', $task);
 
         $this->taskService->deleteTask($task);
 
@@ -104,9 +98,7 @@ class TaskController extends Controller
 
     public function storeComment(TaskCommentStoreRequest $request, Task $task): RedirectResponse
     {
-        if ($task->team_id !== $request->user()->team_id) {
-            abort(403, 'You are not authorized to comment on this task.');
-        }
+        $this->authorize('comment', $task);
 
         $validated = $request->validated();
 

@@ -15,9 +15,7 @@ class TaskSequenceController extends Controller
 
     public function update(TaskSequenceUpdateRequest $request, Task $task): RedirectResponse
     {
-        if ($task->team_id !== $request->user()->team_id) {
-            abort(403);
-        }
+        $this->authorize('updateSequence', $task);
 
         $validated = $request->validated();
 
