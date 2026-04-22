@@ -80,10 +80,10 @@ const deleteTask = () => {
             <!-- Description Preview -->
             <div
                 v-if="task.description"
-                class="max-h-16 min-w-0 overflow-hidden text-[12px] leading-relaxed text-muted-foreground"
+                class="min-w-0 overflow-hidden text-[12px] leading-relaxed text-muted-foreground"
             >
                 <div
-                    class="task-description-preview"
+                    class="task-description-preview line-clamp-3"
                     v-html="task.description"
                 ></div>
             </div>

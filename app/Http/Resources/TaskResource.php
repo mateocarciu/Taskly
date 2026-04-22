@@ -7,6 +7,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class TaskResource extends JsonResource
 {
+    private const INDEX_DESCRIPTION_PREVIEW_LIMIT = 100;
+
     /**
      * Serialize a comment and its nested replies.
      *
@@ -30,6 +32,89 @@ class TaskResource extends JsonResource
     }
 
     /**
+     * Build a short HTML preview that keeps rich text markup intact.
+     */
+    private function buildDescriptionPreview(string $html, int $limit): ?string
+    {
+        $dom = new \DOMDocument('1.0', 'UTF-8');
+        $previousUseInternalErrors = libxml_use_internal_errors(true);
+
+        try {
+            $dom->loadHTML(
+                '<?xml encoding="utf-8" ?><div id="preview">' . $html . '</div>',
+                LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+            );
+
+            $container = $dom->getElementById('preview');
+
+            if (!$container) {
+                return null;
+            }
+
+            $remaining = $limit;
+            $preview = $dom->createElement('div');
+
+            foreach (iterator_to_array($container->childNodes) as $child) {
+                if ($remaining <= 0) {
+                    break;
+                }
+
+                $preview->appendChild($this->clonePreviewNode($dom, $child, $remaining));
+            }
+
+            $htmlPreview = '';
+
+            foreach ($preview->childNodes as $child) {
+                $htmlPreview .= $dom->saveHTML($child);
+            }
+
+            return trim($htmlPreview) !== '' ? $htmlPreview : null;
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previousUseInternalErrors);
+        }
+    }
+
+    /**
+     * Clone a node while respecting a text limit.
+     */
+    private function clonePreviewNode(\DOMDocument $dom, \DOMNode $node, int &$remaining): \DOMNode
+    {
+        if ($node instanceof \DOMText) {
+            $text = $node->wholeText;
+
+            if (mb_strlen($text) <= $remaining) {
+                $remaining -= mb_strlen($text);
+
+                return $dom->createTextNode($text);
+            }
+
+            $snippet = mb_substr($text, 0, $remaining);
+            $remaining = 0;
+
+            return $dom->createTextNode(rtrim($snippet) . '...');
+        }
+
+        $clone = $dom->createElement($node->nodeName);
+
+        if ($node->attributes) {
+            foreach ($node->attributes as $attribute) {
+                $clone->setAttribute($attribute->nodeName, $attribute->nodeValue);
+            }
+        }
+
+        foreach (iterator_to_array($node->childNodes) as $childNode) {
+            if ($remaining <= 0) {
+                break;
+            }
+
+            $clone->appendChild($this->clonePreviewNode($dom, $childNode, $remaining));
+        }
+
+        return $clone;
+    }
+
+    /**
      * Transform the resource into an array.
      *
      * @return array<string, mixed>
@@ -44,13 +129,25 @@ class TaskResource extends JsonResource
         $totalSeconds = $historicalSeconds + $currentSeconds;
         $daysInColumn = (int) floor($totalSeconds / 86400);
 
+        $description = $this->description;
+
+        if (
+            ($request->routeIs('tasks.index') || $request->routeIs('columns.tasks.index'))
+            && is_string($this->description)
+        ) {
+            $description = $this->buildDescriptionPreview(
+                $this->description,
+                self::INDEX_DESCRIPTION_PREVIEW_LIMIT
+            );
+        }
+
         return [
             'id' => $this->id,
             'team_id' => $this->team_id,
             'column_id' => $this->column_id,
             'order' => $this->order,
             'title' => $this->title,
-            'description' => $this->description,
+            'description' => $description,
             'days_in_column' => $daysInColumn,
             'due_date' => $this->due_date,
             'created_by' => $this->created_by,
