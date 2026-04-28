@@ -8,6 +8,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { formatDateTime as formatTaskDateTime } from '@/composables/useDateFormatter';
 import { useInitials } from '@/composables/useInitials';
 import { show, update } from '@/routes/tasks';
 import comments from '@/routes/tasks/comments';
@@ -98,24 +99,9 @@ const isOverdue = computed(() => {
         : false;
 });
 
-const formatDate = (value: string) => {
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    }).format(new Date(value));
-};
+const formatDate = (value: string) => formatTaskDateTime(value);
 
-const formatTimelineDate = (value: string) => {
-    return new Intl.DateTimeFormat('en-US', {
-        weekday: 'long',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    }).format(new Date(value));
-};
+const formatTimelineDate = (value: string) => formatTaskDateTime(value);
 
 const timelineEvents = computed(() => {
     return [...(activeTask.value?.events ?? [])].sort((a, b) => {

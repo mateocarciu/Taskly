@@ -158,4 +158,31 @@ export interface TaskEditFormState {
     processing: boolean;
 }
 
+export interface DashboardColumnStat {
+    id: number;
+    name: string;
+    count: number;
+}
+
+export interface DashboardTaskStat {
+    id: number;
+    title: string;
+    column_name: string;
+    due_date: string | null;
+    reason?: string;
+    assignee_name?: string | null;
+    comments_count?: number;
+}
+
+export interface DashboardStats {
+    team_name: string;
+    team_members: number;
+    total_tasks: number;
+    overdue_tasks: number;
+    due_today_tasks: number;
+    column_stats: DashboardColumnStat[];
+    attention_tasks: DashboardTaskStat[];
+    recent_tasks: DashboardTaskStat[];
+}
+
 export type BreadcrumbItemType = BreadcrumbItem;
