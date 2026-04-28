@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import DashboardAttentionCard from '@/components/dashboard/DashboardAttentionCard.vue';
+import DashboardColumnBreakdown from '@/components/dashboard/DashboardColumnBreakdown.vue';
+import DashboardRecentActivity from '@/components/dashboard/DashboardRecentActivity.vue';
+import DashboardSummaryGrid from '@/components/dashboard/DashboardSummaryGrid.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
-import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/vue3';
-import { Users } from 'lucide-vue-next';
-import { computed } from 'vue';
+import type { BreadcrumbItem } from '@/types';
+import type { DashboardStats } from '@/types/index';
+import { Head } from '@inertiajs/vue3';
+
+const props = defineProps<{
+    stats: DashboardStats;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -13,33 +19,36 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: dashboard().url,
     },
 ];
-
-const page = usePage();
-const user = computed(() => page.props.auth.user); 
 </script>
 
 <template>
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-1 flex-col gap-4 p-4">
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Card>
-                    <CardHeader
-                        class="flex flex-row items-center justify-between space-y-0 pb-2"
-                    >
-                        <CardTitle class="text-sm font-medium">
-                            Team
-                        </CardTitle>
-                        <Users class="size-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-bold">
-                            {{ user?.team?.name }}
-                        </div>
-                    </CardContent>
-                </Card>
+        <div class="flex flex-1 flex-col gap-5 p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-semibold">
+                        {{ props.stats.team_name }}
+                    </h1>
+                    <p class="text-sm text-muted-foreground">
+                        Daily overview of workload, urgency and recent updates.
+                    </p>
+                </div>
             </div>
+
+            <section>
+                <DashboardSummaryGrid :stats="props.stats" />
+            </section>
+
+            <section class="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
+                <DashboardAttentionCard :tasks="props.stats.attention_tasks" />
+                <DashboardColumnBreakdown :columns="props.stats.column_stats" />
+            </section>
+
+            <section>
+                <DashboardRecentActivity :tasks="props.stats.recent_tasks" />
+            </section>
         </div>
     </AppLayout>
 </template>
