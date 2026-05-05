@@ -45,17 +45,17 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <Card>
+    <Card class="w-full min-w-0">
         <CardHeader class="pb-2">
             <CardTitle class="text-base">To Handle Now</CardTitle>
         </CardHeader>
         <CardContent class="p-0">
             <div
                 ref="attentionScrollEl"
-                class="relative max-h-96 space-y-2 overflow-y-auto"
+                class="relative max-h-64 space-y-2 overflow-y-auto sm:max-h-80 md:max-h-96"
                 @scroll="updateAttentionScrollHint"
             >
-                <div class="space-y-2 px-4 pt-4">
+                <div class="space-y-2 px-3 pt-3 sm:px-4 sm:pt-4">
                     <div
                         v-for="task in tasks"
                         :key="task.id"
@@ -82,14 +82,14 @@ onBeforeUnmount(() => {
 
                 <p
                     v-if="!tasks.length"
-                    class="px-4 py-3 text-sm text-muted-foreground"
+                    class="px-3 py-3 text-sm text-muted-foreground sm:px-4"
                 >
                     No urgent task right now.
                 </p>
 
                 <div
                     v-if="showAttentionScrollHint"
-                    class="pointer-events-none sticky bottom-0 flex justify-center bg-linear-to-b from-transparent to-background/80 px-4 py-3"
+                    class="pointer-events-none sticky bottom-0 flex justify-center bg-linear-to-b from-transparent to-background/80 px-3 py-3 sm:px-4"
                 >
                     <div
                         class="flex items-center gap-1 rounded-full border bg-background/95 px-3 py-2 text-xs font-medium text-muted-foreground shadow-lg backdrop-blur"

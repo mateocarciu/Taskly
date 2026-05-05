@@ -10,7 +10,7 @@ defineProps<{
 </script>
 
 <template>
-    <Card>
+    <Card class="w-full min-w-0">
         <CardHeader class="pb-2">
             <CardTitle class="text-base">Recent Activity</CardTitle>
         </CardHeader>
