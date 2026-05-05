@@ -29,16 +29,18 @@ const columnBarWidth = (count: number): string => {
 </script>
 
 <template>
-    <Card>
+    <Card class="w-full min-w-0">
         <CardHeader class="pb-2">
-            <div class="flex items-end justify-between gap-3">
-                <div>
+            <div
+                class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-3"
+            >
+                <div class="min-w-0 flex-1">
                     <CardTitle class="text-base">By Column</CardTitle>
                     <p class="text-xs text-muted-foreground">
                         Distribution of tasks across the workflow.
                     </p>
                 </div>
-                <p class="text-xs text-muted-foreground">
+                <p class="shrink-0 text-xs text-muted-foreground">
                     {{ totalColumnTasks }} tasks
                 </p>
             </div>

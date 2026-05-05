@@ -25,7 +25,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-1 flex-col gap-5 p-4">
+        <div
+            class="flex flex-1 flex-col gap-3 overflow-hidden p-3 sm:gap-5 sm:p-4"
+        >
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-semibold">
@@ -41,7 +43,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <DashboardSummaryGrid :stats="props.stats" />
             </section>
 
-            <section class="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
+            <section
+                class="grid w-full min-w-0 gap-3 overflow-visible sm:gap-4 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr]"
+            >
                 <DashboardAttentionCard :tasks="props.stats.attention_tasks" />
                 <DashboardColumnBreakdown :columns="props.stats.column_stats" />
             </section>
