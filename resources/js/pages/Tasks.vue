@@ -4,13 +4,14 @@ import TaskCreateDialog from '@/components/tasks/TaskCreateDialog.vue';
 import TaskEditDialog from '@/components/tasks/TaskEditDialog.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index } from '@/routes/tasks';
-import type { BreadcrumbItem, Column, Task, TeamMember } from '@/types';
+import type { BreadcrumbItem, Column, Tag, Task, TeamMember } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 defineProps<{
     columns: Column[];
     teamMembers: TeamMember[];
+    tags: Tag[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -41,7 +42,10 @@ const openTaskDetails = (task: Task) => {
                         Manage your team's tasks
                     </p>
                 </div>
-                <TaskCreateDialog :team-members="teamMembers" />
+                <TaskCreateDialog
+                    :team-members="teamMembers"
+                    :available-tags="tags"
+                />
             </div>
 
             <div
@@ -55,6 +59,7 @@ const openTaskDetails = (task: Task) => {
             v-model:open="isEditModalOpen"
             :task="taskToEdit"
             :team-members="teamMembers"
+            :available-tags="tags"
         />
     </AppLayout>
 </template>

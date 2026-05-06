@@ -40,6 +40,12 @@ export interface User {
     team?: Team;
 }
 
+export interface Tag {
+    id: number;
+    name: string;
+    color: string;
+}
+
 export interface Task {
     id: number;
     team_id: number;
@@ -59,6 +65,7 @@ export interface Task {
         id: number;
         name: string;
     };
+    tags?: Tag[];
     comments?: TaskComment[];
     events?: TaskEvent[];
 }
@@ -82,6 +89,7 @@ export interface TaskForm {
     description: string;
     due_date: string;
     assigned_to: number | null;
+    tag_ids: number[];
 }
 
 export interface TeamMember {
@@ -153,6 +161,7 @@ export interface TaskEditFormState {
     description: string;
     due_date: string;
     assigned_to: number | null;
+    tag_ids: number[];
     errors: Record<string, string | undefined>;
     isDirty: boolean;
     processing: boolean;

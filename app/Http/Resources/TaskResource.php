@@ -181,6 +181,14 @@ class TaskResource extends JsonResource
                     'metadata' => $event->metadata ?? [],
                 ])->values(),
             ),
+            'tags' => $this->whenLoaded(
+                'tags',
+                fn() => $this->tags->map(fn($tag) => [
+                    'id' => $tag->id,
+                    'name' => $tag->name,
+                    'color' => $tag->color,
+                ])->values()
+            ),
         ];
     }
 }

@@ -25,6 +25,13 @@ class TaskUpdateRequest extends FormRequest
                     fn($query) => $query->where('team_id', $this->user()?->team_id)
                 ),
             ],
+            'tag_ids' => [
+                'sometimes',
+                'array',
+                Rule::exists('tags', 'id')->where(
+                    fn($query) => $query->where('team_id', $this->user()?->team_id)
+                ),
+            ],
         ];
     }
 }
