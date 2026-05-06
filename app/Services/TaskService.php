@@ -15,6 +15,7 @@ class TaskService
     public function createTask(array $data, User $user): Task
     {
         $columnId = $data['column_id'] ?? null;
+        $tagIds = $data['tag_ids'] ?? null;
 
         if (!$columnId) {
             $columnId = Column::where('team_id', $user->team_id)->orderBy('order')->value('id');
@@ -23,11 +24,11 @@ class TaskService
         Task::where('column_id', $columnId)->increment('order');
         $order = 0;
 
-        unset($data['column_id']);
+        unset($data['column_id'], $data['tag_ids']);
 
         $columnName = Column::query()->where('id', $columnId)->value('name');
 
-        return DB::transaction(function () use ($data, $user, $columnId, $order, $columnName) {
+        return DB::transaction(function () use ($data, $user, $columnId, $order, $columnName, $tagIds) {
             $task = Task::create(array_merge($data, [
                 'team_id' => $user->team_id,
                 'created_by' => $user->id,
@@ -45,6 +46,10 @@ class TaskService
                     'column_name' => $columnName,
                 ],
             ]);
+
+            if ($tagIds !== null) {
+                $task->tags()->sync($tagIds);
+            }
 
             if (!empty($task->assigned_to)) {
                 $assignedUserName = User::query()->where('id', $task->assigned_to)->value('name');
@@ -70,10 +75,20 @@ class TaskService
     public function updateTask(Task $task, array $data, User $actor): bool
     {
         $oldAssignedTo = $task->assigned_to;
+
+        // Extract tag_ids if provided
+        $tagIds = $data['tag_ids'] ?? null;
+        unset($data['tag_ids']);
+
         $updated = $task->update($data);
 
         if (!$updated) {
             return false;
+        }
+
+        // Sync tags if provided
+        if ($tagIds !== null) {
+            $task->tags()->sync($tagIds);
         }
 
         if (array_key_exists('assigned_to', $data) && $oldAssignedTo !== $task->assigned_to) {

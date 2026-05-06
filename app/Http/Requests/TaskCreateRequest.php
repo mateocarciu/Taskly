@@ -26,6 +26,13 @@ class TaskCreateRequest extends FormRequest
                     fn($query) => $query->where('team_id', $this->user()?->team_id)
                 ),
             ],
+            'tag_ids' => [
+                'sometimes',
+                'array',
+                Rule::exists('tags', 'id')->where(
+                    fn($query) => $query->where('team_id', $this->user()?->team_id)
+                ),
+            ],
             'column_id' => [
                 'nullable',
                 Rule::exists('columns', 'id')->where(fn($query) => $query->where('team_id', $this->user()?->team_id)),

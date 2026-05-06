@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\Column;
+use App\Models\Tag;
 use App\Models\User;
 use App\Services\TaskService;
 use App\Http\Resources\ColumnResource;
@@ -38,6 +39,7 @@ class TaskController extends Controller
                     ->with([
                         'creator:id,name',
                         'assignee:id,name',
+                        'tags:id,name,color',
                     ])
                     ->orderBy('order')
                     ->paginate(10)
@@ -49,9 +51,15 @@ class TaskController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
+        $tags = Tag::query()
+            ->where('team_id', $request->user()->team_id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'color']);
+
         return Inertia::render('Tasks', [
             'columns' => ColumnResource::collection($columns),
             'teamMembers' => $teamMembers,
+            'tags' => $tags,
         ]);
     }
 
@@ -62,6 +70,7 @@ class TaskController extends Controller
         $task->load([
             'creator:id,name',
             'assignee:id,name',
+            'tags:id,name,color',
             'comments' => fn($query) => $query
                 ->whereNull('parent_id')
                 ->with(['user:id,name', 'replies']),

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TagBadge from '@/components/tags/TagBadge.vue';
 import TaskDeleteDialog from '@/components/tasks/TaskDeleteDialog.vue';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -86,6 +87,11 @@ const deleteTask = () => {
                     class="task-description-preview line-clamp-3"
                     v-html="task.description"
                 ></div>
+            </div>
+
+            <!-- Tags Display -->
+            <div v-if="task.tags && task.tags.length > 0" class="mt-1">
+                <TagBadge :tags="task.tags" />
             </div>
 
             <!-- Footer: Meta tags & Avatar -->

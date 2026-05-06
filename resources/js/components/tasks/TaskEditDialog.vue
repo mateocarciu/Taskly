@@ -12,7 +12,7 @@ import { formatDateTime as formatTaskDateTime } from '@/composables/useDateForma
 import { useInitials } from '@/composables/useInitials';
 import { show, update } from '@/routes/tasks';
 import comments from '@/routes/tasks/comments';
-import type { Task, TaskComment, TaskEvent, TeamMember } from '@/types';
+import type { Tag, Task, TaskComment, TaskEvent, TeamMember } from '@/types';
 import { useForm } from '@inertiajs/vue3';
 import { X } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
@@ -21,6 +21,7 @@ import { toast } from 'vue-sonner';
 const props = defineProps<{
     task: Task | null;
     teamMembers: TeamMember[];
+    availableTags?: Tag[];
 }>();
 
 const { getInitials } = useInitials();
@@ -36,6 +37,7 @@ const form = useForm({
     description: '',
     due_date: '',
     assigned_to: null as number | null,
+    tag_ids: [] as number[],
 });
 
 const commentForm = useForm({
@@ -64,6 +66,7 @@ const hydrateFormsFromTask = (task: Task) => {
         ? new Date(task.due_date).toISOString().slice(0, 16)
         : '';
     form.assigned_to = task.assigned_to ?? null;
+    form.tag_ids = task.tags?.map((t) => t.id) ?? [];
     commentsList.value = [...(task.comments ?? [])];
 };
 
@@ -83,7 +86,15 @@ const loadTaskDetails = async (taskId: number) => {
 
         const task = (await response.json()) as Task;
         taskDetails.value = task;
-        hydrateFormsFromTask(task);
+
+        form.title = task.title;
+        form.description = task.description || '';
+        form.due_date = task.due_date
+            ? new Date(task.due_date).toISOString().slice(0, 16)
+            : '';
+        form.assigned_to = task.assigned_to ?? null;
+        commentsList.value = [...(task.comments ?? [])];
+
         return true;
     } catch {
         toast.error('Unable to load task details');
@@ -256,6 +267,8 @@ watch([() => props.task, isOpen], ([task, open]) => {
                     <TaskEditFormPanel
                         :form="form"
                         :team-members="teamMembers"
+                        :initial-tags="activeTask?.tags"
+                        :available-tags="availableTags"
                         :is-loading-details="isLoadingDetails"
                         @submit="submit"
                         @cancel="isOpen = false"
@@ -263,6 +276,7 @@ watch([() => props.task, isOpen], ([task, open]) => {
                         @update:description="form.description = $event"
                         @update:due-date="form.due_date = $event"
                         @update:assigned-to="form.assigned_to = $event"
+                        @update:tag-ids="form.tag_ids = $event"
                     />
 
                     <TaskActivityDiscussionPanel

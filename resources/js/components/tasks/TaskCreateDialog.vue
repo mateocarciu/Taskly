@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import TagSelector from '@/components/tags/TagSelector.vue';
 import TaskAssigneeSelect from '@/components/tasks/TaskAssigneeSelect.vue';
 import TaskRichTextEditor from '@/components/tasks/TaskRichTextEditor.vue';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { store } from '@/routes/tasks';
-import type { AppPageProps, TaskForm, TeamMember } from '@/types';
+import type { AppPageProps, Tag, TaskForm, TeamMember } from '@/types';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -24,6 +25,7 @@ import { toast } from 'vue-sonner';
 
 defineProps<{
     teamMembers: TeamMember[];
+    availableTags?: Tag[];
 }>();
 
 const page = usePage<AppPageProps>();
@@ -35,7 +37,15 @@ const form = useForm<TaskForm>({
     description: '',
     due_date: '',
     assigned_to: currentUserId.value,
+    tag_ids: [],
 });
+
+const selectedTags = ref<Tag[]>([]);
+
+const onTagsUpdated = (tags: Tag[]) => {
+    selectedTags.value = tags;
+    form.tag_ids = tags.map((t) => t.id);
+};
 
 const submit = () => {
     if (form.isDirty) {
@@ -43,6 +53,8 @@ const submit = () => {
             onSuccess: () => {
                 form.reset();
                 form.assigned_to = currentUserId.value;
+                form.tag_ids = [];
+                selectedTags.value = [];
                 isOpen.value = false;
                 toast.success('Task created');
             },
@@ -117,6 +129,12 @@ const submit = () => {
                             <InputError :message="form.errors.assigned_to" />
                         </div>
                     </div>
+
+                    <TagSelector
+                        :selected="selectedTags"
+                        :available-tags="availableTags"
+                        @update:selected="onTagsUpdated"
+                    />
 
                     <DialogFooter>
                         <Button

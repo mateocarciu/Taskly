@@ -16,7 +16,7 @@ import { dashboard } from '@/routes';
 import { index } from '@/routes/tasks';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, ListCheck } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, ListCheck, Tag } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -29,6 +29,11 @@ const mainNavItems: NavItem[] = [
         title: 'Tasks',
         href: index(),
         icon: ListCheck,
+    },
+    {
+        title: 'Tags',
+        href: '/tags',
+        icon: Tag,
     },
 ];
 

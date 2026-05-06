@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import TagSelector from '@/components/tags/TagSelector.vue';
 import TaskAssigneeSelect from '@/components/tasks/TaskAssigneeSelect.vue';
 import TaskRichTextEditor from '@/components/tasks/TaskRichTextEditor.vue';
 import { Button } from '@/components/ui/button';
@@ -7,24 +8,38 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import type { TeamMember } from '@/types';
+import type { Tag, TeamMember } from '@/types';
 import { TaskEditFormState } from '@/types';
 import { Save } from 'lucide-vue-next';
+import { ref } from 'vue';
 
-defineProps<{
+const props = defineProps<{
     form: TaskEditFormState;
     teamMembers: TeamMember[];
     isLoadingDetails: boolean;
+    initialTags?: Tag[];
+    availableTags?: Tag[];
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
     submit: [];
     cancel: [];
     'update:title': [value: string];
     'update:description': [value: string];
     'update:due-date': [value: string];
     'update:assigned-to': [value: number | null];
+    'update:tag-ids': [value: number[]];
 }>();
+
+const selectedTags = ref<Tag[]>(props.initialTags ?? []);
+
+const onTagsUpdated = (tags: Tag[]) => {
+    selectedTags.value = tags;
+    emit(
+        'update:tag-ids',
+        tags.map((t) => t.id),
+    );
+};
 </script>
 
 <template>
@@ -79,6 +94,12 @@ defineEmits<{
                     <InputError :message="form.errors.assigned_to" />
                 </div>
             </div>
+
+            <TagSelector
+                :selected="selectedTags"
+                :available-tags="availableTags"
+                @update:selected="onTagsUpdated"
+            />
 
             <DialogFooter class="pt-2">
                 <Button
