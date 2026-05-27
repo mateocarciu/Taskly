@@ -15,7 +15,8 @@ class TagController extends Controller
     {
         $tags = Tag::where('team_id', $request->user()->team_id)
             ->orderBy('name')
-            ->get(['id', 'name', 'color']);
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('Tags', [
             'tags' => $tags,

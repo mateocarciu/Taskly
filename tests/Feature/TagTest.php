@@ -35,7 +35,8 @@ test('can list team tags', function () {
         ->assertStatus(200)
         ->assertInertia(fn (Assert $page) => $page
             ->component('Tags')
-            ->has('tags', 3)
+            ->has('tags.data', 3)
+            ->where('tags.total', 3)
         );
 });
 

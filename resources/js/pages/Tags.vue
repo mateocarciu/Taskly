@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import Pagination from '@/components/Pagination.vue';
 import TagDeleteDialog from '@/components/tags/TagDeleteDialog.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,15 +15,23 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
-import type { AppPageProps, BreadcrumbItem, Tag } from '@/types';
+import type { AppPageProps, BreadcrumbItem, PaginationLink, Tag } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { Pencil, Plus, Save, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 const props = defineProps<
     AppPageProps<{
-        tags: Tag[];
+        tags: {
+            current_page: number;
+            data: Tag[];
+            last_page: number;
+            links: PaginationLink[];
+            next_page_url: string | null;
+            prev_page_url: string | null;
+            total: number;
+        };
     }>
 >();
 
@@ -190,6 +199,9 @@ const confirmDelete = () => {
                                         !form.name.trim() || form.processing
                                     "
                                 >
+                                    <Save v-if="editingTag" class="size-4" />
+                                    <Plus v-else class="size-4" />
+
                                     {{ editingTag ? 'Update' : 'Create' }}
                                 </Button>
                             </DialogFooter>
@@ -198,62 +210,74 @@ const confirmDelete = () => {
                 </Dialog>
             </div>
 
-            <div class="rounded-lg border border-border">
+            <div class="flex flex-1 flex-col rounded-lg border border-border">
                 <div
                     class="border-b border-border px-4 py-3 text-sm font-medium"
                 >
-                    Team Tags ({{ props.tags.length }})
+                    Team Tags ({{ props.tags.total }})
                 </div>
-                <div class="divide-y divide-border">
-                    <div
-                        v-if="props.tags.length === 0"
-                        class="px-4 py-8 text-center text-sm text-muted-foreground"
-                    >
-                        No tags yet. Create one to get started!
-                    </div>
+                <div class="flex flex-1 flex-col min-h-0">
+                    <div class="divide-y divide-border flex-1">
+                        <div
+                            v-if="props.tags.data.length === 0"
+                            class="px-4 py-8 text-center text-sm text-muted-foreground"
+                        >
+                            No tags yet. Create one to get started!
+                        </div>
 
-                    <div
-                        v-for="tag in props.tags"
-                        :key="tag.id"
-                        class="flex items-center justify-between px-4 py-3"
-                    >
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="h-3.5 w-3.5 rounded-full border border-border"
-                                :style="{ backgroundColor: tag.color }"
-                            />
-                            <div>
-                                <p class="text-sm font-medium">
-                                    {{ tag.name }}
-                                </p>
-                                <p class="text-xs text-muted-foreground">
-                                    {{ tag.color }}
-                                </p>
+                        <div
+                            v-for="tag in props.tags.data"
+                            :key="tag.id"
+                            class="flex items-center justify-between px-4 py-3"
+                        >
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="h-3.5 w-3.5 rounded-full border border-border"
+                                    :style="{ backgroundColor: tag.color }"
+                                />
+                                <div>
+                                    <p class="text-sm font-medium">
+                                        {{ tag.name }}
+                                    </p>
+                                    <p class="text-xs text-muted-foreground">
+                                        {{ tag.color }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <Button
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    class="h-8 w-8"
+                                    :title="`Edit ${tag.name}`"
+                                    @click="openEdit(tag)"
+                                >
+                                    <Pencil class="size-4" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    class="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                    :title="`Delete ${tag.name}`"
+                                    @click="openDelete(tag)"
+                                >
+                                    <Trash2 class="size-4" />
+                                </Button>
                             </div>
                         </div>
-
-                        <div class="flex items-center gap-2">
-                            <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                class="h-8 w-8"
-                                :title="`Edit ${tag.name}`"
-                                @click="openEdit(tag)"
-                            >
-                                <Pencil class="size-4" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                class="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                :title="`Delete ${tag.name}`"
-                                @click="openDelete(tag)"
-                            >
-                                <Trash2 class="size-4" />
-                            </Button>
-                        </div>
                     </div>
                 </div>
+            </div>
+
+            <div class="px-4 py-3">
+                <Pagination
+                    :current-page="props.tags.current_page"
+                    :last-page="props.tags.last_page"
+                    :prev-page-url="props.tags.prev_page_url"
+                    :next-page-url="props.tags.next_page_url"
+                    :links="props.tags.links"
+                />
             </div>
         </div>
     </AppLayout>
