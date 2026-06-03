@@ -240,7 +240,7 @@ watch([() => props.task, isOpen], ([task, open]) => {
             @open-auto-focus.prevent
         >
             <div
-                class="max-h-[92vh] overflow-y-auto overscroll-contain bg-background xl:overflow-hidden"
+                class="max-h-[92vh] overflow-y-auto overscroll-contain bg-background lg:overflow-hidden"
             >
                 <DialogHeader
                     class="sticky top-0 z-20 border-b bg-background/95 px-6 pt-6 pr-14 pb-4 backdrop-blur supports-backdrop-filter:bg-background/80"
@@ -262,7 +262,7 @@ watch([() => props.task, isOpen], ([task, open]) => {
                 </DialogHeader>
 
                 <div
-                    class="grid xl:h-[calc(92vh-96px)] xl:grid-cols-[minmax(0,1.1fr)_minmax(420px,0.9fr)]"
+                    class="grid lg:h-[calc(92vh-96px)] lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,0.9fr)]"
                 >
                     <TaskEditFormPanel
                         :form="form"

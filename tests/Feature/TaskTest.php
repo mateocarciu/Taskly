@@ -63,6 +63,65 @@ describe('index', function () {
                 }
             );
     });
+
+    test('can filter tasks by assignee, search keyword, and due date', function () {
+        $column = Column::create(['team_id' => $this->team->id, 'name' => 'To Do', 'order' => 1]);
+        
+        $assignee = User::factory()->create(['team_id' => $this->team->id]);
+        
+        $task1 = Task::factory()->create([
+            'team_id' => $this->team->id,
+            'column_id' => $column->id,
+            'title' => 'Searchable query one',
+            'assigned_to' => $assignee->id,
+            'due_date' => now()->addDays(5),
+        ]);
+
+        $task2 = Task::factory()->create([
+            'team_id' => $this->team->id,
+            'column_id' => $column->id,
+            'title' => 'Unrelated task',
+            'assigned_to' => null,
+            'due_date' => null,
+        ]);
+
+        // Test search filter
+        $this->actingAs($this->user)
+            ->get(route('tasks.index', ['search' => 'query']))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('columns.0.tasks', 1)
+                ->where('columns.0.tasks.0.id', $task1->id)
+            );
+
+        // Test assignee filter
+        $this->actingAs($this->user)
+            ->get(route('tasks.index', ['assignee_id' => $assignee->id]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('columns.0.tasks', 1)
+                ->where('columns.0.tasks.0.id', $task1->id)
+            );
+
+        // Test unassigned filter
+        $this->actingAs($this->user)
+            ->get(route('tasks.index', ['assignee_id' => 'unassigned']))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('columns.0.tasks', 1)
+                ->where('columns.0.tasks.0.id', $task2->id)
+            );
+
+        // Test custom date filter
+        $customDateString = now()->addDays(5)->toDateString();
+        $this->actingAs($this->user)
+            ->get(route('tasks.index', ['due_date' => $customDateString]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('columns.0.tasks', 1)
+                ->where('columns.0.tasks.0.id', $task1->id)
+            );
+    });
 });
 
 describe('show', function () {

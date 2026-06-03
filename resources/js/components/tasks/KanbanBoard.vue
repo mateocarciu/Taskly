@@ -11,6 +11,7 @@ import KanbanColumn from './KanbanColumn.vue';
 
 const props = defineProps<{
     columns: Column[];
+    filters: Record<string, any>;
 }>();
 
 const emit = defineEmits<{
@@ -82,7 +83,11 @@ const onColumnDragChange = (event: {
             @change="onColumnDragChange"
         >
             <template #item="{ element }">
-                <KanbanColumn :column="element" @edit="emit('edit', $event)" />
+                <KanbanColumn
+                    :column="element"
+                    :filters="filters"
+                    @edit="emit('edit', $event)"
+                />
             </template>
 
             <template #footer>

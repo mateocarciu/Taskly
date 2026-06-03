@@ -19,6 +19,7 @@ import TaskItem from './TaskItem.vue';
 
 const props = defineProps<{
     column: Column;
+    filters: Record<string, any>;
 }>();
 
 const emit = defineEmits<{
@@ -50,8 +51,29 @@ const loadMoreTasks = async () => {
     isLoadingMore.value = true;
     try {
         const nextPage = pagination.value.current_page + 1;
+        const params = new URLSearchParams();
+        params.append('page', nextPage.toString());
+
+        if (props.filters.search) {
+            params.append('search', props.filters.search);
+        }
+        if (props.filters.assignee_id) {
+            params.append('assignee_id', props.filters.assignee_id.toString());
+        }
+        if (props.filters.tag_ids) {
+            const tagIds = Array.isArray(props.filters.tag_ids)
+                ? props.filters.tag_ids
+                : [props.filters.tag_ids];
+            tagIds.forEach((id: any) => {
+                params.append('tag_ids[]', id.toString());
+            });
+        }
+        if (props.filters.due_date) {
+            params.append('due_date', props.filters.due_date);
+        }
+
         const response = await fetch(
-            `/columns/${props.column.id}/tasks?page=${nextPage}`,
+            `/columns/${props.column.id}/tasks?${params.toString()}`,
             {
                 headers: {
                     Accept: 'application/json',
