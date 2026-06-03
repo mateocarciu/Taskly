@@ -43,12 +43,12 @@ const onTagsUpdated = (tags: Tag[]) => {
 </script>
 
 <template>
-    <div class="h-full min-h-0 p-6 xl:pr-8">
+    <div class="h-full min-h-0 p-6 lg:overflow-y-auto lg:overscroll-contain lg:pr-8">
         <form
-            class="flex h-full min-h-0 flex-col gap-4"
+            class="space-y-6"
             @submit.prevent="$emit('submit')"
         >
-            <div class="flex-1 space-y-4 overflow-y-auto pr-1">
+            <div class="space-y-4">
                 <div class="grid gap-2">
                     <Label for="edit-task-title">Title</Label>
                     <Input
@@ -110,7 +110,7 @@ const onTagsUpdated = (tags: Tag[]) => {
                 />
             </div>
 
-            <DialogFooter class="shrink-0 pt-4">
+            <DialogFooter class="pt-4">
                 <Button
                     type="button"
                     variant="outline"

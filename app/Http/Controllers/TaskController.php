@@ -18,6 +18,7 @@ use App\Http\Requests\TaskCommentStoreRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\TaskUpdateRequest;
+use App\Http\Requests\TaskListRequest;
 
 class TaskController extends Controller
 {
@@ -25,14 +26,16 @@ class TaskController extends Controller
     {
     }
 
-    public function index(Request $request): Response
+    public function index(TaskListRequest $request): Response
     {
+        $filters = $request->validated();
+
         $columns = Column::query()
             ->where('team_id', $request->user()->team_id)
             ->orderBy('order')
             ->get();
 
-        $columns->each(function ($column) {
+        $columns->each(function ($column) use ($filters) {
             $column->setRelation(
                 'tasks',
                 $column->tasks()
@@ -41,6 +44,7 @@ class TaskController extends Controller
                         'assignee:id,name',
                         'tags:id,name,color',
                     ])
+                    ->filter($filters)
                     ->orderBy('order')
                     ->paginate(10)
             );
@@ -60,6 +64,7 @@ class TaskController extends Controller
             'columns' => ColumnResource::collection($columns),
             'teamMembers' => $teamMembers,
             'tags' => $tags,
+            'filters' => $filters,
         ]);
     }
 

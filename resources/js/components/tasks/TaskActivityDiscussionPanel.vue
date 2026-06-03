@@ -65,7 +65,7 @@ const daysInColumnLabel = computed(() => {
 
 <template>
     <div
-        class="border-t border-border p-6 pt-4 xl:overflow-y-auto xl:overscroll-contain xl:border-t-0 xl:border-l xl:pl-8"
+        class="border-t border-border p-6 pt-4 lg:overflow-y-auto lg:overscroll-contain lg:border-t-0 lg:border-l lg:pl-8"
     >
         <div
             v-if="isLoadingDetails"

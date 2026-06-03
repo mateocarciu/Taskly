@@ -99,4 +99,55 @@ class Task extends Model
     {
         return $this->belongsToMany(Tag::class, 'task_tag');
     }
+
+    /**
+     * Scope a query to filter tasks based on array parameters.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param array $filters
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeFilter($query, array $filters)
+    {
+        $search = $filters['search'] ?? null;
+        $assigneeId = $filters['assignee_id'] ?? null;
+        $tagIds = $filters['tag_ids'] ?? null;
+        $dueDate = $filters['due_date'] ?? null;
+
+        return $query
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%");
+                });
+            })
+            ->when($assigneeId, function ($query, $assigneeId) {
+                if ($assigneeId === 'unassigned') {
+                    $query->whereNull('assigned_to');
+                } else {
+                    $query->where('assigned_to', $assigneeId);
+                }
+            })
+            ->when($tagIds, function ($query, $tagIds) {
+                $query->whereHas('tags', function ($q) use ($tagIds) {
+                    $q->whereIn('tags.id', (array) $tagIds);
+                });
+            })
+            ->when($dueDate, function ($query, $dueDate) {
+                if ($dueDate === 'overdue') {
+                    $query->whereDate('due_date', '<', now()->toDateString());
+                } elseif ($dueDate === 'today') {
+                    $query->whereDate('due_date', '=', now()->toDateString());
+                } elseif ($dueDate === 'week') {
+                    $query->whereBetween('due_date', [
+                        now()->startOfWeek()->toDateString(),
+                        now()->endOfWeek()->toDateString()
+                    ]);
+                } elseif ($dueDate === 'none') {
+                    $query->whereNull('due_date');
+                } else {
+                    $query->whereDate('due_date', '=', $dueDate);
+                }
+            });
+    }
 }
