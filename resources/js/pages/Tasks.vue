@@ -6,8 +6,8 @@ import TaskFilters from '@/components/tasks/TaskFilters.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index } from '@/routes/tasks';
 import type { BreadcrumbItem, Column, Tag, Task, TeamMember } from '@/types';
-import { Head, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
 
 defineProps<{
     columns: Column[];
@@ -31,6 +31,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 const isEditModalOpen = ref(false);
 const taskToEdit = ref<Task | null>(null);
 
+const page = usePage();
+const taskIdFromUrl = computed(() => {
+    const url = new URL(page.url, window.location.origin);
+    const val = url.searchParams.get('task');
+    return val ? parseInt(val, 10) : null;
+});
+
 const openTaskDetails = (task: Task) => {
     taskToEdit.value = task;
     isEditModalOpen.value = true;
@@ -52,6 +59,27 @@ const handleFilterChange = (newFilters: any) => {
         replace: true,
     });
 };
+
+watch(taskIdFromUrl, (id) => {
+    if (id) {
+        if (!taskToEdit.value || taskToEdit.value.id !== id) {
+            taskToEdit.value = { id } as Task;
+        }
+        isEditModalOpen.value = true;
+    } else {
+        isEditModalOpen.value = false;
+    }
+}, { immediate: true });
+
+watch(isEditModalOpen, (isOpen) => {
+    const url = new URL(window.location.href);
+    if (isOpen && taskToEdit.value) {
+        url.searchParams.set('task', taskToEdit.value.id.toString());
+    } else {
+        url.searchParams.delete('task');
+    }
+    window.history.replaceState(null, '', url.pathname + url.search);
+});
 </script>
 
 <template>

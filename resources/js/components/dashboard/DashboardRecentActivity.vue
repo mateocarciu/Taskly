@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDate } from '@/composables/useDateFormatter';
+import { Link } from '@inertiajs/vue3';
 import type { DashboardTaskStat } from '@/types/index';
 import { Clock3 } from 'lucide-vue-next';
 
@@ -15,10 +16,11 @@ defineProps<{
             <CardTitle class="text-base">Recent Activity</CardTitle>
         </CardHeader>
         <CardContent class="space-y-2">
-            <div
+            <Link
                 v-for="task in tasks"
                 :key="task.id"
-                class="grid gap-2 rounded-lg border p-3 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto] md:items-center"
+                :href="`/tasks?task=${task.id}`"
+                class="grid gap-2 rounded-lg border p-3 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto] md:items-center transition-colors hover:bg-accent/40 block"
             >
                 <div class="min-w-0">
                     <p class="truncate text-sm font-medium">
@@ -45,7 +47,7 @@ defineProps<{
                     <Clock3 class="size-3.5" />
                     <span>{{ formatDate(task.due_date) }}</span>
                 </div>
-            </div>
+            </Link>
 
             <p v-if="!tasks.length" class="text-sm text-muted-foreground">
                 No tasks yet.

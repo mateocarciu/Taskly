@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDate } from '@/composables/useDateFormatter';
+import { Link } from '@inertiajs/vue3';
 import type { DashboardTaskStat } from '@/types/index';
 import { ChevronDown } from 'lucide-vue-next';
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
@@ -56,10 +57,11 @@ onBeforeUnmount(() => {
                 @scroll="updateAttentionScrollHint"
             >
                 <div class="space-y-2 px-3 pt-3 sm:px-4 sm:pt-4">
-                    <div
+                    <Link
                         v-for="task in tasks"
                         :key="task.id"
-                        class="flex items-center justify-between gap-3 rounded-lg border p-3"
+                        :href="`/tasks?task=${task.id}`"
+                        class="flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-accent/40 block"
                     >
                         <div class="min-w-0 space-y-1">
                             <p class="truncate text-sm font-medium">
@@ -77,7 +79,7 @@ onBeforeUnmount(() => {
                         >
                             {{ task.reason }}
                         </span>
-                    </div>
+                    </Link>
                 </div>
 
                 <p
