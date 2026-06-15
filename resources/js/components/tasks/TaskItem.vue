@@ -2,7 +2,6 @@
 import TagBadge from '@/components/tags/TagBadge.vue';
 import TaskDeleteDialog from '@/components/tasks/TaskDeleteDialog.vue';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useInitials } from '@/composables/useInitials';
@@ -45,7 +44,7 @@ const deleteTask = () => {
         @click.stop="emit('edit', task)"
         class="group relative cursor-pointer border-border transition-all hover:border-primary/40 hover:bg-accent/5 hover:shadow-sm"
     >
-        <CardContent class="flex flex-col gap-3 p-3.5">
+        <CardContent class="flex flex-col gap-3 pt-3.5">
             <!-- Header: Title and Actions -->
             <div class="flex items-start justify-between gap-2">
                 <p
@@ -95,43 +94,44 @@ const deleteTask = () => {
             </div>
 
             <!-- Footer: Meta tags & Avatar -->
-            <div class="mt-1 flex items-end justify-between gap-2">
-                <!-- Tags -->
-                <div class="flex flex-wrap items-center gap-2">
-                    <Badge
+            <div
+                class="mt-2 pt-2.5 border-t border-border/40 flex items-center justify-between gap-2"
+            >
+                <div class="flex flex-wrap items-center gap-3">
+                    <div
                         v-if="
                             task.days_in_column !== null &&
                             task.days_in_column !== undefined
                         "
-                        variant="secondary"
-                        class="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium"
+                        class="flex items-center gap-1.5 text-[11px] text-muted-foreground/80 font-medium"
                         title="Time in column"
                     >
-                        <ClockAlert class="size-3 text-muted-foreground" />
+                        <ClockAlert class="size-3.5 text-muted-foreground/80" />
                         <span>{{
                             task.days_in_column === 0
                                 ? 'Today'
                                 : `${task.days_in_column}d`
                         }}</span>
-                    </Badge>
+                    </div>
 
-                    <Badge
+                    <div
                         v-if="task.due_date"
-                        :variant="isOverdue(task) ? 'destructive' : 'secondary'"
-                        class="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium"
+                        :class="[
+                            'flex items-center gap-1.5 transition-colors',
+                            isOverdue(task)
+                                ? 'bg-destructive/10 text-destructive border border-destructive/20 px-2 py-0.5 rounded-md font-semibold text-[10px]'
+                                : 'text-[11px] text-muted-foreground/80 font-medium'
+                        ]"
                         title="Due date"
                     >
-                        <Calendar
-                            class="size-3"
-                            :class="!isOverdue(task) && 'text-muted-foreground'"
-                        />
+                        <Calendar class="size-3.5" />
                         <span>{{
                             new Date(task.due_date).toLocaleDateString(
                                 'en-US',
                                 { day: 'numeric', month: 'short' },
                             )
                         }}</span>
-                    </Badge>
+                    </div>
                 </div>
 
                 <!-- Avatar -->

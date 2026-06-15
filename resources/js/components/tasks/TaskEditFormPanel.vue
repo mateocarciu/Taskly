@@ -43,11 +43,12 @@ const onTagsUpdated = (tags: Tag[]) => {
 </script>
 
 <template>
-    <div class="h-full min-h-0 p-6 lg:overflow-y-auto lg:overscroll-contain lg:pr-8">
-        <form
-            class="space-y-6"
-            @submit.prevent="$emit('submit')"
-        >
+    <form
+        class="space-y-6 p-6 lg:space-y-0 lg:p-0 lg:flex lg:flex-col lg:h-full lg:min-h-0"
+        @submit.prevent="$emit('submit')"
+    >
+        <!-- Scrollable Content on desktop, normal flow on mobile -->
+        <div class="lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:p-6 lg:pr-8">
             <div class="space-y-4">
                 <div class="grid gap-2">
                     <Label for="edit-task-title">Title</Label>
@@ -109,8 +110,11 @@ const onTagsUpdated = (tags: Tag[]) => {
                     @update:selected="onTagsUpdated"
                 />
             </div>
+        </div>
 
-            <DialogFooter class="pt-4">
+        <!-- Sticky Footer on desktop, normal flow on mobile -->
+        <div class="pt-4 lg:pt-0 lg:shrink-0 lg:border-t lg:border-border lg:bg-background lg:px-6 lg:py-4">
+            <DialogFooter>
                 <Button
                     type="button"
                     variant="outline"
@@ -129,6 +133,6 @@ const onTagsUpdated = (tags: Tag[]) => {
                     Save changes
                 </Button>
             </DialogFooter>
-        </form>
-    </div>
+        </div>
+    </form>
 </template>
