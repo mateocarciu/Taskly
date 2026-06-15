@@ -2,7 +2,6 @@
 import InputError from '@/components/InputError.vue';
 import TaskCommentThreadItem from '@/components/tasks/TaskCommentThreadItem.vue';
 import TaskRichTextEditor from '@/components/tasks/TaskRichTextEditor.vue';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
@@ -104,24 +103,30 @@ const daysInColumnLabel = computed(() => {
         <div class="mb-4 space-y-3">
             <h3 class="text-base font-semibold">Discussion</h3>
             <div
-                class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
+                class="flex flex-wrap items-center gap-3"
             >
-                <Badge
+                <div
                     v-if="dueDateLabel"
-                    :variant="isOverdue ? 'destructive' : 'secondary'"
-                    class="gap-1"
+                    :class="[
+                        'flex items-center gap-1.5 transition-colors',
+                        isOverdue
+                            ? 'bg-destructive/10 text-destructive border border-destructive/20 px-2 py-0.5 rounded-md font-semibold text-[11px]'
+                            : 'text-xs text-muted-foreground font-medium'
+                    ]"
+                    title="Due date"
                 >
-                    <Calendar class="size-3" />
-                    {{ dueDateLabel }}
-                </Badge>
-                <Badge
+                    <Calendar class="size-3.5" />
+                    <span>{{ dueDateLabel }}</span>
+                </div>
+
+                <div
                     v-if="daysInColumnLabel"
-                    variant="secondary"
-                    class="gap-1"
+                    class="flex items-center gap-1.5 text-xs text-muted-foreground font-medium"
+                    title="Time in column"
                 >
-                    <ClockAlert class="size-3" />
-                    {{ daysInColumnLabel }}
-                </Badge>
+                    <ClockAlert class="size-3.5 text-muted-foreground" />
+                    <span>{{ daysInColumnLabel }}</span>
+                </div>
             </div>
         </div>
 

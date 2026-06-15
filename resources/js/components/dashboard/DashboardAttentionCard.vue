@@ -49,6 +49,9 @@ onBeforeUnmount(() => {
     <Card class="w-full min-w-0">
         <CardHeader class="pb-2">
             <CardTitle class="text-base">To Handle Now</CardTitle>
+            <p class="text-xs text-muted-foreground">
+                Tasks that need your immediate attention.
+            </p>
         </CardHeader>
         <CardContent class="p-0">
             <div
@@ -56,7 +59,7 @@ onBeforeUnmount(() => {
                 class="relative max-h-64 space-y-2 overflow-y-auto sm:max-h-80 md:max-h-96"
                 @scroll="updateAttentionScrollHint"
             >
-                <div class="space-y-2 px-3 pt-3 sm:px-4 sm:pt-4">
+                <div class="space-y-2 px-3 sm:px-4">
                     <Link
                         v-for="task in tasks"
                         :key="task.id"
