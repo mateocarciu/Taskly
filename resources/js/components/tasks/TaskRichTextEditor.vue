@@ -39,13 +39,14 @@ const editor = useEditor({
         StarterKit.configure({
             // disable, we use our custom one with preview NodeView
             paragraph: false,
+            link: false,
         }),
         ParagraphWithPreview,
         Placeholder.configure({
             placeholder: props.placeholder ?? 'Write a description...',
         }),
         Link.configure({
-            openOnClick: false,
+            openOnClick: true,
             autolink: true,
             linkOnPaste: true,
             HTMLAttributes: {
