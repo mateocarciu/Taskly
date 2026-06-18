@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import ParagraphPreviewNodeView from '@/components/tasks/ParagraphPreviewNodeView.vue';
 import { Button } from '@/components/ui/button';
+import { Paragraph } from '@tiptap/extension-paragraph';
+import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import StarterKit from '@tiptap/starter-kit';
-import { EditorContent, useEditor } from '@tiptap/vue-3';
+import { EditorContent, VueNodeViewRenderer, useEditor } from '@tiptap/vue-3';
 import {
     Bold,
     Code2,
@@ -12,6 +15,12 @@ import {
     Pilcrow,
 } from 'lucide-vue-next';
 import { onBeforeUnmount, watch } from 'vue';
+
+const ParagraphWithPreview = Paragraph.extend({
+    addNodeView() {
+        return VueNodeViewRenderer(ParagraphPreviewNodeView);
+    },
+});
 
 const props = defineProps<{
     modelValue: string;
@@ -23,18 +32,31 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: string): void;
 }>();
 
+
 const editor = useEditor({
     content: props.modelValue,
     extensions: [
-        StarterKit,
+        StarterKit.configure({
+            // disable, we use our custom one with preview NodeView
+            paragraph: false,
+        }),
+        ParagraphWithPreview,
         Placeholder.configure({
             placeholder: props.placeholder ?? 'Write a description...',
+        }),
+        Link.configure({
+            openOnClick: false,
+            autolink: true,
+            linkOnPaste: true,
+            HTMLAttributes: {
+                class: 'text-blue-600 dark:text-blue-400 underline underline-offset-4 hover:text-blue-800 dark:hover:text-blue-300 transition-colors cursor-pointer',
+            },
         }),
     ],
     editorProps: {
         attributes: {
             class: 'w-full bg-background px-3 py-2 text-sm focus-visible:outline-none',
-            style: `min-height: ${props.minHeight ?? '6rem'}; height: ${props.minHeight ?? '6rem'};`,
+            style: `min-height: ${props.minHeight ?? '6rem'};`,
         },
     },
     onUpdate: ({ editor }) => {
@@ -65,9 +87,7 @@ onBeforeUnmount(() => {
     <div
         class="overflow-hidden rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow]"
     >
-        <div
-            class="flex flex-wrap items-center gap-1 border-b border-input p-2"
-        >
+        <div class="flex flex-wrap items-center gap-1 border-b border-input p-2">
             <Button
                 type="button"
                 size="icon-sm"
@@ -137,7 +157,7 @@ onBeforeUnmount(() => {
 
         <EditorContent
             :editor="editor"
-            class="task-rich-text rounded-b-md"
+            class="task-rich-text"
             :style="{ '--task-editor-min-height': props.minHeight ?? '6rem' }"
         />
     </div>
@@ -146,7 +166,6 @@ onBeforeUnmount(() => {
 <style scoped>
 .task-rich-text :deep(.ProseMirror) {
     min-height: var(--task-editor-min-height, 6rem);
-    height: var(--task-editor-min-height, 6rem);
     margin: 0;
     overflow-y: auto;
     overscroll-behavior: contain;

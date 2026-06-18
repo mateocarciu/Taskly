@@ -33,6 +33,7 @@ const taskToEdit = ref<Task | null>(null);
 
 const page = usePage();
 const taskIdFromUrl = computed(() => {
+    if (typeof window === 'undefined') return null;
     const url = new URL(page.url, window.location.origin);
     const val = url.searchParams.get('task');
     return val ? parseInt(val, 10) : null;

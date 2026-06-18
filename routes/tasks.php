@@ -4,6 +4,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\ColumnController;
 use App\Http\Controllers\TaskSequenceController;
 use App\Http\Controllers\Api\ColumnTaskController;
+use App\Http\Controllers\Api\LinkPreviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified', 'hasTeam'])
@@ -26,4 +27,5 @@ Route::middleware(['auth', 'verified', 'hasTeam'])
 
         Route::put('tasks/{task}/sequence', [TaskSequenceController::class, 'update'])->name('tasks.sequence.update');
         Route::get('columns/{column}/tasks', [ColumnTaskController::class, 'index'])->name('columns.tasks.index');
+        Route::get('link-preview', [LinkPreviewController::class, 'show'])->name('link-preview.show');
     });

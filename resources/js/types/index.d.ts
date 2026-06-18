@@ -195,3 +195,11 @@ export interface DashboardStats {
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
+
+export interface PreviewData {
+    url: string;
+    title: string | null;
+    description: string | null;
+    image: string | null;
+    favicon: string | null;
+}
