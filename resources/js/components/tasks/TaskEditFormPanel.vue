@@ -113,7 +113,7 @@ const onTagsUpdated = (tags: Tag[]) => {
         </div>
 
         <!-- Sticky Footer on desktop, normal flow on mobile -->
-        <div class="pt-4 lg:pt-0 lg:shrink-0 lg:border-t lg:border-border lg:bg-background lg:px-6 lg:py-4">
+        <div class="pt-4 lg:shrink-0 lg:border-t lg:border-border lg:bg-background lg:px-6 lg:py-4">
             <DialogFooter>
                 <Button
                     type="button"

@@ -194,4 +194,9 @@ const deleteTask = () => {
 .task-description-preview :deep(ol) {
     list-style: decimal;
 }
+
+.task-description-preview :deep(a) {
+    pointer-events: none;
+    text-decoration: none;
+}
 </style>
