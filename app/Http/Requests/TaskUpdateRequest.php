@@ -32,6 +32,10 @@ class TaskUpdateRequest extends FormRequest
                     fn($query) => $query->where('team_id', $this->user()?->team_id)
                 ),
             ],
+            'attachments' => ['sometimes', 'array'],
+            'attachments.*' => ['file', 'max:20480'], // 20MB max per file
+            'removed_attachment_ids' => ['sometimes', 'array'],
+            'removed_attachment_ids.*' => ['uuid'],
         ];
     }
 }

@@ -76,6 +76,7 @@ class TaskController extends Controller
             'creator:id,name',
             'assignee:id,name',
             'tags:id,name,color',
+            'taskAttachments',
             'comments' => fn($query) => $query
                 ->whereNull('parent_id')
                 ->with(['user:id,name', 'replies']),

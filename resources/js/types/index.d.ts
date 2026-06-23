@@ -46,6 +46,14 @@ export interface Tag {
     color: string;
 }
 
+export interface TaskAttachment {
+    id: string;
+    filename: string;
+    mime_type: string;
+    size: number;
+    url: string;
+}
+
 export interface Task {
     id: number;
     team_id: number;
@@ -68,6 +76,7 @@ export interface Task {
     tags?: Tag[];
     comments?: TaskComment[];
     events?: TaskEvent[];
+    attachments?: TaskAttachment[];
 }
 
 export interface Column {
@@ -90,6 +99,7 @@ export interface TaskForm {
     due_date: string;
     assigned_to: number | null;
     tag_ids: number[];
+    attachments: File[];
 }
 
 export interface TeamMember {
@@ -162,6 +172,8 @@ export interface TaskEditFormState {
     due_date: string;
     assigned_to: number | null;
     tag_ids: number[];
+    attachments: File[];
+    removed_attachment_ids: string[];
     errors: Record<string, string | undefined>;
     isDirty: boolean;
     processing: boolean;

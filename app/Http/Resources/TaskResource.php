@@ -189,6 +189,17 @@ class TaskResource extends JsonResource
                     'color' => $tag->color,
                 ])->values()
             ),
+            'attachments' => $this->whenLoaded(
+                'taskAttachments',
+                fn() => $this->taskAttachments
+                    ->map(fn($a) => [
+                        'id'        => $a->id,
+                        'filename'  => $a->filename,
+                        'mime_type' => $a->mime_type,
+                        'size'      => $a->size,
+                        'url'       => route('attachments.show', $a->id),
+                    ])->values()
+            ),
         ];
     }
 }

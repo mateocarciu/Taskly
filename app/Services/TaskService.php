@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Models\Task;
 use App\Models\Column;
+use App\Models\TaskAttachment;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class TaskService
 {
@@ -24,11 +26,12 @@ class TaskService
         Task::where('column_id', $columnId)->increment('order');
         $order = 0;
 
-        unset($data['column_id'], $data['tag_ids']);
+        $newFiles = $data['attachments'] ?? [];
+        unset($data['column_id'], $data['tag_ids'], $data['attachments']);
 
         $columnName = Column::query()->where('id', $columnId)->value('name');
 
-        return DB::transaction(function () use ($data, $user, $columnId, $order, $columnName, $tagIds) {
+        return DB::transaction(function () use ($data, $user, $columnId, $order, $columnName, $tagIds, $newFiles) {
             $task = Task::create(array_merge($data, [
                 'team_id' => $user->team_id,
                 'created_by' => $user->id,
@@ -65,6 +68,20 @@ class TaskService
                 ]);
             }
 
+            foreach ($newFiles as $file) {
+                $path = $file->store('attachments', 'local');
+
+                TaskAttachment::create([
+                    'team_id'   => $user->team_id,
+                    'task_id'   => $task->id,
+                    'user_id'   => $user->id,
+                    'path'      => $path,
+                    'filename'  => $file->getClientOriginalName(),
+                    'mime_type' => $file->getMimeType(),
+                    'size'      => $file->getSize(),
+                ]);
+            }
+
             return $task;
         });
     }
@@ -75,10 +92,10 @@ class TaskService
     public function updateTask(Task $task, array $data, User $actor): bool
     {
         $oldAssignedTo = $task->assigned_to;
-
-        // Extract tag_ids if provided
         $tagIds = $data['tag_ids'] ?? null;
-        unset($data['tag_ids']);
+        $newFiles = $data['attachments'] ?? [];
+        $removedIds = $data['removed_attachment_ids'] ?? [];
+        unset($data['tag_ids'], $data['attachments'], $data['removed_attachment_ids']);
 
         $updated = $task->update($data);
 
@@ -105,6 +122,31 @@ class TaskService
                     'assigned_to_name' => $assignedUserName,
                     'previous_assigned_to' => $oldAssignedTo,
                 ],
+            ]);
+        }
+
+        if (!empty($removedIds)) {
+            $toRemove = TaskAttachment::whereIn('id', $removedIds)
+                ->where('team_id', $actor->team_id)
+                ->get();
+
+            foreach ($toRemove as $attachment) {
+                Storage::disk('local')->delete($attachment->path);
+                $attachment->delete();
+            }
+        }
+
+        foreach ($newFiles as $file) {
+            $path = $file->store('attachments', 'local');
+
+            TaskAttachment::create([
+                'team_id'   => $actor->team_id,
+                'task_id'   => $task->id,
+                'user_id'   => $actor->id,
+                'path'      => $path,
+                'filename'  => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'size'      => $file->getSize(),
             ]);
         }
 

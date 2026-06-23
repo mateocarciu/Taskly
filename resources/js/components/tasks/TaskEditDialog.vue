@@ -38,6 +38,8 @@ const form = useForm({
     due_date: '',
     assigned_to: null as number | null,
     tag_ids: [] as number[],
+    attachments: [] as File[],
+    removed_attachment_ids: [] as string[],
 });
 
 const commentForm = useForm({
@@ -67,6 +69,8 @@ const hydrateFormsFromTask = (task: Task) => {
         : '';
     form.assigned_to = task.assigned_to ?? null;
     form.tag_ids = task.tags?.map((t) => t.id) ?? [];
+    form.attachments = [];
+    form.removed_attachment_ids = [];
     commentsList.value = [...(task.comments ?? [])];
 };
 
@@ -93,6 +97,8 @@ const loadTaskDetails = async (taskId: number) => {
             ? new Date(task.due_date).toISOString().slice(0, 16)
             : '';
         form.assigned_to = task.assigned_to ?? null;
+        form.attachments = [];
+        form.removed_attachment_ids = [];
         commentsList.value = [...(task.comments ?? [])];
 
         return true;
@@ -155,7 +161,10 @@ const getEventLabel = (event: TaskEvent) => {
 const submit = () => {
     if (!activeTask.value) return;
 
-    form.put(update(activeTask.value.id).url, {
+    form.transform((data) => ({
+        ...data,
+        _method: 'PUT',
+    })).post(update(activeTask.value.id).url, {
         preserveScroll: true,
         onSuccess: () => {
             isOpen.value = false;
@@ -229,7 +238,7 @@ watch([() => props.task, isOpen], ([task, open]) => {
         taskDetails.value = null;
         commentsList.value = [];
     }
-});
+}, { immediate: true });
 </script>
 
 <template>
@@ -270,6 +279,7 @@ watch([() => props.task, isOpen], ([task, open]) => {
                         :initial-tags="activeTask?.tags"
                         :available-tags="availableTags"
                         :is-loading-details="isLoadingDetails"
+                        :existing-attachments="activeTask?.attachments"
                         @submit="submit"
                         @cancel="isOpen = false"
                         @update:title="form.title = $event"
@@ -277,6 +287,8 @@ watch([() => props.task, isOpen], ([task, open]) => {
                         @update:due-date="form.due_date = $event"
                         @update:assigned-to="form.assigned_to = $event"
                         @update:tag-ids="form.tag_ids = $event"
+                        @update:attachments="form.attachments = $event"
+                        @update:removed-attachment-ids="form.removed_attachment_ids = $event"
                     />
 
                     <TaskActivityDiscussionPanel
