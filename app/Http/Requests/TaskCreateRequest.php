@@ -37,6 +37,8 @@ class TaskCreateRequest extends FormRequest
                 'nullable',
                 Rule::exists('columns', 'id')->where(fn($query) => $query->where('team_id', $this->user()?->team_id)),
             ],
+            'attachments' => ['sometimes', 'array'],
+            'attachments.*' => ['file', 'max:20480'], // 20MB max per file
         ];
     }
 

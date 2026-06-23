@@ -31,7 +31,7 @@ class LinkPreviewController extends Controller
                 'title' => $host ?: 'Local Link',
                 'description' => 'Link to local page',
                 'image' => null,
-                'favicon' => asset('favicon.ico'),
+                'favicon' => null,
             ]);
         }
 
@@ -49,7 +49,7 @@ class LinkPreviewController extends Controller
                     'title' => parse_url($url, PHP_URL_HOST),
                     'description' => 'Failed to fetch link preview',
                     'image' => null,
-                    'favicon' => asset('favicon.ico'),
+                    'favicon' => null,
                 ];
             }
         });
@@ -77,7 +77,7 @@ class LinkPreviewController extends Controller
                 'title' => basename($url) ?: parse_url($url, PHP_URL_HOST),
                 'description' => 'Link to file: ' . $contentType,
                 'image' => null,
-                'favicon' => asset('favicon.ico'),
+                'favicon' => null,
             ];
         }
 
@@ -129,7 +129,7 @@ class LinkPreviewController extends Controller
         if ($favicon) {
             $favicon = $this->resolveUrl($favicon, $url);
         } else {
-            $favicon = asset('favicon.ico');
+            $favicon = null;
         }
 
         return [

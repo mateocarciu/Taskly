@@ -19,7 +19,7 @@ defineProps<{
             <Link
                 v-for="task in tasks"
                 :key="task.id"
-                :href="`/tasks?task=${task.id}`"
+                :href="`/tasks?id=${task.id}`"
                 class="grid gap-2 rounded-lg border p-3 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto] md:items-center transition-colors hover:bg-accent/40 block"
             >
                 <div class="min-w-0">

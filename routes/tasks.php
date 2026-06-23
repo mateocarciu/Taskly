@@ -5,6 +5,7 @@ use App\Http\Controllers\ColumnController;
 use App\Http\Controllers\TaskSequenceController;
 use App\Http\Controllers\Api\ColumnTaskController;
 use App\Http\Controllers\Api\LinkPreviewController;
+use App\Http\Controllers\Api\TaskAttachmentController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified', 'hasTeam'])
@@ -28,4 +29,7 @@ Route::middleware(['auth', 'verified', 'hasTeam'])
         Route::put('tasks/{task}/sequence', [TaskSequenceController::class, 'update'])->name('tasks.sequence.update');
         Route::get('columns/{column}/tasks', [ColumnTaskController::class, 'index'])->name('columns.tasks.index');
         Route::get('link-preview', [LinkPreviewController::class, 'show'])->name('link-preview.show');
+        
+        Route::get('attachments/{attachment}', [TaskAttachmentController::class, 'show'])->name('attachments.show');
+        Route::delete('attachments/{attachment}', [TaskAttachmentController::class, 'destroy'])->name('attachments.destroy');
     });

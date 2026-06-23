@@ -38,6 +38,7 @@ const form = useForm<TaskForm>({
     due_date: '',
     assigned_to: currentUserId.value,
     tag_ids: [],
+    attachments: [],
 });
 
 const selectedTags = ref<Tag[]>([]);
@@ -48,7 +49,7 @@ const onTagsUpdated = (tags: Tag[]) => {
 };
 
 const submit = () => {
-    if (form.isDirty) {
+    if (form.isDirty || form.attachments.length > 0) {
         form.submit(store(), {
             onSuccess: () => {
                 form.reset();
@@ -103,9 +104,13 @@ const submit = () => {
                     <div class="grid gap-2">
                         <Label for="task-description">Description</Label>
                         <TaskRichTextEditor
-                            v-model="form.description"
+                            :model-value="form.description"
                             placeholder="Add more details..."
                             min-height="20rem"
+                            :show-attachments="true"
+                            :pending-files="form.attachments"
+                            @update:model-value="form.description = $event"
+                            @update:attachments="form.attachments = $event"
                         />
                         <InputError :message="form.errors.description" />
                     </div>
@@ -146,7 +151,7 @@ const submit = () => {
                         </Button>
                         <Button
                             type="submit"
-                            :disabled="!form.isDirty || form.processing"
+                            :disabled="(!form.isDirty && form.attachments.length === 0) || form.processing"
                         >
                             <Spinner v-if="form.processing" />
                             <Plus v-else class="size-4" />

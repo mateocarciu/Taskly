@@ -101,6 +101,14 @@ class Task extends Model
     }
 
     /**
+     * Get the file attachments for the task.
+     */
+    public function taskAttachments(): HasMany
+    {
+        return $this->hasMany(TaskAttachment::class)->orderBy('created_at');
+    }
+
+    /**
      * Scope a query to filter tasks based on array parameters.
      *
      * @param \Illuminate\Database\Eloquent\Builder $query

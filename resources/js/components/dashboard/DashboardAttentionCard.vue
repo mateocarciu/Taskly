@@ -63,7 +63,7 @@ onBeforeUnmount(() => {
                     <Link
                         v-for="task in tasks"
                         :key="task.id"
-                        :href="`/tasks?task=${task.id}`"
+                        :href="`/tasks?id=${task.id}`"
                         class="flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-accent/40 block"
                     >
                         <div class="min-w-0 space-y-1">

@@ -35,7 +35,7 @@ const page = usePage();
 const taskIdFromUrl = computed(() => {
     if (typeof window === 'undefined') return null;
     const url = new URL(page.url, window.location.origin);
-    const val = url.searchParams.get('task');
+    const val = url.searchParams.get('id');
     return val ? parseInt(val, 10) : null;
 });
 
@@ -75,9 +75,9 @@ watch(taskIdFromUrl, (id) => {
 watch(isEditModalOpen, (isOpen) => {
     const url = new URL(window.location.href);
     if (isOpen && taskToEdit.value) {
-        url.searchParams.set('task', taskToEdit.value.id.toString());
+        url.searchParams.set('id', taskToEdit.value.id.toString());
     } else {
-        url.searchParams.delete('task');
+        url.searchParams.delete('id');
     }
     window.history.replaceState(null, '', url.pathname + url.search);
 });

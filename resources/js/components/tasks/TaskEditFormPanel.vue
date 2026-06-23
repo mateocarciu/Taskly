@@ -8,7 +8,7 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import type { Tag, TeamMember } from '@/types';
+import type { Tag, TeamMember, TaskAttachment } from '@/types';
 import { TaskEditFormState } from '@/types';
 import { Save } from 'lucide-vue-next';
 import { ref } from 'vue';
@@ -19,6 +19,7 @@ const props = defineProps<{
     isLoadingDetails: boolean;
     initialTags?: Tag[];
     availableTags?: Tag[];
+    existingAttachments?: TaskAttachment[];
 }>();
 
 const emit = defineEmits<{
@@ -29,6 +30,8 @@ const emit = defineEmits<{
     'update:due-date': [value: string];
     'update:assigned-to': [value: number | null];
     'update:tag-ids': [value: number[]];
+    'update:attachments': [value: File[]];
+    'update:removed-attachment-ids': [value: string[]];
 }>();
 
 const selectedTags = ref<Tag[]>(props.initialTags ?? []);
@@ -70,9 +73,13 @@ const onTagsUpdated = (tags: Tag[]) => {
                         :model-value="form.description"
                         placeholder="Add more details..."
                         min-height="20rem"
-                        @update:model-value="
-                            $emit('update:description', $event)
-                        "
+                        :show-attachments="true"
+                        :existing-attachments="existingAttachments"
+                        :pending-files="form.attachments"
+                        :removed-ids="form.removed_attachment_ids"
+                        @update:model-value="$emit('update:description', $event)"
+                        @update:attachments="$emit('update:attachments', $event)"
+                        @update:removed-attachment-ids="$emit('update:removed-attachment-ids', $event)"
                     />
                     <InputError :message="form.errors.description" />
                 </div>
@@ -125,7 +132,9 @@ const onTagsUpdated = (tags: Tag[]) => {
                 <Button
                     type="submit"
                     :disabled="
-                        !form.isDirty || form.processing || isLoadingDetails
+                        (!form.isDirty && form.attachments.length === 0 && form.removed_attachment_ids.length === 0) ||
+                        form.processing ||
+                        isLoadingDetails
                     "
                 >
                     <Spinner v-if="form.processing" />
