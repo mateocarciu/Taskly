@@ -215,3 +215,17 @@ export interface PreviewData {
     image: string | null;
     favicon: string | null;
 }
+
+export interface UnifiedAttachment {
+    id: string | number;
+    key: string;
+    filename: string;
+    size: number;
+    mime_type: string;
+    url?: string;
+    previewUrl?: string;
+    isImage: boolean;
+    isPending: boolean;
+    isRemoved: boolean;
+    pendingIndex?: number;
+}

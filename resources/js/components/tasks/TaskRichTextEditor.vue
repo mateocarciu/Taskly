@@ -15,9 +15,43 @@ import {
     Pilcrow,
     Paperclip,
 } from 'lucide-vue-next';
-import { onBeforeUnmount, ref, watch } from 'vue';
+import { onBeforeUnmount, ref, watch, computed } from 'vue';
 import TaskAttachmentsPanel from '@/components/tasks/TaskAttachmentsPanel.vue';
 import type { TaskAttachment } from '@/types';
+import { toast } from 'vue-sonner';
+
+const isAllowedFile = (file: File): boolean => {
+    const allowedTypes = [
+        'application/pdf',
+        'image/png',
+        'image/svg+xml',
+        'image/jpeg',
+        'image/jpg'
+    ];
+    if (allowedTypes.includes(file.type)) return true;
+
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    return ['pdf', 'png', 'svg', 'jpeg', 'jpg'].includes(ext || '');
+};
+
+const filterFiles = (files: File[]): File[] => {
+    const allowed: File[] = [];
+    const rejected: string[] = [];
+
+    for (const file of files) {
+        if (isAllowedFile(file)) {
+            allowed.push(file);
+        } else {
+            rejected.push(file.name);
+        }
+    }
+
+    if (rejected.length > 0) {
+        toast.error(`Only PDF and image files (PNG, SVG, JPEG) are allowed. Rejected: ${rejected.join(', ')}`);
+    }
+
+    return allowed;
+};
 
 const ParagraphWithPreview = Paragraph.extend({
     addNodeView() {
@@ -49,6 +83,10 @@ const emit = defineEmits<{
     (e: 'update:removed-attachment-ids', ids: string[]): void;
 }>();
 
+const hasAttachments = computed(() => {
+    return props.existingAttachments.length > 0 || props.pendingFiles.length > 0;
+});
+
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
 const triggerFileInput = () => fileInputRef.value?.click();
@@ -56,7 +94,10 @@ const triggerFileInput = () => fileInputRef.value?.click();
 const handleFileInputChange = (event: Event) => {
     const files = (event.target as HTMLInputElement).files;
     if (files && files.length > 0) {
-        emit('update:attachments', [...props.pendingFiles, ...Array.from(files)]);
+        const allowedFiles = filterFiles(Array.from(files));
+        if (allowedFiles.length > 0) {
+            emit('update:attachments', [...props.pendingFiles, ...allowedFiles]);
+        }
         (event.target as HTMLInputElement).value = '';
     }
 };
@@ -103,7 +144,10 @@ const editor = useEditor({
             }
 
             if (files.length > 0) {
-                emit('update:attachments', [...props.pendingFiles, ...files]);
+                const allowedFiles = filterFiles(files);
+                if (allowedFiles.length > 0) {
+                    emit('update:attachments', [...props.pendingFiles, ...allowedFiles]);
+                }
                 return true;
             }
             return false;
@@ -113,7 +157,10 @@ const editor = useEditor({
             
             if (!moved && event.dataTransfer?.files?.length) {
                 const files = Array.from(event.dataTransfer.files);
-                emit('update:attachments', [...props.pendingFiles, ...files]);
+                const allowedFiles = filterFiles(files);
+                if (allowedFiles.length > 0) {
+                    emit('update:attachments', [...props.pendingFiles, ...allowedFiles]);
+                }
                 return true;
             }
 
@@ -235,6 +282,7 @@ onBeforeUnmount(() => {
                 ref="fileInputRef"
                 type="file"
                 multiple
+                accept="application/pdf,image/png,image/svg+xml,image/jpeg,image/jpg"
                 class="hidden"
                 @change="handleFileInputChange"
             />
@@ -246,7 +294,7 @@ onBeforeUnmount(() => {
             :style="{ '--task-editor-min-height': props.minHeight ?? '6rem' }"
         />
 
-        <div v-if="props.showAttachments" class="border-t border-input p-4 bg-muted/5">
+        <div v-if="props.showAttachments && hasAttachments" class="px-3 pb-3">
             <TaskAttachmentsPanel
                 :existing-attachments="props.existingAttachments"
                 :pending-files="props.pendingFiles"

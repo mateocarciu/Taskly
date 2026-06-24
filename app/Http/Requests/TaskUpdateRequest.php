@@ -33,7 +33,7 @@ class TaskUpdateRequest extends FormRequest
                 ),
             ],
             'attachments' => ['sometimes', 'array'],
-            'attachments.*' => ['file', 'max:20480'], // 20MB max per file
+            'attachments.*' => ['file', 'mimes:pdf,png,svg,jpeg,jpg', 'max:20480'], // 20MB max per file
             'removed_attachment_ids' => ['sometimes', 'array'],
             'removed_attachment_ids.*' => ['uuid'],
         ];
