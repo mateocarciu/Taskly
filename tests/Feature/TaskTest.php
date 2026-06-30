@@ -29,14 +29,15 @@ describe('index', function () {
             ->get(route('tasks.index'))
             ->assertOk()
             ->assertInertia(
-                function ($page) use ($column, $task) {
-                    return $page
-                        ->component('Tasks')
-                        ->has('columns', 1)
-                        ->where('columns.0.id', $column->id)
-                        ->has('columns.0.tasks', 1)
-                        ->where('columns.0.tasks.0.id', $task->id);
-                }
+                fn ($page) => $page
+                    ->component('Tasks')
+                    ->loadDeferredProps(
+                        fn ($reload) => $reload
+                            ->has('columns', 1)
+                            ->where('columns.0.id', $column->id)
+                            ->has('columns.0.tasks', 1)
+                            ->where('columns.0.tasks.0.id', $task->id)
+                    )
             );
     });
 
@@ -53,14 +54,15 @@ describe('index', function () {
             ->get(route('tasks.index'))
             ->assertOk()
             ->assertInertia(
-                function ($page) use ($column, $creator) {
-                    return $page
-                        ->component('Tasks')
-                        ->has('columns', 1)
-                        ->has('columns.0.tasks', 1)
-                        ->where('columns.0.tasks.0.creator.id', $creator->id)
-                        ->where('columns.0.tasks.0.creator.name', $creator->name);
-                }
+                fn ($page) => $page
+                    ->component('Tasks')
+                    ->loadDeferredProps(
+                        fn ($reload) => $reload
+                            ->has('columns', 1)
+                            ->has('columns.0.tasks', 1)
+                            ->where('columns.0.tasks.0.creator.id', $creator->id)
+                            ->where('columns.0.tasks.0.creator.name', $creator->name)
+                    )
             );
     });
 
@@ -90,8 +92,10 @@ describe('index', function () {
             ->get(route('tasks.index', ['search' => 'query']))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->has('columns.0.tasks', 1)
-                ->where('columns.0.tasks.0.id', $task1->id)
+                ->loadDeferredProps(fn ($reload) => $reload
+                    ->has('columns.0.tasks', 1)
+                    ->where('columns.0.tasks.0.id', $task1->id)
+                )
             );
 
         // Test assignee filter
@@ -99,8 +103,10 @@ describe('index', function () {
             ->get(route('tasks.index', ['assignee_id' => $assignee->id]))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->has('columns.0.tasks', 1)
-                ->where('columns.0.tasks.0.id', $task1->id)
+                ->loadDeferredProps(fn ($reload) => $reload
+                    ->has('columns.0.tasks', 1)
+                    ->where('columns.0.tasks.0.id', $task1->id)
+                )
             );
 
         // Test unassigned filter
@@ -108,8 +114,10 @@ describe('index', function () {
             ->get(route('tasks.index', ['assignee_id' => 'unassigned']))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->has('columns.0.tasks', 1)
-                ->where('columns.0.tasks.0.id', $task2->id)
+                ->loadDeferredProps(fn ($reload) => $reload
+                    ->has('columns.0.tasks', 1)
+                    ->where('columns.0.tasks.0.id', $task2->id)
+                )
             );
 
         // Test custom date filter
@@ -118,8 +126,10 @@ describe('index', function () {
             ->get(route('tasks.index', ['due_date' => $customDateString]))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->has('columns.0.tasks', 1)
-                ->where('columns.0.tasks.0.id', $task1->id)
+                ->loadDeferredProps(fn ($reload) => $reload
+                    ->has('columns.0.tasks', 1)
+                    ->where('columns.0.tasks.0.id', $task1->id)
+                )
             );
     });
 });

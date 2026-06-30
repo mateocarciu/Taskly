@@ -310,8 +310,6 @@ onBeforeUnmount(() => {
 .task-rich-text :deep(.ProseMirror) {
     min-height: var(--task-editor-min-height, 6rem);
     margin: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
 }
 
 .task-rich-text :deep(.ProseMirror p.is-editor-empty:first-child::before) {

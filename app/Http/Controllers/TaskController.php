@@ -61,7 +61,7 @@ class TaskController extends Controller
             ->get(['id', 'name', 'color']);
 
         return Inertia::render('Tasks', [
-            'columns' => ColumnResource::collection($columns),
+            'columns' => Inertia::defer(fn () => ColumnResource::collection($columns)),
             'teamMembers' => $teamMembers,
             'tags' => $tags,
             'filters' => $filters,

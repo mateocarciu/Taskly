@@ -3,14 +3,15 @@ import KanbanBoard from '@/components/tasks/KanbanBoard.vue';
 import TaskCreateDialog from '@/components/tasks/TaskCreateDialog.vue';
 import TaskEditDialog from '@/components/tasks/TaskEditDialog.vue';
 import TaskFilters from '@/components/tasks/TaskFilters.vue';
+import TasksPageSkeleton from '@/components/tasks/TasksPageSkeleton.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index } from '@/routes/tasks';
 import type { BreadcrumbItem, Column, Tag, Task, TeamMember } from '@/types';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
-defineProps<{
-    columns: Column[];
+const props = defineProps<{
+    columns?: Column[];
     teamMembers: TeamMember[];
     tags: Tag[];
     filters?: {
@@ -30,6 +31,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const isEditModalOpen = ref(false);
 const taskToEdit = ref<Task | null>(null);
+const localColumns = ref<Column[] | null>(null);
 
 const page = usePage();
 const taskIdFromUrl = computed(() => {
@@ -61,16 +63,31 @@ const handleFilterChange = (newFilters: any) => {
     });
 };
 
-watch(taskIdFromUrl, (id) => {
-    if (id) {
-        if (!taskToEdit.value || taskToEdit.value.id !== id) {
-            taskToEdit.value = { id } as Task;
+
+watch(
+    () => props.columns,
+    (newCols) => {
+        if (newCols !== undefined) {
+            localColumns.value = newCols;
         }
-        isEditModalOpen.value = true;
-    } else {
-        isEditModalOpen.value = false;
-    }
-}, { immediate: true });
+    },
+    { immediate: true },
+);
+
+watch(
+    taskIdFromUrl,
+    (id) => {
+        if (id) {
+            if (!taskToEdit.value || taskToEdit.value.id !== id) {
+                taskToEdit.value = { id } as Task;
+            }
+            isEditModalOpen.value = true;
+        } else {
+            isEditModalOpen.value = false;
+        }
+    },
+    { immediate: true },
+);
 
 watch(isEditModalOpen, (isOpen) => {
     const url = new URL(window.location.href);
@@ -101,29 +118,34 @@ watch(isEditModalOpen, (isOpen) => {
                 />
             </div>
 
-            <TaskFilters
-                :filters="filters || {}"
-                :team-members="teamMembers"
-                :tags="tags"
-                @change="handleFilterChange"
-            />
+            <!-- Show skeleton only on the very first load when columns has not been resolved yet -->
+            <TasksPageSkeleton v-if="!localColumns" />
 
-            <div
-                class="h-[calc(100vh-[breadcrumbs height]-header)] flex-1 overflow-hidden"
-            >
-                <KanbanBoard
-                    :columns="columns"
+            <template v-else>
+                <TaskFilters
                     :filters="filters || {}"
-                    @edit="openTaskDetails"
+                    :team-members="teamMembers"
+                    :tags="tags"
+                    @change="handleFilterChange"
                 />
-            </div>
-        </div>
 
-        <TaskEditDialog
-            v-model:open="isEditModalOpen"
-            :task="taskToEdit"
-            :team-members="teamMembers"
-            :available-tags="tags"
-        />
+                <div
+                    class="h-[calc(100vh-[breadcrumbs height]-header)] flex-1 overflow-hidden"
+                >
+                    <KanbanBoard
+                        :columns="localColumns"
+                        :filters="filters || {}"
+                        @edit="openTaskDetails"
+                    />
+                </div>
+            </template>
+
+            <TaskEditDialog
+                v-model:open="isEditModalOpen"
+                :task="taskToEdit"
+                :team-members="teamMembers"
+                :available-tags="tags"
+            />
+        </div>
     </AppLayout>
 </template>
