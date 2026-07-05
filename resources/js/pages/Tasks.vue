@@ -32,6 +32,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 const isEditModalOpen = ref(false);
 const taskToEdit = ref<Task | null>(null);
 const localColumns = ref<Column[] | null>(null);
+const startTime = Date.now();
 
 const page = usePage();
 const taskIdFromUrl = computed(() => {
@@ -63,12 +64,15 @@ const handleFilterChange = (newFilters: any) => {
     });
 };
 
-
 watch(
     () => props.columns,
     (newCols) => {
         if (newCols !== undefined) {
-            localColumns.value = newCols;
+            const elapsed = Date.now() - startTime;
+            const remaining = Math.max(0, 500 - elapsed);
+            setTimeout(() => {
+                localColumns.value = newCols;
+            }, remaining);
         }
     },
     { immediate: true },

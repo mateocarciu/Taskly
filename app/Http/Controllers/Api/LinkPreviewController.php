@@ -9,67 +9,87 @@ use Illuminate\Support\Facades\Http;
 
 class LinkPreviewController extends Controller
 {
-    public function show(Request $request)
+    public function batch(Request $request)
     {
         $request->validate([
-            'url' => 'required|url',
+            'urls' => 'required|array',
+            'urls.*' => 'required|url',
         ]);
 
-        $url = $request->input('url');
+        $urls = array_unique($request->input('urls'));
+        $results = [];
+        $urlsToFetch = [];
 
-        $host = strtolower(parse_url($url, PHP_URL_HOST) ?? '');
         $localHosts = ['localhost', '127.0.0.1', '127.0.0.2', '::1', strtolower(parse_url(config('app.url', ''), PHP_URL_HOST) ?? '')];
-        
         $serverHost = strtolower(parse_url($request->getSchemeAndHttpHost(), PHP_URL_HOST) ?? '');
         if ($serverHost) {
             $localHosts[] = $serverHost;
         }
 
-        if (in_array($host, $localHosts)) {
-            return response()->json([
-                'url' => $url,
-                'title' => $host ?: 'Local Link',
-                'description' => 'Link to local page',
-                'image' => null,
-                'favicon' => null,
-            ]);
-        }
-
-        // Cache the preview for 24 hours
-        $cacheKey = 'link_preview_' . md5($url);
-
-        $data = Cache::remember($cacheKey, now()->addDay(), function () use ($url) {
-            try {
-                return $this->fetchPreviewData($url);
-            } catch (\Exception $e) {
-                // Cache the fallback response on failure to prevent repeated timeouts
-                // that could exhaust server workers if a link is dead.
-                return [
+        foreach ($urls as $url) {
+            $host = strtolower(parse_url($url, PHP_URL_HOST) ?? '');
+            
+            if (in_array($host, $localHosts)) {
+                $results[$url] = [
                     'url' => $url,
-                    'title' => parse_url($url, PHP_URL_HOST),
-                    'description' => 'Failed to fetch link preview',
+                    'title' => $host ?: 'Local Link',
+                    'description' => 'Link to local page',
                     'image' => null,
                     'favicon' => null,
                 ];
+                continue;
             }
-        });
 
-        return response()->json($data);
-    }
+            $cacheKey = 'link_preview_' . md5($url);
+            $cached = Cache::get($cacheKey);
 
-    private function fetchPreviewData(string $url): array
-    {
-        // Set short timeout to prevent blocking server threads
-        $response = Http::timeout(3)
-            ->withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            ])
-            ->get($url);
-
-        if (!$response->successful()) {
-            throw new \Exception('HTTP request failed with status ' . $response->status());
+            if ($cached) {
+                $results[$url] = $cached;
+            } else {
+                $urlsToFetch[] = $url;
+            }
         }
 
+        if (!empty($urlsToFetch)) {
+            $responses = Http::pool(function ($pool) use ($urlsToFetch) {
+                return array_map(function ($url) use ($pool) {
+                    return $pool->timeout(3)
+                        ->withHeaders([
+                            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        ])
+                        ->get($url);
+                }, $urlsToFetch);
+            });
+
+            foreach ($urlsToFetch as $index => $url) {
+                $response = $responses[$index];
+                $cacheKey = 'link_preview_' . md5($url);
+
+                try {
+                    if ($response instanceof \Exception || !$response->successful()) {
+                        throw new \Exception('Failed to fetch ' . $url);
+                    }
+                    $data = $this->parseResponse($response, $url);
+                } catch (\Exception $e) {
+                    $data = [
+                        'url' => $url,
+                        'title' => parse_url($url, PHP_URL_HOST),
+                        'description' => '',
+                        'image' => null,
+                        'favicon' => null,
+                    ];
+                }
+
+                Cache::put($cacheKey, $data, now()->addDay());
+                $results[$url] = $data;
+            }
+        }
+
+        return response()->json($results);
+    }
+
+    private function parseResponse($response, string $url): array
+    {
         $contentType = $response->header('Content-Type', '');
         if (strpos($contentType, 'text/html') === false) {
             return [
