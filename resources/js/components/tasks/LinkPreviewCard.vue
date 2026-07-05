@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue';
 import type { PreviewData } from '@/types';
 import { X } from 'lucide-vue-next';
+import { fetchPreview } from '@/utils/linkPreviewBatcher';
 
 const props = defineProps<{ url: string }>();
 const emit = defineEmits<{ (e: 'dismiss'): void }>();
@@ -12,12 +13,7 @@ const failed = ref(false);
 
 onMounted(async () => {
     try {
-        const res = await fetch(`/link-preview?url=${encodeURIComponent(props.url)}`, {
-            headers: { Accept: 'application/json' },
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data: PreviewData = await res.json();
-        preview.value = data;
+        preview.value = await fetchPreview(props.url);
     } catch {
         failed.value = true;
     } finally {

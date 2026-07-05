@@ -28,7 +28,7 @@ Route::middleware(['auth', 'verified', 'hasTeam'])
 
         Route::put('tasks/{task}/sequence', [TaskSequenceController::class, 'update'])->name('tasks.sequence.update');
         Route::get('columns/{column}/tasks', [ColumnTaskController::class, 'index'])->name('columns.tasks.index');
-        Route::get('link-preview', [LinkPreviewController::class, 'show'])->name('link-preview.show');
+        Route::get('link-previews/batch', [LinkPreviewController::class, 'batch'])->name('link-preview.batch');
         
         Route::get('attachments/{attachment}', [TaskAttachmentController::class, 'show'])->name('attachments.show');
         Route::delete('attachments/{attachment}', [TaskAttachmentController::class, 'destroy'])->name('attachments.destroy');
