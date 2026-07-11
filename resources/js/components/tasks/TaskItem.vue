@@ -17,6 +17,7 @@ import { router } from '@inertiajs/vue3';
 import { AlertTriangle, Calendar, Check, ClockAlert, MoreHorizontal, Pencil, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
+import { formatDate } from '@/composables/useDateFormatter';
 
 const props = withDefaults(
     defineProps<{
@@ -149,12 +150,7 @@ const deleteTask = () => {
                     >
                         <AlertTriangle v-if="!isDone && isOverdue(task)" class="size-3.5" />
                         <Calendar v-else class="size-3.5" />
-                        <span>{{
-                            new Date(task.due_date).toLocaleDateString(
-                                'en-US',
-                                { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' },
-                            )
-                        }}</span>
+                        <span>{{ formatDate(task.due_date) }}</span>
                     </div>
 
                     <div

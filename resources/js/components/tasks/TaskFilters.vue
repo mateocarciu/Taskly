@@ -22,6 +22,7 @@ import {
     X,
 } from 'lucide-vue-next';
 import { computed, reactive, watch } from 'vue';
+import { formatDate } from '@/composables/useDateFormatter';
 
 interface FilterState {
     search: string;
@@ -157,11 +158,7 @@ const dueDateLabel = computed(() => {
             return 'Any due date';
         default:
             try {
-                return new Date(localFilters.due_date).toLocaleDateString('en-US', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                });
+                return formatDate(localFilters.due_date);
             } catch {
                 return localFilters.due_date;
             }
