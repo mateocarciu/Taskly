@@ -29,6 +29,7 @@ const emit = defineEmits<{
     'update:description': [value: string];
     'update:due-date': [value: string];
     'update:assigned-to': [value: number | null];
+    'update:created-by': [value: number | undefined];
     'update:tag-ids': [value: number[]];
     'update:attachments': [value: File[]];
     'update:removed-attachment-ids': [value: string[]];
@@ -103,6 +104,7 @@ const onTagsUpdated = (tags: Tag[]) => {
                         <TaskAssigneeSelect
                             :model-value="form.assigned_to"
                             :team-members="teamMembers"
+                            :allow-unassigned="true"
                             @update:model-value="
                                 $emit('update:assigned-to', $event)
                             "
@@ -111,11 +113,26 @@ const onTagsUpdated = (tags: Tag[]) => {
                     </div>
                 </div>
 
-                <TagSelector
-                    :selected="selectedTags"
-                    :available-tags="availableTags"
-                    @update:selected="onTagsUpdated"
-                />
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="grid gap-2">
+                        <Label>Reporter</Label>
+                        <TaskAssigneeSelect
+                            :model-value="form.created_by ?? null"
+                            :team-members="teamMembers"
+                            :allow-unassigned="false"
+                            @update:model-value="
+                                $emit('update:created-by', $event ?? undefined)
+                            "
+                        />
+                        <InputError :message="form.errors.created_by" />
+                    </div>
+
+                    <TagSelector
+                        :selected="selectedTags"
+                        :available-tags="availableTags"
+                        @update:selected="onTagsUpdated"
+                    />
+                </div>
             </div>
         </div>
 

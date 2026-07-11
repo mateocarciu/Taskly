@@ -34,7 +34,7 @@ class TaskService
         return DB::transaction(function () use ($data, $user, $columnId, $order, $columnName, $tagIds, $newFiles) {
             $task = Task::create(array_merge($data, [
                 'team_id' => $user->team_id,
-                'created_by' => $user->id,
+                'created_by' => $data['created_by'] ?? $user->id,
                 'column_id' => $columnId,
                 'order' => $order,
                 'column_updated_at' => now(), // Initialize column timing

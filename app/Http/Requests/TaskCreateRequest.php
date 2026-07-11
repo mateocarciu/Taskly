@@ -20,6 +20,12 @@ class TaskCreateRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
             'due_date' => ['nullable', 'date'],
+            'created_by' => [
+                'nullable',
+                Rule::exists('users', 'id')->where(
+                    fn($query) => $query->where('team_id', $this->user()?->team_id)
+                ),
+            ],
             'assigned_to' => [
                 'nullable',
                 Rule::exists('users', 'id')->where(

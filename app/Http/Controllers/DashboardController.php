@@ -29,10 +29,12 @@ class DashboardController extends Controller
         $totalTasks = (clone $baseTasksQuery)->count();
 
         $overdueQuery = (clone $baseTasksQuery)
+            ->whereHas('column', fn($query) => $query->where('type', '!=', 'done'))
             ->whereNotNull('due_date')
             ->whereDate('due_date', '<', today());
 
         $dueTodayQuery = (clone $baseTasksQuery)
+            ->whereHas('column', fn($query) => $query->where('type', '!=', 'done'))
             ->whereNotNull('due_date')
             ->whereDate('due_date', today());
 

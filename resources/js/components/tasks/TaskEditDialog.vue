@@ -68,6 +68,7 @@ const hydrateFormsFromTask = (task: Task) => {
         ? task.due_date.slice(0, 16)
         : '';
     form.assigned_to = task.assigned_to ?? null;
+    form.created_by = task.created_by;
     form.tag_ids = task.tags?.map((t) => t.id) ?? [];
     form.attachments = [];
     form.removed_attachment_ids = [];
@@ -99,6 +100,7 @@ const loadTaskDetails = async (taskId: number, showLoader = true) => {
             ? task.due_date.slice(0, 16)
             : '';
         form.assigned_to = task.assigned_to ?? null;
+        form.created_by = task.created_by;
         form.attachments = [];
         form.removed_attachment_ids = [];
         commentsList.value = [...(task.comments ?? [])];
@@ -290,6 +292,7 @@ watch([() => props.task, isOpen], ([task, open], [oldTask, oldOpen]) => {
                         @update:description="form.description = $event"
                         @update:due-date="form.due_date = $event"
                         @update:assigned-to="form.assigned_to = $event"
+                        @update:created-by="form.created_by = $event"
                         @update:tag-ids="form.tag_ids = $event"
                         @update:attachments="form.attachments = $event"
                         @update:removed-attachment-ids="form.removed_attachment_ids = $event"

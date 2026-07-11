@@ -17,6 +17,7 @@ import { computed } from 'vue';
 const props = defineProps<{
     modelValue: number | null;
     teamMembers: TeamMember[];
+    allowUnassigned?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -72,6 +73,7 @@ const selectMember = (memberId: number | null) => {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem
+                v-if="allowUnassigned !== false"
                 class="cursor-pointer"
                 @click="selectMember(null)"
             >
