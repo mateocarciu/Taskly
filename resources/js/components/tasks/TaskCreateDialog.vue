@@ -37,6 +37,7 @@ const form = useForm<TaskForm>({
     description: '',
     due_date: '',
     assigned_to: currentUserId.value,
+    created_by: currentUserId.value,
     tag_ids: [],
     attachments: [],
 });
@@ -54,6 +55,7 @@ const submit = () => {
             onSuccess: () => {
                 form.reset();
                 form.assigned_to = currentUserId.value;
+                form.created_by = currentUserId.value;
                 form.tag_ids = [];
                 selectedTags.value = [];
                 isOpen.value = false;
@@ -128,6 +130,7 @@ const submit = () => {
                         <div class="grid gap-2">
                             <Label>Assigned to</Label>
                             <TaskAssigneeSelect
+                                :allow-unassigned="true"
                                 v-model="form.assigned_to"
                                 :team-members="teamMembers"
                             />
@@ -135,11 +138,23 @@ const submit = () => {
                         </div>
                     </div>
 
-                    <TagSelector
-                        :selected="selectedTags"
-                        :available-tags="availableTags"
-                        @update:selected="onTagsUpdated"
-                    />
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div class="grid gap-2">
+                            <Label>Reporter</Label>
+                            <TaskAssigneeSelect
+                                v-model="form.created_by"
+                                :team-members="teamMembers"
+                                :allow-unassigned="false"
+                            />
+                            <InputError :message="form.errors.created_by" />
+                        </div>
+
+                        <TagSelector
+                            :selected="selectedTags"
+                            :available-tags="availableTags"
+                            @update:selected="onTagsUpdated"
+                        />
+                    </div>
 
                     <DialogFooter>
                         <Button

@@ -12,12 +12,17 @@ This project was bootstrapped from the official [Laravel Vue Starter Kit](https:
   - Assignee (filtered by specific team members or unassigned tasks).
   - Tags (multi-select filter).
   - Due Dates (shortcuts like Today, This Week, Overdue, or custom exact dates and date ranges).
-- **Task Details & Collaboration:** Task editing with rich description styling (Tiptap editor), comments with threaded replies, and a detailed activity log timeline.
-- **Workload Dashboard:** Team workspace overview featuring task metrics, urgent "To Handle Now" tasks, column breakdowns, and a recent activity feed (with direct links back to tasks).
+- **Task Details & Collaboration:** 
+  - Task editing with rich description styling (Tiptap editor), comments with threaded replies, and a detailed activity log timeline.
+  - Discussion threads with nested replies.
+  - Detailed activity log timeline for full auditability.
+  - **Document Uploads:** Attach files directly to tasks (currently supporting Images and PDFs).
+  - **Smart Link Previews:** Automatic, rich previews for URLs embedded in task descriptions and comments.
+- **Workload Dashboard:** Team workspace overview featuring task metrics, urgent "To Handle Now" tasks, column breakdowns, and a recent activity feed.
 
 ## Tech Stack
 
-- **Backend:** Laravel 12 (PHP >= 8.2), Inertia.js V3
+- **Backend:** Laravel 12 (PHP >= 8.4), Inertia.js V3
 - **Frontend:** Vue 3
 - **Styling:** Tailwind CSS & Shadcn
 - **CI/CD:** GitHub Actions workflow for automated testing, linting and deployment.
@@ -28,7 +33,7 @@ This project was bootstrapped from the official [Laravel Vue Starter Kit](https:
 ### Prerequisites
 
 Make sure you have the following installed on your local system:
-- **PHP** >= 8.2
+- **PHP** >= 8.4
 - **Composer**
 - **Node.js** >= 20
 - **NPM**
