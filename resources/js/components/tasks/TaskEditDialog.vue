@@ -65,7 +65,7 @@ const hydrateFormsFromTask = (task: Task) => {
     form.title = task.title;
     form.description = task.description || '';
     form.due_date = task.due_date
-        ? new Date(task.due_date).toISOString().slice(0, 16)
+        ? task.due_date.slice(0, 16)
         : '';
     form.assigned_to = task.assigned_to ?? null;
     form.tag_ids = task.tags?.map((t) => t.id) ?? [];
@@ -74,8 +74,10 @@ const hydrateFormsFromTask = (task: Task) => {
     commentsList.value = [...(task.comments ?? [])];
 };
 
-const loadTaskDetails = async (taskId: number) => {
-    isLoadingDetails.value = true;
+const loadTaskDetails = async (taskId: number, showLoader = true) => {
+    if (showLoader) {
+        isLoadingDetails.value = true;
+    }
 
     try {
         const response = await fetch(show(taskId).url, {
@@ -94,7 +96,7 @@ const loadTaskDetails = async (taskId: number) => {
         form.title = task.title;
         form.description = task.description || '';
         form.due_date = task.due_date
-            ? new Date(task.due_date).toISOString().slice(0, 16)
+            ? task.due_date.slice(0, 16)
             : '';
         form.assigned_to = task.assigned_to ?? null;
         form.attachments = [];
@@ -106,7 +108,9 @@ const loadTaskDetails = async (taskId: number) => {
         toast.error('Unable to load task details');
         return false;
     } finally {
-        isLoadingDetails.value = false;
+        if (showLoader) {
+            isLoadingDetails.value = false;
+        }
     }
 };
 
@@ -183,9 +187,9 @@ const submitComment = () => {
 
     commentForm.post(comments.store(taskId).url, {
         preserveScroll: true,
-        onSuccess: () => {
+        onSuccess: async () => {
+            await loadTaskDetails(taskId, false);
             commentForm.reset('body');
-            void loadTaskDetails(taskId);
             toast.success('Comment posted');
         },
     });
@@ -215,16 +219,16 @@ const submitReply = (commentId: number) => {
     replyForm.parent_id = commentId;
     replyForm.post(comments.store(taskId).url, {
         preserveScroll: true,
-        onSuccess: () => {
+        onSuccess: async () => {
+            await loadTaskDetails(taskId, false);
             cancelReply();
-            void loadTaskDetails(taskId);
             toast.success('Reply posted');
         },
     });
 };
 
-watch([() => props.task, isOpen], ([task, open]) => {
-    if (task && open) {
+watch([() => props.task, isOpen], ([task, open], [oldTask, oldOpen]) => {
+    if (task && open && (!oldOpen || oldTask?.id !== task.id)) {
         taskDetails.value = null;
         hydrateFormsFromTask(task);
         void loadTaskDetails(task.id);
@@ -244,12 +248,12 @@ watch([() => props.task, isOpen], ([task, open]) => {
 <template>
     <Dialog v-model:open="isOpen">
         <DialogContent
-            class="task-edit-dialog w-[97vw] max-w-[1400px] overflow-hidden bg-background p-0 sm:max-w-[1400px]"
+            class="task-edit-dialog w-[97vw] max-w-[1400px] overflow-hidden bg-background p-0 sm:max-w-[1400px] focus:outline-none"
             :show-close-button="false"
             @open-auto-focus.prevent
         >
             <div
-                class="max-h-[92vh] overflow-y-auto overscroll-contain bg-background lg:overflow-hidden"
+                class="max-h-[92vh] overflow-y-auto overscroll-contain bg-background lg:overflow-hidden focus:outline-none"
             >
                 <DialogHeader
                     class="sticky top-0 z-20 border-b bg-background/95 px-6 pt-6 pr-14 pb-4 backdrop-blur supports-backdrop-filter:bg-background/80"

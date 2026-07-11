@@ -16,6 +16,7 @@ class Column extends Model
     protected $fillable = [
         'team_id',
         'name',
+        'type',
         'order',
     ];
 

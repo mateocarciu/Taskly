@@ -19,6 +19,7 @@ class ColumnService
 
         return Column::create([
             'name' => $data['name'],
+            'type' => $data['type'] ?? 'todo',
             'team_id' => $user->team_id,
             'order' => $order,
         ]);

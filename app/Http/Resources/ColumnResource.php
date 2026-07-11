@@ -35,6 +35,7 @@ class ColumnResource extends JsonResource
             'id' => $this->id,
             'team_id' => $this->team_id,
             'name' => $this->name,
+            'type' => $this->type,
             'order' => $this->order,
             'tasks' => $tasksData,
             'pagination' => $pagination,

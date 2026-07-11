@@ -160,6 +160,11 @@ class TaskResource extends JsonResource
                 'id' => $this->assignee->id,
                 'name' => $this->assignee->name,
             ]),
+            'column' => $this->whenLoaded('column', fn() => [
+                'id' => $this->column->id,
+                'name' => $this->column->name,
+                'type' => $this->column->type,
+            ]),
             'comments' => $this->whenLoaded(
                 'comments',
                 fn() => $this->comments

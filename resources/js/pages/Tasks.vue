@@ -108,7 +108,7 @@ watch(isEditModalOpen, (isOpen) => {
     <Head title="Tasks" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 p-4">
+        <div class="flex h-[calc(100svh-4rem)] flex-col gap-6 p-4">
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-semibold">Tasks</h1>
@@ -134,7 +134,7 @@ watch(isEditModalOpen, (isOpen) => {
                 />
 
                 <div
-                    class="h-[calc(100vh-[breadcrumbs height]-header)] flex-1 overflow-hidden"
+                    class="flex-1 min-h-0 overflow-hidden"
                 >
                     <KanbanBoard
                         :columns="localColumns"

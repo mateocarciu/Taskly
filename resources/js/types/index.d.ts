@@ -58,6 +58,11 @@ export interface Task {
     id: number;
     team_id: number;
     column_id: number | null;
+    column?: {
+        id: number;
+        name: string;
+        type: 'todo' | 'in_progress' | 'done';
+    };
     order: number;
     title: string;
     description?: string | null;
@@ -83,6 +88,7 @@ export interface Column {
     id: number;
     team_id: number;
     name: string;
+    type: 'todo' | 'in_progress' | 'done';
     order: number;
     tasks: Task[];
     pagination?: {

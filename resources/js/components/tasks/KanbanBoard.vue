@@ -71,12 +71,12 @@ const onColumnDragChange = (event: {
 
 <template>
     <div
-        class="relative flex h-full w-full items-start gap-4 overflow-x-auto pb-4"
+        class="relative h-full w-full overflow-auto pb-4"
     >
         <draggable
             v-model="localColumns"
             item-key="id"
-            class="flex h-full w-full items-start gap-4"
+            class="flex min-h-full min-w-max w-full items-stretch gap-4"
             handle=".column-drag-handle"
             ghost-class="opacity-60"
             @start="onColumnDragStart"
@@ -91,7 +91,7 @@ const onColumnDragChange = (event: {
             </template>
 
             <template #footer>
-                <div class="mt-0 shrink-0">
+                <div class="mt-0 shrink-0 p-1">
                     <Button
                         variant="outline"
                         class="border-dashed text-muted-foreground shadow-sm transition-all hover:border-foreground hover:text-foreground"

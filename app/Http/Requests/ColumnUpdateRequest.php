@@ -15,6 +15,7 @@ class ColumnUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'type' => ['sometimes', 'required', 'string', 'in:todo,in_progress,done'],
         ];
     }
 }

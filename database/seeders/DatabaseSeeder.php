@@ -37,19 +37,22 @@ class DatabaseSeeder extends Seeder
             $todoColumn = Column::create([
                 'team_id' => $team->id,
                 'name' => 'To Do',
-                'order' => 1
+                'order' => 1,
+                'type' => 'todo'
             ]);
 
             $progressColumn = Column::create([
                 'team_id' => $team->id,
                 'name' => 'In Progress',
-                'order' => 2
+                'order' => 2,
+                'type' => 'in_progress'
             ]);
 
             $doneColumn = Column::create([
                 'team_id' => $team->id,
                 'name' => 'Done',
-                'order' => 3
+                'order' => 3,
+                'type' => 'done'
             ]);
 
             $teamUsers = User::where('team_id', $team->id)->pluck('id');
