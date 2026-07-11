@@ -14,10 +14,13 @@ import { dashboard, login, register } from '@/routes';
 import { Head, Link } from '@inertiajs/vue3';
 import {
     ArrowRight,
-    CheckCircle2,
-    ListChecks,
     Sparkles,
-    Users2,
+    KanbanSquare,
+    FileText,
+    Link as LinkIcon,
+    MessageSquare,
+    History,
+    Tags,
 } from 'lucide-vue-next';
 
 withDefaults(
@@ -31,22 +34,40 @@ withDefaults(
 
 const features = [
     {
-        icon: Users2,
-        title: 'Team Workspace',
+        icon: KanbanSquare,
+        title: 'Visual Kanban Boards',
         description:
-            'Collaborate with your team in one organized workspace and stay aligned.',
+            'Organize work with custom columns, drag & drop simplicity, and clear status tracking.',
     },
     {
-        icon: ListChecks,
-        title: 'Task Tracking',
+        icon: FileText,
+        title: 'Rich Content & Files',
         description:
-            'Create, assign, and track progress with a clean workflow built for focus.',
+            'Write markdown descriptions and upload PDFs or images directly into your tasks.',
     },
     {
-        icon: CheckCircle2,
-        title: 'Clear Progress',
+        icon: LinkIcon,
+        title: 'Smart Link Previews',
         description:
-            'Understand what is done, what is next, and where your team needs support.',
+            'Share URLs in task discussions and get automatic visual previews of the content.',
+    },
+    {
+        icon: MessageSquare,
+        title: 'Team Collaboration',
+        description:
+            'Keep conversations contextual with threaded comments, assignees, and task reporters.',
+    },
+    {
+        icon: History,
+        title: 'Activity Timeline',
+        description:
+            'Never miss a change. Every update, assignment, and comment is logged in a clear timeline.',
+    },
+    {
+        icon: Tags,
+        title: 'Tags & Filtering',
+        description:
+            'Use custom color-coded tags and powerful filters to find exactly what you need.',
     },
 ];
 </script>
@@ -110,8 +131,8 @@ const features = [
                     <p
                         class="mt-4 max-w-2xl text-base text-pretty text-muted-foreground sm:text-lg"
                     >
-                        Taskly keeps your team focused with simple task flows,
-                        clear ownership, and real progress visibility.
+                        Taskly keeps your team focused with visual boards,
+                        powerful collaboration tools, and clear progress tracking.
                     </p>
 
                     <div
