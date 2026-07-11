@@ -48,12 +48,7 @@ const cleanedCommentBody = computed(() => {
 const dueDateLabel = computed(() => {
     if (!props.activeTask?.due_date) return null;
 
-    return new Date(props.activeTask.due_date).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        timeZone: 'UTC',
-    });
+    return props.formatDate(props.activeTask.due_date);
 });
 
 const daysInColumnLabel = computed(() => {

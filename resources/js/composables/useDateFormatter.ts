@@ -7,7 +7,7 @@ export const formatDate = (value: string | null): string => {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return 'No due date';
 
-    return dateTimeFormatter({ year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(date);
+    return dateTimeFormatter({ year: 'numeric', month: 'short', day: 'numeric' }).format(date);
 };
 
 export const formatDateTime = (value: string | null): string => {
@@ -22,6 +22,5 @@ export const formatDateTime = (value: string | null): string => {
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-        timeZone: 'UTC',
     }).format(date);
 };
