@@ -28,6 +28,10 @@ const sidebarNavItems: NavItem[] = [
         href: '/settings/teams',
     },
     {
+        title: 'Columns & Statuses',
+        href: '/settings/columns',
+    },
+    {
         title: 'Appearance',
         href: editAppearance(),
     },

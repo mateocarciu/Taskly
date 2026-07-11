@@ -4,17 +4,29 @@ import TaskDeleteDialog from '@/components/tasks/TaskDeleteDialog.vue';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useInitials } from '@/composables/useInitials';
 import { destroy } from '@/routes/tasks';
 import type { Task } from '@/types';
 import { router } from '@inertiajs/vue3';
-import { Calendar, ClockAlert, Pencil, Trash2 } from 'lucide-vue-next';
+import { AlertTriangle, Calendar, Check, ClockAlert, MoreHorizontal, Pencil, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 
-const props = defineProps<{
-    task: Task;
-}>();
+const props = withDefaults(
+    defineProps<{
+        task: Task;
+        isDone?: boolean;
+    }>(),
+    {
+        isDone: false,
+    }
+);
 
 const emit = defineEmits<{
     edit: [task: Task];
@@ -25,6 +37,7 @@ const { getInitials } = useInitials();
 const showDeleteDialog = ref(false);
 
 const isOverdue = (task: Task) => {
+    if (props.isDone) return false;
     return task.due_date ? new Date(task.due_date) < new Date() : false;
 };
 
@@ -47,33 +60,43 @@ const deleteTask = () => {
         <CardContent class="flex flex-col gap-3 pt-3.5">
             <!-- Header: Title and Actions -->
             <div class="flex items-start justify-between gap-2">
-                <p
-                    class="line-clamp-2 text-sm leading-snug font-medium"
-                    :title="task.title"
-                >
-                    {{ task.title }}
-                </p>
+                <div class="flex min-w-0 items-start gap-1.5">
+                    <p
+                        class="line-clamp-2 text-sm leading-snug font-medium"
+                        :title="task.title"
+                    >
+                        {{ task.title }}
+                    </p>
+                </div>
                 <div
                     class="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100"
                 >
-                    <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        class="h-6 w-6 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                        @click.stop="emit('edit', task)"
-                        title="Edit task"
-                    >
-                        <Pencil class="size-3" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        class="h-6 w-6 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                        @click.stop="showDeleteDialog = true"
-                        title="Delete task"
-                    >
-                        <Trash2 class="size-3" />
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                class="h-6 w-6 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                                @click.stop
+                                title="Task actions"
+                            >
+                                <MoreHorizontal class="size-3.5" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" class="w-32">
+                            <DropdownMenuItem @click.stop="emit('edit', task)">
+                                <Pencil class="mr-2 size-3" />
+                                <span>Edit</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                @click.stop="showDeleteDialog = true"
+                                class="text-destructive focus:text-destructive focus:bg-destructive/10"
+                            >
+                                <Trash2 class="mr-2 size-3" />
+                                <span>Delete</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
 
@@ -118,19 +141,28 @@ const deleteTask = () => {
                         v-if="task.due_date"
                         :class="[
                             'flex items-center gap-1.5 transition-colors',
-                            isOverdue(task)
+                            !isDone && isOverdue(task)
                                 ? 'bg-destructive/10 text-destructive border border-destructive/20 px-2 py-0.5 rounded-md font-semibold text-[10px]'
                                 : 'text-[11px] text-muted-foreground/80 font-medium'
                         ]"
                         title="Due date"
                     >
-                        <Calendar class="size-3.5" />
+                        <AlertTriangle v-if="!isDone && isOverdue(task)" class="size-3.5" />
+                        <Calendar v-else class="size-3.5" />
                         <span>{{
                             new Date(task.due_date).toLocaleDateString(
                                 'en-US',
-                                { day: 'numeric', month: 'short' },
+                                { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' },
                             )
                         }}</span>
+                    </div>
+
+                    <div
+                        v-if="isDone"
+                        class="flex items-center gap-1 text-[11px] font-medium text-green-500 dark:text-green-400"
+                        title="Done"
+                    >
+                        <Check class="size-3.5" />
                     </div>
                 </div>
 

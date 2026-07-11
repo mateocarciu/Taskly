@@ -15,6 +15,7 @@ class ColumnStoreRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'type' => ['nullable', 'string', 'in:todo,in_progress,done'],
         ];
     }
 }

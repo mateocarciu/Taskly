@@ -155,7 +155,7 @@ const showLessReplies = () => {
                         type="button"
                         size="sm"
                         :disabled="postingReply"
-                        @click="emit('submitReply', comment.id)"
+                        @click="() => { emit('submitReply', comment.id); repliesExpanded = true; }"
                     >
                         Post reply
                     </Button>

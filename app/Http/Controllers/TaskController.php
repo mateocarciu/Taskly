@@ -73,6 +73,7 @@ class TaskController extends Controller
         $this->authorize('view', $task);
 
         $task->load([
+            'column:id,name,type',
             'creator:id,name',
             'assignee:id,name',
             'tags:id,name,color',

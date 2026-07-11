@@ -7,11 +7,18 @@ import {
     Check,
     ChevronDown,
     GripVertical,
+    MoreHorizontal,
     Pencil,
     Trash2,
     X,
 } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import draggable from 'vuedraggable';
 import ColumnDeleteDialog from './ColumnDeleteDialog.vue';
@@ -34,16 +41,7 @@ const pagination = ref<Column['pagination']>(
     props.column.pagination ? { ...props.column.pagination } : undefined,
 );
 const isLoadingMore = ref(false);
-
-watch(
-    () => props.column.tasks,
-    (newTasks) => {
-        localTasks.value = [...(newTasks || [])];
-        if (props.column.pagination) {
-            pagination.value = { ...props.column.pagination };
-        }
-    },
-);
+const isDone = computed(() => props.column.type === 'done');
 
 const loadMoreTasks = async () => {
     if (!pagination.value || !pagination.value.has_more) return;
@@ -150,13 +148,24 @@ const onDragChange = (event: any) => {
         );
     }
 };
+
+
+watch(
+    () => props.column.tasks,
+    (newTasks) => {
+        localTasks.value = [...(newTasks || [])];
+        if (props.column.pagination) {
+            pagination.value = { ...props.column.pagination };
+        }
+    },
+);
 </script>
 
 <template>
     <div
-        class="flex h-full max-h-[calc(100vh-12rem)] w-[350px] shrink-0 flex-col rounded-xl bg-muted/40 p-3"
+        class="flex w-[350px] shrink-0 flex-col rounded-xl bg-[color-mix(in_srgb,var(--muted)_40%,var(--background))]"
     >
-        <div class="mb-3 flex items-center justify-between px-1">
+        <div class="sticky top-0 z-10 flex items-center justify-between px-4 pt-3 pb-3 bg-[color-mix(in_srgb,var(--muted)_40%,var(--background))] rounded-t-xl">
             <div v-if="isEditingColumn" class="flex flex-1 items-center gap-2">
                 <input
                     v-model="editName"
@@ -200,34 +209,47 @@ const onDragChange = (event: any) => {
                 >
                     {{ column.pagination?.total }}
                 </span>
+                <Check
+                    v-if="isDone"
+                    class="ml-2 size-3.5 shrink-0 text-green-500 dark:text-green-400"
+                    title="Work items moved to this column are marked as done"
+                />
             </h3>
 
-            <div class="flex items-center space-x-1" v-if="!isEditingColumn">
-                <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    class="h-6 w-6 text-muted-foreground"
-                    @click="isEditingColumn = true"
-                >
-                    <Pencil class="size-3" />
-                </Button>
-                <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    class="h-6 w-6 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                    @click="isDeleteColumnOpen = true"
-                >
-                    <Trash2 class="size-3" />
-                </Button>
+            <div v-if="!isEditingColumn">
+                <DropdownMenu>
+                    <DropdownMenuTrigger as-child>
+                        <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            class="h-6 w-6 text-muted-foreground"
+                        >
+                            <MoreHorizontal class="size-3.5" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" class="w-32">
+                        <DropdownMenuItem @click="isEditingColumn = true">
+                            <Pencil class="mr-2 size-3" />
+                            <span>Rename</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            @click="isDeleteColumnOpen = true"
+                            class="text-destructive focus:text-destructive focus:bg-destructive/10"
+                        >
+                            <Trash2 class="mr-2 size-3" />
+                            <span>Delete</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </div>
 
-        <div class="no-scrollbar min-h-[100px] flex-1 overflow-y-auto">
+        <div class="no-scrollbar flex flex-1 flex-col px-3 pb-3">
             <draggable
                 v-model="localTasks"
                 group="tasks"
                 item-key="id"
-                class="flex min-h-full flex-col gap-3 pb-2"
+                class="flex flex-1 flex-col gap-3 pb-2 min-h-[100px]"
                 ghost-class="opacity-50"
                 @change="onDragChange"
             >
@@ -235,6 +257,7 @@ const onDragChange = (event: any) => {
                     <div class="cursor-grab active:cursor-grabbing">
                         <TaskItem
                             :task="element"
+                            :is-done="props.column.type === 'done'"
                             @edit="emit('edit', $event)"
                         />
                     </div>
