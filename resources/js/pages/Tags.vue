@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import Pagination from '@/components/Pagination.vue';
-import TagDeleteDialog from '@/components/tags/TagDeleteDialog.vue';
+import ConfirmDeleteDialog from '@/components/ConfirmDeleteDialog.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -282,10 +282,11 @@ const confirmDelete = () => {
         </div>
     </AppLayout>
 
-    <TagDeleteDialog
+    <ConfirmDeleteDialog
         v-if="tagToDelete"
         v-model:open="isDeleteDialogOpen"
-        :tag="tagToDelete"
+        title="Delete tag"
+        :description="`Are you sure you want to delete the tag &ldquo;${tagToDelete.name}&rdquo;? Tasks using this tag will no longer be labelled with it.`"
         @confirm="confirmDelete"
     />
 </template>

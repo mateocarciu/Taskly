@@ -153,8 +153,7 @@ describe('show', function () {
             ->get(route('tasks.show', $task))
             ->assertOk()
             ->assertJsonPath('id', $task->id)
-            ->assertJsonPath('creator.id', $this->user->id)
-            ->assertJsonPath('comments.0.body', 'First comment');
+            ->assertJsonPath('creator.id', $this->user->id);
     });
 
     test('forbids showing a task from another team', function () {
@@ -324,5 +323,114 @@ describe('destroy', function () {
             ->assertStatus(403);
 
         $this->assertDatabaseHas('tasks', ['id' => $task->id]);
+    });
+});
+
+describe('comments', function () {
+    test('can store a comment on a task', function () {
+        $task = Task::factory()->create(['team_id' => $this->team->id]);
+
+        $this->actingAs($this->user)
+            ->post(route('tasks.comments.store', $task), [
+                'body' => 'Test comment body',
+            ])
+            ->assertStatus(204);
+
+        $this->assertDatabaseHas('task_comments', [
+            'task_id' => $task->id,
+            'user_id' => $this->user->id,
+            'body' => 'Test comment body',
+        ]);
+    });
+
+    test('can list comments of a task', function () {
+        $task = Task::factory()->create(['team_id' => $this->team->id]);
+        $comment = TaskComment::create([
+            'task_id' => $task->id,
+            'user_id' => $this->user->id,
+            'body' => 'Listing comment body',
+        ]);
+
+        $this->actingAs($this->user)
+            ->get(route('tasks.comments.index', $task))
+            ->assertOk()
+            ->assertJsonPath('comments.0.id', $comment->id)
+            ->assertJsonPath('comments.0.body', 'Listing comment body');
+    });
+
+    test('can update owned comment', function () {
+        $task = Task::factory()->create(['team_id' => $this->team->id]);
+        $comment = TaskComment::create([
+            'task_id' => $task->id,
+            'user_id' => $this->user->id,
+            'body' => 'Original body',
+        ]);
+
+        $this->actingAs($this->user)
+            ->put(route('tasks.comments.update', [$task, $comment]), [
+                'body' => 'Updated body',
+            ])
+            ->assertStatus(204);
+
+        $this->assertDatabaseHas('task_comments', [
+            'id' => $comment->id,
+            'body' => 'Updated body',
+        ]);
+    });
+
+    test('cannot update another users comment', function () {
+        $task = Task::factory()->create(['team_id' => $this->team->id]);
+        $otherUser = User::factory()->create(['team_id' => $this->team->id]);
+        $comment = TaskComment::create([
+            'task_id' => $task->id,
+            'user_id' => $otherUser->id,
+            'body' => 'Original body',
+        ]);
+
+        $this->actingAs($this->user)
+            ->put(route('tasks.comments.update', [$task, $comment]), [
+                'body' => 'Updated body',
+            ])
+            ->assertStatus(403);
+
+        $this->assertDatabaseHas('task_comments', [
+            'id' => $comment->id,
+            'body' => 'Original body',
+        ]);
+    });
+
+    test('can delete owned comment', function () {
+        $task = Task::factory()->create(['team_id' => $this->team->id]);
+        $comment = TaskComment::create([
+            'task_id' => $task->id,
+            'user_id' => $this->user->id,
+            'body' => 'Comment to delete',
+        ]);
+
+        $this->actingAs($this->user)
+            ->delete(route('tasks.comments.destroy', [$task, $comment]))
+            ->assertStatus(204);
+
+        $this->assertDatabaseMissing('task_comments', [
+            'id' => $comment->id,
+        ]);
+    });
+
+    test('cannot delete another users comment', function () {
+        $task = Task::factory()->create(['team_id' => $this->team->id]);
+        $otherUser = User::factory()->create(['team_id' => $this->team->id]);
+        $comment = TaskComment::create([
+            'task_id' => $task->id,
+            'user_id' => $otherUser->id,
+            'body' => 'Comment to delete',
+        ]);
+
+        $this->actingAs($this->user)
+            ->delete(route('tasks.comments.destroy', [$task, $comment]))
+            ->assertStatus(403);
+
+        $this->assertDatabaseHas('task_comments', [
+            'id' => $comment->id,
+        ]);
     });
 });

@@ -10,28 +10,6 @@ class TaskResource extends JsonResource
     private const INDEX_DESCRIPTION_PREVIEW_LIMIT = 100;
 
     /**
-     * Serialize a comment and its nested replies.
-     *
-     * @return array<string, mixed>
-     */
-    private function serializeComment($comment): array
-    {
-        return [
-            'id' => $comment->id,
-            'body' => $comment->body,
-            'parent_id' => $comment->parent_id,
-            'created_at' => $comment->created_at?->toIso8601String(),
-            'user' => [
-                'id' => $comment->user->id,
-                'name' => $comment->user->name,
-            ],
-            'replies' => $comment->relationLoaded('replies')
-                ? $comment->replies->map(fn($reply) => $this->serializeComment($reply))->values()
-                : [],
-        ];
-    }
-
-    /**
      * Build a short HTML preview that keeps rich text markup intact.
      */
     private function buildDescriptionPreview(string $html, int $limit): ?string
@@ -165,12 +143,6 @@ class TaskResource extends JsonResource
                 'name' => $this->column->name,
                 'type' => $this->column->type,
             ]),
-            'comments' => $this->whenLoaded(
-                'comments',
-                fn() => $this->comments
-                    ->map(fn($comment) => $this->serializeComment($comment))
-                    ->values()
-            ),
             'events' => $this->whenLoaded(
                 'events',
                 fn() => $this->events->map(fn($event) => [

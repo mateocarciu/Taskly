@@ -21,7 +21,7 @@ import {
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import draggable from 'vuedraggable';
-import ColumnDeleteDialog from './ColumnDeleteDialog.vue';
+import ConfirmDeleteDialog from '@/components/ConfirmDeleteDialog.vue';
 import TaskItem from './TaskItem.vue';
 
 const props = defineProps<{
@@ -285,9 +285,10 @@ watch(
             </div>
         </div>
 
-        <ColumnDeleteDialog
+        <ConfirmDeleteDialog
             v-model:open="isDeleteColumnOpen"
-            :column="column"
+            title="Delete column"
+            :description="`Are you sure you want to delete the &ldquo;${column.name}&rdquo; column? This action cannot be undone.`"
             @confirm="deleteColumn"
         />
     </div>

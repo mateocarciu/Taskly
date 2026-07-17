@@ -35,6 +35,8 @@ const emit = defineEmits<{
     cancelReply: [];
     updateReplyBody: [value: string];
     submitReply: [commentId: number];
+    updateComment: [commentId: number, body: string];
+    deleteComment: [commentId: number];
 }>();
 
 const cleanedCommentBody = computed(() => {
@@ -210,6 +212,8 @@ const activeTab = ref<'discussion' | 'activity'>('discussion');
                         @cancel-reply="emit('cancelReply')"
                         @update-reply-body="emit('updateReplyBody', $event)"
                         @submit-reply="emit('submitReply', $event)"
+                        @update-comment="(commentId, body) => emit('updateComment', commentId, body)"
+                        @delete-comment="(commentId) => emit('deleteComment', commentId)"
                     />
                 </div>
             </div>

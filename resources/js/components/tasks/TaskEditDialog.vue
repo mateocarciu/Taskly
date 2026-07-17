@@ -13,7 +13,7 @@ import { useInitials } from '@/composables/useInitials';
 import { show, update } from '@/routes/tasks';
 import comments from '@/routes/tasks/comments';
 import type { Tag, Task, TaskComment, TaskEvent, TeamMember } from '@/types';
-import { useForm } from '@inertiajs/vue3';
+import { useForm, useHttp } from '@inertiajs/vue3';
 import { X } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
@@ -42,14 +42,13 @@ const form = useForm({
     removed_attachment_ids: [] as string[],
 });
 
-const commentForm = useForm({
-    body: '',
-});
+const commentForm = useHttp({ body: '' });
 
-const replyForm = useForm({
-    body: '',
-    parent_id: null as number | null,
-});
+const replyForm = useHttp({ body: '', parent_id: null as number | null });
+
+const updateForm = useHttp({ body: '' });
+
+const deleteForm = useHttp({});
 
 const activeReplyToId = ref<number | null>(null);
 
@@ -72,38 +71,32 @@ const hydrateFormsFromTask = (task: Task) => {
     form.tag_ids = task.tags?.map((t) => t.id) ?? [];
     form.attachments = [];
     form.removed_attachment_ids = [];
-    commentsList.value = [...(task.comments ?? [])];
 };
 
-const loadTaskDetails = async (taskId: number, showLoader = true) => {
+const loadTaskDetails = async (taskId: number, showLoader = true, hydrateForm = true) => {
     if (showLoader) {
         isLoadingDetails.value = true;
     }
 
     try {
         const response = await fetch(show(taskId).url, {
-            headers: {
-                Accept: 'application/json',
-            },
+            headers: { Accept: 'application/json' },
         });
 
-        if (!response.ok) {
-            throw new Error('Could not load task details');
-        }
+        if (!response.ok) throw new Error('Could not load task details');
 
         const task = (await response.json()) as Task;
         taskDetails.value = task;
 
-        form.title = task.title;
-        form.description = task.description || '';
-        form.due_date = task.due_date
-            ? task.due_date.slice(0, 16)
-            : '';
-        form.assigned_to = task.assigned_to ?? null;
-        form.created_by = task.created_by;
-        form.attachments = [];
-        form.removed_attachment_ids = [];
-        commentsList.value = [...(task.comments ?? [])];
+        if (hydrateForm) {
+            form.title = task.title;
+            form.description = task.description || '';
+            form.due_date = task.due_date ? task.due_date.slice(0, 16) : '';
+            form.assigned_to = task.assigned_to ?? null;
+            form.created_by = task.created_by;
+            form.attachments = [];
+            form.removed_attachment_ids = [];
+        }
 
         return true;
     } catch {
@@ -113,6 +106,21 @@ const loadTaskDetails = async (taskId: number, showLoader = true) => {
         if (showLoader) {
             isLoadingDetails.value = false;
         }
+    }
+};
+
+const loadComments = async (taskId: number) => {
+    try {
+        const response = await fetch(comments.index(taskId).url, {
+            headers: { Accept: 'application/json' },
+        });
+
+        if (!response.ok) throw new Error('Could not load comments');
+
+        const data = (await response.json()) as { comments: TaskComment[] };
+        commentsList.value = data.comments;
+    } catch {
+        toast.error('Unable to load comments');
     }
 };
 
@@ -173,24 +181,22 @@ const submit = () => {
     })).post(update(activeTask.value.id).url, {
         preserveScroll: true,
         onSuccess: () => {
-            isOpen.value = false;
             toast.success('Task updated');
         },
     });
 };
 
-const submitComment = () => {
+const submitComment = async () => {
     if (!activeTask.value) return;
     const taskId = activeTask.value.id;
 
     const bodyText = stripRichText(commentForm.body);
-
     if (!bodyText) return;
 
-    commentForm.post(comments.store(taskId).url, {
-        preserveScroll: true,
+    await commentForm.post(comments.store(taskId).url, {
         onSuccess: async () => {
-            await loadTaskDetails(taskId, false);
+            commentForm.reset('body');
+            await loadComments(taskId);
             commentForm.reset('body');
             toast.success('Comment posted');
         },
@@ -211,7 +217,7 @@ const cancelReply = () => {
     replyForm.parent_id = null;
 };
 
-const submitReply = (commentId: number) => {
+const submitReply = async (commentId: number) => {
     if (!activeTask.value) return;
     const taskId = activeTask.value.id;
 
@@ -219,12 +225,37 @@ const submitReply = (commentId: number) => {
     if (!bodyText) return;
 
     replyForm.parent_id = commentId;
-    replyForm.post(comments.store(taskId).url, {
-        preserveScroll: true,
+    await replyForm.post(comments.store(taskId).url, {
         onSuccess: async () => {
-            await loadTaskDetails(taskId, false);
+            replyForm.reset('body');
+            await loadComments(taskId);
             cancelReply();
             toast.success('Reply posted');
+        },
+    });
+};
+
+const updateComment = async (commentId: number, body: string) => {
+    if (!activeTask.value) return;
+    const taskId = activeTask.value.id;
+
+    updateForm.body = body;
+    await updateForm.put(comments.update({ task: taskId, comment: commentId }).url, {
+        onSuccess: async () => {
+            await loadComments(taskId);
+            toast.success('Comment updated');
+        },
+    });
+};
+
+const deleteComment = async (commentId: number) => {
+    if (!activeTask.value) return;
+    const taskId = activeTask.value.id;
+
+    await deleteForm.delete(comments.destroy({ task: taskId, comment: commentId }).url, {
+        onSuccess: async () => {
+            await loadComments(taskId);
+            toast.success('Comment deleted');
         },
     });
 };
@@ -234,6 +265,7 @@ watch([() => props.task, isOpen], ([task, open], [oldTask, oldOpen]) => {
         taskDetails.value = null;
         hydrateFormsFromTask(task);
         void loadTaskDetails(task.id);
+        void loadComments(task.id);
         form.clearErrors();
         commentForm.reset('body');
         commentForm.clearErrors();
@@ -321,6 +353,8 @@ watch([() => props.task, isOpen], ([task, open], [oldTask, oldOpen]) => {
                         @cancel-reply="cancelReply"
                         @update-reply-body="replyForm.body = $event"
                         @submit-reply="submitReply"
+                        @update-comment="(commentId, body) => updateComment(commentId, body)"
+                        @delete-comment="deleteComment"
                     />
                 </div>
             </div>

@@ -15,7 +15,10 @@ Route::middleware(['auth', 'verified', 'hasTeam'])
             Route::get('tasks/{task}', 'show')->name('tasks.show');
             Route::post('tasks', 'store')->name('tasks.store');
             Route::put('tasks/{task}', 'update')->name('tasks.update');
+            Route::get('tasks/{task}/comments', 'indexComments')->name('tasks.comments.index');
             Route::post('tasks/{task}/comments', 'storeComment')->name('tasks.comments.store');
+            Route::put('tasks/{task}/comments/{comment}', 'updateComment')->name('tasks.comments.update');
+            Route::delete('tasks/{task}/comments/{comment}', 'destroyComment')->name('tasks.comments.destroy');
             Route::delete('tasks/{task}', 'destroy')->name('tasks.destroy');
         });
 
