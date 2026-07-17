@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import TagBadge from '@/components/tags/TagBadge.vue';
-import TaskDeleteDialog from '@/components/tasks/TaskDeleteDialog.vue';
+import ConfirmDeleteDialog from '@/components/ConfirmDeleteDialog.vue';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -189,9 +189,10 @@ const deleteTask = () => {
         </CardContent>
     </Card>
 
-    <TaskDeleteDialog
+    <ConfirmDeleteDialog
         v-model:open="showDeleteDialog"
-        :task="task"
+        title="Delete task"
+        :description="`Are you sure you want to delete &ldquo;${task.title}&rdquo;? This action cannot be undone.`"
         @confirm="deleteTask"
     />
 </template>

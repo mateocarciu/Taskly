@@ -6,8 +6,11 @@ use App\Models\Task;
 use App\Models\Column;
 use App\Models\Tag;
 use App\Models\User;
+use App\Models\TaskComment;
 use App\Services\TaskService;
+use App\Services\CommentService;
 use App\Http\Resources\ColumnResource;
+use App\Http\Resources\CommentResource;
 use App\Http\Resources\TaskResource;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,15 +18,19 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TaskCreateRequest;
 use App\Http\Requests\TaskCommentStoreRequest;
+use App\Http\Requests\TaskCommentUpdateRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\TaskUpdateRequest;
 use App\Http\Requests\TaskListRequest;
+use \Illuminate\Http\Response as HttpResponse;
 
 class TaskController extends Controller
 {
-    public function __construct(private TaskService $taskService)
-    {
+    public function __construct(
+        private TaskService $taskService,
+        private CommentService $commentService
+    ) {
     }
 
     public function index(TaskListRequest $request): Response
@@ -68,7 +75,7 @@ class TaskController extends Controller
         ]);
     }
 
-    public function show(Request $request, Task $task): JsonResponse
+    public function show(Task $task): JsonResponse
     {
         $this->authorize('view', $task);
 
@@ -78,13 +85,24 @@ class TaskController extends Controller
             'assignee:id,name',
             'tags:id,name,color',
             'taskAttachments',
-            'comments' => fn($query) => $query
-                ->whereNull('parent_id')
-                ->with(['user:id,name', 'replies']),
             'events.actor:id,name',
         ]);
 
         return response()->json((new TaskResource($task))->resolve());
+    }
+
+    public function indexComments(Task $task): JsonResponse
+    {
+        $this->authorize('view', $task);
+
+        $comments = $task->comments()
+            ->whereNull('parent_id')
+            ->with(['user:id,name', 'replies.user:id,name'])
+            ->get();
+
+        return response()->json([
+            'comments' => CommentResource::collection($comments)->resolve(),
+        ]);
     }
 
     public function store(TaskCreateRequest $request): RedirectResponse
@@ -112,18 +130,34 @@ class TaskController extends Controller
         return back();
     }
 
-    public function storeComment(TaskCommentStoreRequest $request, Task $task): RedirectResponse
+    public function storeComment(TaskCommentStoreRequest $request, Task $task): HttpResponse|JsonResponse
     {
         $this->authorize('comment', $task);
 
         $validated = $request->validated();
 
-        $task->comments()->create([
-            'user_id' => $request->user()->id,
-            'parent_id' => $validated['parent_id'] ?? null,
-            'body' => $validated['body'],
-        ]);
+        $this->commentService->createComment($task, $validated, $request->user());
 
-        return back();
+        return response()->noContent();
+    }
+
+    public function updateComment(TaskCommentUpdateRequest $request, Task $task, TaskComment $comment): HttpResponse|JsonResponse
+    {
+        $this->authorize('update', $comment);
+
+        $validated = $request->validated();
+
+        $this->commentService->updateComment($comment, $validated);
+
+        return response()->noContent();
+    }
+
+    public function destroyComment(Request $request, Task $task, TaskComment $comment): HttpResponse|JsonResponse
+    {
+        $this->authorize('delete', $comment);
+
+        $this->commentService->deleteComment($comment);
+
+        return response()->noContent();
     }
 }

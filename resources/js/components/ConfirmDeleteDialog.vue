@@ -8,11 +8,19 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import type { Tag } from '@/types';
 
-defineProps<{
-    tag: Tag;
-}>();
+withDefaults(
+    defineProps<{
+        title: string;
+        description: string;
+        confirmText?: string;
+        destructive?: boolean;
+    }>(),
+    {
+        confirmText: 'Delete',
+        destructive: true,
+    }
+);
 
 const isOpen = defineModel<boolean>('open', { default: false });
 
@@ -25,19 +33,18 @@ const emit = defineEmits<{
     <Dialog v-model:open="isOpen">
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Delete tag</DialogTitle>
-                <DialogDescription>
-                    Are you sure you want to delete the tag
-                    <span class="font-medium">"{{ tag.name }}"</span>? Tasks
-                    using this tag will no longer be labelled with it.
-                </DialogDescription>
+                <DialogTitle>{{ title }}</DialogTitle>
+                <DialogDescription>{{ description }}</DialogDescription>
             </DialogHeader>
             <DialogFooter>
                 <Button variant="outline" @click="isOpen = false">
                     Cancel
                 </Button>
-                <Button variant="destructive" @click="emit('confirm')">
-                    Delete
+                <Button
+                    :variant="destructive ? 'destructive' : 'default'"
+                    @click="emit('confirm')"
+                >
+                    {{ confirmText }}
                 </Button>
             </DialogFooter>
         </DialogContent>

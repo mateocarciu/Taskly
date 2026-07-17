@@ -28,7 +28,7 @@ describe('comments', function () {
             ->post(route('tasks.comments.store', $task), [
                 'body' => 'Progress is good, moving to review.',
             ])
-            ->assertRedirect();
+            ->assertStatus(204);
 
         $this->assertDatabaseHas('task_comments', [
             'task_id' => $task->id,
@@ -64,7 +64,7 @@ describe('comments', function () {
                 'body' => 'This is a threaded reply.',
                 'parent_id' => $parent->id,
             ])
-            ->assertRedirect();
+            ->assertStatus(204);
 
         $this->assertDatabaseHas('task_comments', [
             'task_id' => $task->id,
@@ -99,7 +99,7 @@ describe('comments', function () {
             ->assertSessionHasErrors('parent_id');
     });
 
-    test('includes threaded replies in task details payload', function () {
+    test('can fetch threaded replies via comments index route', function () {
         $task = Task::factory()->create([
             'team_id' => $this->team->id,
             'column_id' => $this->column->id,
@@ -119,7 +119,7 @@ describe('comments', function () {
         ]);
 
         $this->actingAs($this->user)
-            ->get(route('tasks.show', $task))
+            ->get(route('tasks.comments.index', $task))
             ->assertOk()
             ->assertJsonPath('comments.0.body', 'Top level comment')
             ->assertJsonPath('comments.0.replies.0.body', 'Nested reply');
