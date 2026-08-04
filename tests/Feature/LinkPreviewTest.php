@@ -2,8 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use App\Models\Team;
+use App\Models\TeamMembership;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -13,6 +14,7 @@ class LinkPreviewTest extends TestCase
     use RefreshDatabase;
 
     protected $user;
+
     protected $team;
 
     protected function setUp(): void
@@ -22,6 +24,11 @@ class LinkPreviewTest extends TestCase
         $this->team = Team::factory()->create();
         $this->user = User::factory()->create([
             'team_id' => $this->team->id,
+        ]);
+
+        TeamMembership::create([
+            'team_id' => $this->team->id,
+            'user_id' => $this->user->id,
         ]);
     }
 

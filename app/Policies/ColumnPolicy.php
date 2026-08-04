@@ -12,7 +12,7 @@ class ColumnPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->team_id !== null;
+        return $user->hasActiveTeam();
     }
 
     /**
@@ -20,7 +20,7 @@ class ColumnPolicy
      */
     public function view(User $user, Column $column): bool
     {
-        return $user->team_id === $column->team_id;
+        return $user->canAccessTeam($column->team_id);
     }
 
     /**
@@ -28,7 +28,7 @@ class ColumnPolicy
      */
     public function create(User $user): bool
     {
-        return $user->team_id !== null;
+        return $user->hasActiveTeam();
     }
 
     /**
@@ -36,7 +36,7 @@ class ColumnPolicy
      */
     public function update(User $user, Column $column): bool
     {
-        return $user->team_id === $column->team_id;
+        return $user->isPrivileged() && $user->canAccessTeam($column->team_id);
     }
 
     /**
@@ -44,30 +44,14 @@ class ColumnPolicy
      */
     public function delete(User $user, Column $column): bool
     {
-        return $user->team_id === $column->team_id;
+        return $user->isPrivileged() && $user->canAccessTeam($column->team_id);
     }
 
     /**
-     * Determine whether the user can update column sequence.
+     * Determine whether the user can update the sequence of the model.
      */
     public function updateSequence(User $user, Column $column): bool
     {
-        return $user->team_id === $column->team_id;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Column $column): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Column $column): bool
-    {
-        return false;
+        return $user->isPrivileged() && $user->canAccessTeam($column->team_id);
     }
 }

@@ -2,17 +2,25 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Tag;
+use App\Models\User;
 
 class TagPolicy
 {
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->hasActiveTeam();
+    }
+
     /**
      * Determine whether the user can update the tag.
      */
     public function update(User $user, Tag $tag): bool
     {
-        return $user->team_id === $tag->team_id;
+        return $user->canAccessTeam($tag->team_id);
     }
 
     /**
@@ -20,6 +28,6 @@ class TagPolicy
      */
     public function delete(User $user, Tag $tag): bool
     {
-        return $user->team_id === $tag->team_id;
+        return $user->canAccessTeam($tag->team_id);
     }
 }

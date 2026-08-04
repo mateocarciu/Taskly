@@ -3,11 +3,13 @@
 use App\Models\Column;
 use App\Models\Task;
 use App\Models\Team;
+use App\Models\TeamMembership;
 use App\Models\User;
 
 beforeEach(function () {
     $this->team = Team::factory()->create();
-    $this->user = User::factory()->create(['team_id' => $this->team->id]);
+    $this->user = User::factory()->admin()->create(['team_id' => $this->team->id]);
+    TeamMembership::create(['team_id' => $this->team->id, 'user_id' => $this->user->id]);
     $this->otherTeam = Team::factory()->create();
 });
 
@@ -56,8 +58,10 @@ describe('sequence update', function () {
 
     test('cannot reorder a column from another team', function () {
         $foreignColumn = Column::create(['team_id' => $this->otherTeam->id, 'name' => 'Foreign', 'order' => 0]);
+        $member = User::factory()->create(['team_id' => $this->team->id]);
+        TeamMembership::create(['team_id' => $this->team->id, 'user_id' => $member->id]);
 
-        $this->actingAs($this->user)
+        $this->actingAs($member)
             ->put(route('columns.sequence.update', $foreignColumn), [
                 'order' => 0,
             ])

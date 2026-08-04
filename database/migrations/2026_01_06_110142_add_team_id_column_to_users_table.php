@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->foreignId('team_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->string('role')->default('member');
         });
     }
 
@@ -24,6 +25,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn([
                 'team_id',
+                'role',
             ]);
         });
     }

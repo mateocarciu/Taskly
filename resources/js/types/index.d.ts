@@ -38,6 +38,7 @@ export interface User {
     updated_at: string;
     team_id: number | null;
     team?: Team;
+    role: 'owner' | 'admin' | 'member';
 }
 
 export interface Tag {
@@ -112,6 +113,8 @@ export interface TaskForm {
 export interface TeamMember {
     id: number;
     name: string;
+    email: string;
+    role: 'owner' | 'admin' | 'member';
 }
 
 export interface TaskComment {

@@ -17,6 +17,15 @@ return new class extends Migration
             $table->integer('count_completed_tasks', false, true);
             $table->timestamps();
         });
+
+        Schema::create('team_memberships', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('team_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->timestamps();
+
+            $table->unique(['team_id', 'user_id']);
+        });
     }
 
     /**
@@ -24,6 +33,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('team_memberships');
         Schema::dropIfExists('teams');
     }
 };

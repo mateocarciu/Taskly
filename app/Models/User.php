@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
@@ -25,6 +26,7 @@ class User extends Authenticatable
         'email',
         'password',
         'team_id',
+        'role',
     ];
 
     /**
@@ -62,10 +64,90 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the team memberships for the user.
+     */
+    public function teamMemberships(): HasMany
+    {
+        return $this->hasMany(TeamMembership::class);
+    }
+
+    /**
+     * Get the teams that the user belongs to.
+     */
+    public function teams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class, 'team_memberships')->withTimestamps();
+    }
+
+    /**
      * Get the comments written by the user.
      */
     public function taskComments(): HasMany
     {
         return $this->hasMany(TaskComment::class);
+    }
+
+    /**
+     * Determine if the user is an owner.
+     */
+    public function isOwner(): bool
+    {
+        return $this->role === 'owner';
+    }
+
+    /**
+     * Determine if the user is an admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Determine if the user is privileged (owner or admin).
+     */
+    public function isPrivileged(): bool
+    {
+        return $this->isOwner() || $this->isAdmin();
+    }
+
+    /**
+     * Determine if the user can access a given team.
+     */
+    public function canAccessTeam(Team|int $team): bool
+    {
+        if ($this->isPrivileged()) {
+            return true;
+        }
+
+        return $this->teamMemberships()
+            ->where('team_id', $team instanceof Team ? $team->getKey() : $team)
+            ->exists();
+    }
+
+    /**
+     * Determine if the user has an active team.
+     */
+    public function hasActiveTeam(): bool
+    {
+        return $this->team_id !== null && $this->canAccessTeam($this->team_id);
+    }
+
+    /**
+     * Get a query builder for teams that the user can access.
+     */
+    public function accessibleTeamsQuery(): Builder
+    {
+        return $this->isPrivileged()
+            ? Team::query()
+            : Team::query()->whereHas('memberships', fn (Builder $query) => $query->where('user_id', $this->id));
+    }
+
+    public function scopeInTeam(Builder $query, int $teamId): Builder
+    {
+        return $query->where(function (Builder $q) use ($teamId) {
+            $q->whereIn('role', ['owner', 'admin'])
+                ->orWhereHas('teamMemberships', fn (Builder $membership) => $membership->where('team_id', $teamId));
+        });
     }
 }

@@ -3,6 +3,7 @@
 use App\Models\Column;
 use App\Models\Task;
 use App\Models\Team;
+use App\Models\TeamMembership;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -15,6 +16,7 @@ test('guests are redirected to the login page', function () {
 test('authenticated users can visit the dashboard', function () {
     $team = Team::factory()->create();
     $user = User::factory()->create(['team_id' => $team->id]);
+    TeamMembership::create(['team_id' => $team->id, 'user_id' => $user->id]);
     $this->actingAs($user);
 
     $response = $this->get(route('dashboard'));
@@ -26,6 +28,7 @@ test('dashboard shows team task statistics', function () {
 
     $team = Team::factory()->create(['name' => 'Acme Team']);
     $user = User::factory()->create(['team_id' => $team->id]);
+    TeamMembership::create(['team_id' => $team->id, 'user_id' => $user->id]);
 
     $todo = Column::create(['team_id' => $team->id, 'name' => 'To Do', 'order' => 1]);
     $progress = Column::create(['team_id' => $team->id, 'name' => 'In Progress', 'order' => 2]);

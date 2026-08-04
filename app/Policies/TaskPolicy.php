@@ -12,7 +12,7 @@ class TaskPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->team_id !== null;
+        return $user->hasActiveTeam();
     }
 
     /**
@@ -20,7 +20,7 @@ class TaskPolicy
      */
     public function view(User $user, Task $task): bool
     {
-        return $user->team_id === $task->team_id;
+        return $user->canAccessTeam($task->team_id);
     }
 
     /**
@@ -28,7 +28,7 @@ class TaskPolicy
      */
     public function create(User $user): bool
     {
-        return $user->team_id !== null;
+        return $user->hasActiveTeam();
     }
 
     /**
@@ -36,7 +36,7 @@ class TaskPolicy
      */
     public function update(User $user, Task $task): bool
     {
-        return $user->team_id === $task->team_id;
+        return $user->canAccessTeam($task->team_id);
     }
 
     /**
@@ -44,7 +44,7 @@ class TaskPolicy
      */
     public function delete(User $user, Task $task): bool
     {
-        return $user->team_id === $task->team_id;
+        return $user->canAccessTeam($task->team_id);
     }
 
     /**
@@ -52,30 +52,14 @@ class TaskPolicy
      */
     public function comment(User $user, Task $task): bool
     {
-        return $user->team_id === $task->team_id;
+        return $user->canAccessTeam($task->team_id);
     }
 
     /**
-     * Determine whether the user can update task sequence.
+     * Determine whether the user can update the sequence of the model.
      */
     public function updateSequence(User $user, Task $task): bool
     {
-        return $user->team_id === $task->team_id;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Task $task): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Task $task): bool
-    {
-        return false;
+        return $user->canAccessTeam($task->team_id);
     }
 }

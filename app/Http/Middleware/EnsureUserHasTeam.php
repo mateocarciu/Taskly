@@ -15,8 +15,12 @@ class EnsureUserHasTeam
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user()->team_id) {
-            return redirect()->route('teams.select');
+        $user = $request->user();
+
+        if ($user->team_id === null) {
+            return $user->isPrivileged()
+                ? redirect()->route('teams.index')
+                : redirect()->route('teams.pending');
         }
 
         return $next($request);

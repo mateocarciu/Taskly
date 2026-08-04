@@ -20,24 +20,17 @@ jobs:
             cd ~/app/Taskly
             git fetch origin main
             git reset --hard origin/main
-            
-            # Reconstruction des containers avec le nouveau Dockerfile (PHP 8.4 + Node)
+
             docker compose up -d --build
 
-            # Eviter l'erreur dubious ownership de Git dans le conteneur
             docker exec laravel-app git config --global --add safe.directory /var/www
             
-            # 2. Installer les dépendances PHP
             docker exec laravel-app composer install --ignore-platform-reqs
             
-            # 3. Installer et compiler les assets (CSS/JS)
             docker exec laravel-app npm ci
             docker exec laravel-app npm run build
-            
-            # 4. Appliquer les migrations de base de données (si SQLite existe déjà)
-            # On ajoute --force car on est en mode production
+
             docker exec laravel-app php artisan migrate --force
-            
-            # 5. Nettoyage des droits et des images
+
             docker exec laravel-app sh -lc "mkdir -p storage bootstrap/cache database && touch database/database.sqlite && chown -R 1000:33 storage bootstrap/cache && chown 1000:33 database/database.sqlite"
             docker image prune -f

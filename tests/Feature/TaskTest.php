@@ -1,14 +1,16 @@
 <?php
 
-use App\Models\Task;
-use App\Models\Team;
-use App\Models\User;
 use App\Models\Column;
+use App\Models\Task;
 use App\Models\TaskComment;
+use App\Models\Team;
+use App\Models\TeamMembership;
+use App\Models\User;
 
 beforeEach(function () {
     $this->team = Team::factory()->create();
     $this->user = User::factory()->create(['team_id' => $this->team->id]);
+    TeamMembership::create(['team_id' => $this->team->id, 'user_id' => $this->user->id]);
     $this->otherTeam = Team::factory()->create();
 });
 
@@ -68,9 +70,9 @@ describe('index', function () {
 
     test('can filter tasks by assignee, search keyword, and due date', function () {
         $column = Column::create(['team_id' => $this->team->id, 'name' => 'To Do', 'order' => 1]);
-        
+
         $assignee = User::factory()->create(['team_id' => $this->team->id]);
-        
+
         $task1 = Task::factory()->create([
             'team_id' => $this->team->id,
             'column_id' => $column->id,
@@ -288,6 +290,7 @@ describe('update', function () {
             'assigned_to' => null,
         ]);
         $assignee = User::factory()->create(['team_id' => $this->team->id]);
+        TeamMembership::create(['team_id' => $this->team->id, 'user_id' => $assignee->id]);
 
         $this->actingAs($this->user)
             ->put(route('tasks.update', $task), [

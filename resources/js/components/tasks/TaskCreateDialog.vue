@@ -84,7 +84,9 @@ const submit = () => {
             class="w-[96vw] max-w-[980px] overflow-hidden p-0 sm:max-w-[980px]"
             @open-auto-focus.prevent
         >
-            <div class="max-h-[92vh] overflow-y-auto overscroll-contain p-6">
+            <div
+                class="flex max-h-[92vh] flex-col gap-4 overflow-y-auto overscroll-contain p-6"
+            >
                 <DialogHeader>
                     <DialogTitle>Create a new task</DialogTitle>
                     <DialogDescription>
@@ -166,7 +168,11 @@ const submit = () => {
                         </Button>
                         <Button
                             type="submit"
-                            :disabled="(!form.isDirty && form.attachments.length === 0) || form.processing"
+                            :disabled="
+                                (!form.isDirty &&
+                                    form.attachments.length === 0) ||
+                                form.processing
+                            "
                         >
                             <Spinner v-if="form.processing" />
                             <Plus v-else class="size-4" />

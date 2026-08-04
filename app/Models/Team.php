@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Team extends Model
 {
-    /** @use HasFactory<\Database\Factories\TeamFactory> */
     use HasFactory;
 
     /**
@@ -20,8 +20,18 @@ class Team extends Model
         'name',
     ];
 
-    public function users(): HasMany
+    public function memberships(): HasMany
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(TeamMembership::class);
+    }
+
+    public function columns(): HasMany
+    {
+        return $this->hasMany(Column::class)->orderBy('order');
+    }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'team_memberships')->withTimestamps();
     }
 }

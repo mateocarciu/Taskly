@@ -3,11 +3,13 @@
 use App\Models\Column;
 use App\Models\Task;
 use App\Models\Team;
+use App\Models\TeamMembership;
 use App\Models\User;
 
 beforeEach(function () {
     $this->team = Team::factory()->create();
     $this->user = User::factory()->create(['team_id' => $this->team->id]);
+    TeamMembership::create(['team_id' => $this->team->id, 'user_id' => $this->user->id]);
     $this->columnA = Column::create(['team_id' => $this->team->id, 'name' => 'Col A', 'order' => 1]);
     $this->columnB = Column::create(['team_id' => $this->team->id, 'name' => 'Col B', 'order' => 2]);
 });

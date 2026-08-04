@@ -57,13 +57,34 @@ Make sure you have the following installed on your local system:
 
 ## Seeded Test Accounts
 
-The seeded database contains **3 teams** and **6 users**. Each user is pre-assigned to a team:
+The seeded database contains **3 teams** and **8 users**, including a default **owner** and **admin** account. All accounts use the password `password`:
 
-| Team | User | Email | Password |
+| Account | Email | Role | Teams |
 | :--- | :--- | :--- | :--- |
-| **Team 1** | User 1, 2, 3 | `test1@example.com` to `test3@example.com` | `password` |
-| **Team 2** | User 4, 5 | `test4@example.com` & `test5@example.com` | `password` |
-| **Team 3** | User 6 | `test6@example.com` | `password` |
+| Owner | `owner@example.com` | Owner | All teams |
+| Admin | `admin@example.com` | Admin | All teams |
+| User 1, 2, 3 | `test1@example.com` to `test3@example.com` | Member | Team 1 |
+| User 4, 5 | `test4@example.com` & `test5@example.com` | Member | Team 2 |
+| User 6 | `test6@example.com` | Member | Team 3 |
 
-*Note: You can also register a new account and create a custom team from the login page.*
+- **Roles & Permissions:** Single-tenant permission model with three global roles (Owner, Admin, Member) with an active-team middleware & explicit team memberships.
+
+## Roles & Permissions
+
+Taskly ships with a single-tenant role model. Every account holds one of three **global roles**, and access to teams is granted through explicit **memberships**.
+
+| Role | Scope | Can |
+| :--- | :--- | :--- |
+| **Owner** | Instance-wide | Everything: create/rename/delete teams, manage users, transfer ownership, promote/demote admins, add/remove members, configure columns |
+| **Admin** | Instance-wide | Create & rename teams, add members, promote members, create users — but cannot delete teams or users, transfer ownership, demote other admins, or remove privileged members |
+| **Member** | Team-scoped | Use tasks, tags and columns inside the teams they were explicitly added to |
+
+### How access is scoped
+
+- **Team membership is the source of truth.** A member's teams are stored in the `team_memberships` table. Privileged users (Owner/Admin) implicitly belong to **every** team, so they appear in every team's member list even without an explicit membership.
+- **`users.team_id` is only the active-team context** (the team selected in the sidebar/Team Switcher), not a membership itself.
+- **Access checks** go through `canAccessTeam()`: privileged users always pass; members must have a matching `team_memberships` row. This backs the `Task`, `Tag`, `Column` and `Team` policies, as well as file-attachment downloads.
+- **Active-team middleware (`hasTeam`):** if a user has no active team, Admins/Owners are redirected to the team settings page and Members to a "pending" screen until an Admin adds them to a team.
+- **Removing & demoting:** privileged users cannot be removed from a team (they always retain access). Demoting an Admin keeps them as an explicit member of the team the demotion happened in, so they don't silently vanish from the member list.
+- **New teams** are bootstrapped with default columns (To Do, In Progress, Done), matching the seeder.
 

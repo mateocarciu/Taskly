@@ -4,11 +4,13 @@ use App\Models\Column;
 use App\Models\Task;
 use App\Models\TaskComment;
 use App\Models\Team;
+use App\Models\TeamMembership;
 use App\Models\User;
 
 beforeEach(function () {
     $this->team = Team::factory()->create();
     $this->user = User::factory()->create(['team_id' => $this->team->id]);
+    TeamMembership::create(['team_id' => $this->team->id, 'user_id' => $this->user->id]);
     $this->otherTeam = Team::factory()->create();
     $this->column = Column::create([
         'team_id' => $this->team->id,
