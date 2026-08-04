@@ -118,7 +118,7 @@ const submit = () => {
                         />
                         <InputError :message="form.errors.description" />
                     </div>
-                    <div class="grid gap-2 sm:grid-cols-2">
+                    <div class="grid gap-4 sm:grid-cols-2">
                         <div class="grid gap-2">
                             <Label for="task-due-date">Due date</Label>
                             <Input

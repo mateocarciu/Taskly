@@ -48,11 +48,13 @@ const onTagsUpdated = (tags: Tag[]) => {
 
 <template>
     <form
-        class="space-y-6 p-6 lg:space-y-0 lg:p-0 lg:flex lg:flex-col lg:h-full lg:min-h-0"
+        class="space-y-6 p-6 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:space-y-0 lg:p-0"
         @submit.prevent="$emit('submit')"
     >
         <!-- Scrollable Content on desktop, normal flow on mobile -->
-        <div class="lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:p-6 lg:pr-8">
+        <div
+            class="lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:p-6 lg:pr-8"
+        >
             <div class="space-y-4">
                 <div class="grid gap-2">
                     <Label for="edit-task-title">Title</Label>
@@ -78,14 +80,20 @@ const onTagsUpdated = (tags: Tag[]) => {
                         :existing-attachments="existingAttachments"
                         :pending-files="form.attachments"
                         :removed-ids="form.removed_attachment_ids"
-                        @update:model-value="$emit('update:description', $event)"
-                        @update:attachments="$emit('update:attachments', $event)"
-                        @update:removed-attachment-ids="$emit('update:removed-attachment-ids', $event)"
+                        @update:model-value="
+                            $emit('update:description', $event)
+                        "
+                        @update:attachments="
+                            $emit('update:attachments', $event)
+                        "
+                        @update:removed-attachment-ids="
+                            $emit('update:removed-attachment-ids', $event)
+                        "
                     />
                     <InputError :message="form.errors.description" />
                 </div>
 
-                <div class="grid gap-2 sm:grid-cols-2">
+                <div class="grid gap-4 sm:grid-cols-2">
                     <div class="grid gap-2">
                         <Label for="edit-task-due-date">Due date</Label>
                         <Input
@@ -137,7 +145,9 @@ const onTagsUpdated = (tags: Tag[]) => {
         </div>
 
         <!-- Sticky Footer on desktop, normal flow on mobile -->
-        <div class="pt-4 lg:shrink-0 lg:border-t lg:border-border lg:bg-background lg:px-6 lg:py-4">
+        <div
+            class="pt-4 lg:shrink-0 lg:border-t lg:border-border lg:bg-background lg:px-6 lg:py-4"
+        >
             <DialogFooter>
                 <Button
                     type="button"
@@ -149,7 +159,9 @@ const onTagsUpdated = (tags: Tag[]) => {
                 <Button
                     type="submit"
                     :disabled="
-                        (!form.isDirty && form.attachments.length === 0 && form.removed_attachment_ids.length === 0) ||
+                        (!form.isDirty &&
+                            form.attachments.length === 0 &&
+                            form.removed_attachment_ids.length === 0) ||
                         form.processing ||
                         isLoadingDetails
                     "

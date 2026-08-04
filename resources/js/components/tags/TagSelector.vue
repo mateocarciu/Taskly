@@ -48,7 +48,7 @@ const triggerLabel = computed(() => {
 
 <template>
     <div class="space-y-2">
-        <label class="text-sm font-medium">Tags</label>
+        <label class="text-sm leading-none font-medium">Tags</label>
 
         <TagBadge
             v-if="selected.length > 0"
@@ -62,7 +62,7 @@ const triggerLabel = computed(() => {
                 <Button
                     type="button"
                     variant="outline"
-                    class="h-10 w-full justify-between px-3"
+                    class="h-9 w-full justify-between px-3"
                 >
                     <div class="flex min-w-0 items-center gap-2">
                         <TagIcon
