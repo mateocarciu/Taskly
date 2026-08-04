@@ -50,13 +50,6 @@ const triggerLabel = computed(() => {
     <div class="space-y-2">
         <label class="text-sm leading-none font-medium">Tags</label>
 
-        <TagBadge
-            v-if="selected.length > 0"
-            :tags="selected"
-            removable
-            @remove="(id) => toggleTag(selected.find((t) => t.id === id)!)"
-        />
-
         <DropdownMenu>
             <DropdownMenuTrigger as-child>
                 <Button
@@ -129,5 +122,12 @@ const triggerLabel = computed(() => {
                 </template>
             </DropdownMenuContent>
         </DropdownMenu>
+
+        <TagBadge
+            v-if="selected.length > 0"
+            :tags="selected"
+            removable
+            @remove="(id) => toggleTag(selected.find((t) => t.id === id)!)"
+        />
     </div>
 </template>

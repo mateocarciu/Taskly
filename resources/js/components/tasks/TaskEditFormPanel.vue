@@ -8,7 +8,7 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import type { Tag, TeamMember, TaskAttachment } from '@/types';
+import type { Tag, TaskAttachment, TeamMember } from '@/types';
 import { TaskEditFormState } from '@/types';
 import { Save } from 'lucide-vue-next';
 import { ref } from 'vue';
@@ -29,7 +29,7 @@ const emit = defineEmits<{
     'update:description': [value: string];
     'update:due-date': [value: string];
     'update:assigned-to': [value: number | null];
-    'update:created-by': [value: number | undefined];
+    'update:created-by': [value: number | null];
     'update:tag-ids': [value: number[]];
     'update:attachments': [value: File[]];
     'update:removed-attachment-ids': [value: string[]];
@@ -121,15 +121,15 @@ const onTagsUpdated = (tags: Tag[]) => {
                     </div>
                 </div>
 
-                <div class="grid gap-4 sm:grid-cols-2">
+                <div class="grid items-start gap-4 sm:grid-cols-2">
                     <div class="grid gap-2">
                         <Label>Reporter</Label>
                         <TaskAssigneeSelect
-                            :model-value="form.created_by ?? null"
+                            :model-value="form.created_by"
                             :team-members="teamMembers"
                             :allow-unassigned="false"
                             @update:model-value="
-                                $emit('update:created-by', $event ?? undefined)
+                                $emit('update:created-by', $event)
                             "
                         />
                         <InputError :message="form.errors.created_by" />

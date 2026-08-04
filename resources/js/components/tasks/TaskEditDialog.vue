@@ -37,6 +37,7 @@ const form = useForm({
     description: '',
     due_date: '',
     assigned_to: null as number | null,
+    created_by: null as number | null,
     tag_ids: [] as number[],
     attachments: [] as File[],
     removed_attachment_ids: [] as string[],
@@ -63,9 +64,7 @@ const stripRichText = (value: string) => {
 const hydrateFormsFromTask = (task: Task) => {
     form.title = task.title;
     form.description = task.description || '';
-    form.due_date = task.due_date
-        ? task.due_date.slice(0, 16)
-        : '';
+    form.due_date = task.due_date ? task.due_date.slice(0, 16) : '';
     form.assigned_to = task.assigned_to ?? null;
     form.created_by = task.created_by;
     form.tag_ids = task.tags?.map((t) => t.id) ?? [];
@@ -73,7 +72,11 @@ const hydrateFormsFromTask = (task: Task) => {
     form.removed_attachment_ids = [];
 };
 
-const loadTaskDetails = async (taskId: number, showLoader = true, hydrateForm = true) => {
+const loadTaskDetails = async (
+    taskId: number,
+    showLoader = true,
+    hydrateForm = true,
+) => {
     if (showLoader) {
         isLoadingDetails.value = true;
     }
@@ -240,54 +243,64 @@ const updateComment = async (commentId: number, body: string) => {
     const taskId = activeTask.value.id;
 
     updateForm.body = body;
-    await updateForm.put(comments.update({ task: taskId, comment: commentId }).url, {
-        onSuccess: async () => {
-            await loadComments(taskId);
-            toast.success('Comment updated');
+    await updateForm.put(
+        comments.update({ task: taskId, comment: commentId }).url,
+        {
+            onSuccess: async () => {
+                await loadComments(taskId);
+                toast.success('Comment updated');
+            },
         },
-    });
+    );
 };
 
 const deleteComment = async (commentId: number) => {
     if (!activeTask.value) return;
     const taskId = activeTask.value.id;
 
-    await deleteForm.delete(comments.destroy({ task: taskId, comment: commentId }).url, {
-        onSuccess: async () => {
-            await loadComments(taskId);
-            toast.success('Comment deleted');
+    await deleteForm.delete(
+        comments.destroy({ task: taskId, comment: commentId }).url,
+        {
+            onSuccess: async () => {
+                await loadComments(taskId);
+                toast.success('Comment deleted');
+            },
         },
-    });
+    );
 };
 
-watch([() => props.task, isOpen], ([task, open], [oldTask, oldOpen]) => {
-    if (task && open && (!oldOpen || oldTask?.id !== task.id)) {
-        taskDetails.value = null;
-        hydrateFormsFromTask(task);
-        void loadTaskDetails(task.id);
-        void loadComments(task.id);
-        form.clearErrors();
-        commentForm.reset('body');
-        commentForm.clearErrors();
-        cancelReply();
-    }
+watch(
+    [() => props.task, isOpen],
+    ([task, open], [oldTask, oldOpen]) => {
+        if (task && open && (!oldOpen || oldTask?.id !== task.id)) {
+            taskDetails.value = null;
+            hydrateFormsFromTask(task);
+            void loadTaskDetails(task.id);
+            void loadComments(task.id);
+            form.clearErrors();
+            commentForm.reset('body');
+            commentForm.clearErrors();
+            cancelReply();
+        }
 
-    if (!open) {
-        taskDetails.value = null;
-        commentsList.value = [];
-    }
-}, { immediate: true });
+        if (!open) {
+            taskDetails.value = null;
+            commentsList.value = [];
+        }
+    },
+    { immediate: true },
+);
 </script>
 
 <template>
     <Dialog v-model:open="isOpen">
         <DialogContent
-            class="task-edit-dialog w-[97vw] max-w-[1400px] overflow-hidden bg-background p-0 sm:max-w-[1400px] focus:outline-none"
+            class="task-edit-dialog w-[97vw] max-w-[1400px] overflow-hidden bg-background p-0 focus:outline-none sm:max-w-[1400px]"
             :show-close-button="false"
             @open-auto-focus.prevent
         >
             <div
-                class="max-h-[92vh] overflow-y-auto overscroll-contain bg-background lg:overflow-hidden focus:outline-none"
+                class="max-h-[92vh] overflow-y-auto overscroll-contain bg-background focus:outline-none lg:overflow-hidden"
             >
                 <DialogHeader
                     class="sticky top-0 z-20 border-b bg-background/95 px-6 pt-6 pr-14 pb-4 backdrop-blur supports-backdrop-filter:bg-background/80"
@@ -327,7 +340,9 @@ watch([() => props.task, isOpen], ([task, open], [oldTask, oldOpen]) => {
                         @update:created-by="form.created_by = $event"
                         @update:tag-ids="form.tag_ids = $event"
                         @update:attachments="form.attachments = $event"
-                        @update:removed-attachment-ids="form.removed_attachment_ids = $event"
+                        @update:removed-attachment-ids="
+                            form.removed_attachment_ids = $event
+                        "
                     />
 
                     <TaskActivityDiscussionPanel
@@ -353,7 +368,9 @@ watch([() => props.task, isOpen], ([task, open], [oldTask, oldOpen]) => {
                         @cancel-reply="cancelReply"
                         @update-reply-body="replyForm.body = $event"
                         @submit-reply="submitReply"
-                        @update-comment="(commentId, body) => updateComment(commentId, body)"
+                        @update-comment="
+                            (commentId, body) => updateComment(commentId, body)
+                        "
                         @delete-comment="deleteComment"
                     />
                 </div>

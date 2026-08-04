@@ -105,7 +105,7 @@ export interface TaskForm {
     description: string;
     due_date: string;
     assigned_to: number | null;
-    created_by?: number;
+    created_by: number | null;
     tag_ids: number[];
     attachments: File[];
 }
@@ -181,7 +181,7 @@ export interface TaskEditFormState {
     description: string;
     due_date: string;
     assigned_to: number | null;
-    created_by?: number;
+    created_by: number | null;
     tag_ids: number[];
     attachments: File[];
     removed_attachment_ids: string[];
