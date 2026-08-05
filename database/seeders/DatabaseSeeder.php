@@ -8,6 +8,7 @@ use App\Models\Team;
 use App\Models\Task;
 use App\Models\TaskComment;
 use App\Models\Column;
+use App\Models\TeamMembership;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 
@@ -20,16 +21,43 @@ class DatabaseSeeder extends Seeder
     {
         $teams = Team::factory(3)->create();
 
+        $owner = User::factory()->withoutTwoFactor()->create([
+            'email' => 'owner@example.com',
+            'password' => Hash::make('password'),
+            'team_id' => $teams->first()->id,
+            'role' => 'owner',
+            'remember_token' => Str::random(10),
+        ]);
+
+        $admin = User::factory()->withoutTwoFactor()->create([
+            'email' => 'admin@example.com',
+            'password' => Hash::make('password'),
+            'team_id' => $teams->first()->id,
+            'role' => 'admin',
+            'remember_token' => Str::random(10),
+        ]);
+
+        // Add owner and admin to all teams so they appear in member lists.
+        foreach ($teams as $team) {
+            TeamMembership::firstOrCreate(['team_id' => $team->id, 'user_id' => $owner->id]);
+            TeamMembership::firstOrCreate(['team_id' => $team->id, 'user_id' => $admin->id]);
+        }
+
         $usersPerTeam = [3, 2, 1];
         $userIndex = 1;
 
         foreach ($teams as $index => $team) {
             for ($i = 0; $i < $usersPerTeam[$index]; $i++) {
-                User::factory()->withoutTwoFactor()->create([
+                $member = User::factory()->withoutTwoFactor()->create([
                     'email' => "test{$userIndex}@example.com",
                     'password' => Hash::make('password'),
                     'team_id' => $team->id,
                     'remember_token' => Str::random(10),
+                ]);
+
+                TeamMembership::create([
+                    'team_id' => $team->id,
+                    'user_id' => $member->id,
                 ]);
                 $userIndex++;
             }
@@ -55,7 +83,10 @@ class DatabaseSeeder extends Seeder
                 'type' => 'done'
             ]);
 
-            $teamUsers = User::where('team_id', $team->id)->pluck('id');
+            $teamUsers = User::query()
+                ->whereIn('role', ['owner', 'admin'])
+                ->orWhereHas('teamMemberships', fn ($membershipQuery) => $membershipQuery->where('team_id', $team->id))
+                ->pluck('id');
 
             $tasks = Task::factory(10)->create([
                 'team_id' => $team->id,

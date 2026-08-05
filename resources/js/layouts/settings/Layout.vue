@@ -8,7 +8,12 @@ import { edit as editProfile } from '@/routes/profile';
 import { show } from '@/routes/two-factor';
 import { edit as editPassword } from '@/routes/user-password';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
+const page = usePage();
+const currentUser = computed(() => page.props.auth.user as any);
+const isPrivileged = computed(() => ['owner', 'admin'].includes(currentUser.value?.role));
 
 const sidebarNavItems: NavItem[] = [
     {
@@ -32,10 +37,23 @@ const sidebarNavItems: NavItem[] = [
         href: '/settings/columns',
     },
     {
+        title: 'User Management',
+        href: '/settings/users',
+    },
+    {
         title: 'Appearance',
         href: editAppearance(),
     },
 ];
+
+const filteredNavItems = computed(() => {
+    return sidebarNavItems.filter((item) => {
+        if (item.title === 'User Management' || item.title === 'Columns & Statuses') {
+            return isPrivileged.value;
+        }
+        return true;
+    });
+});
 
 const currentPath = typeof window !== undefined ? window.location.pathname : '';
 </script>
@@ -51,7 +69,7 @@ const currentPath = typeof window !== undefined ? window.location.pathname : '';
             <aside class="w-full max-w-xl lg:w-48">
                 <nav class="flex flex-col space-y-1 space-x-0">
                     <Button
-                        v-for="item in sidebarNavItems"
+                        v-for="item in filteredNavItems"
                         :key="toUrl(item.href)"
                         variant="ghost"
                         :class="[

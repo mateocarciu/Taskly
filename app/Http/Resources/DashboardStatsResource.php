@@ -15,8 +15,8 @@ class DashboardStatsResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'team_name' => $this->resource['team']->name,
-            'team_members' => $this->resource['team']->users_count,
+            'team_name'    => $this->resource['team']->name,
+            'team_members' => $this->resource['team_member_count'],
             'total_tasks' => $this->resource['total_tasks'],
             'overdue_tasks' => $this->resource['overdue_tasks']->count(),
             'due_today_tasks' => $this->resource['due_today_tasks']->count(),

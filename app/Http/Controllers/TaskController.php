@@ -2,36 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Task;
-use App\Models\Column;
-use App\Models\Tag;
-use App\Models\User;
-use App\Models\TaskComment;
-use App\Services\TaskService;
-use App\Services\CommentService;
+use App\Http\Requests\TaskCommentStoreRequest;
+use App\Http\Requests\TaskCommentUpdateRequest;
+use App\Http\Requests\TaskCreateRequest;
+use App\Http\Requests\TaskListRequest;
+use App\Http\Requests\TaskUpdateRequest;
 use App\Http\Resources\ColumnResource;
 use App\Http\Resources\CommentResource;
 use App\Http\Resources\TaskResource;
-use Inertia\Inertia;
-use Inertia\Response;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\TaskCreateRequest;
-use App\Http\Requests\TaskCommentStoreRequest;
-use App\Http\Requests\TaskCommentUpdateRequest;
+use App\Models\Column;
+use App\Models\Tag;
+use App\Models\Task;
+use App\Models\TaskComment;
+use App\Models\User;
+use App\Services\CommentService;
+use App\Services\TaskService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use App\Http\Requests\TaskUpdateRequest;
-use App\Http\Requests\TaskListRequest;
-use \Illuminate\Http\Response as HttpResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class TaskController extends Controller
 {
     public function __construct(
         private TaskService $taskService,
         private CommentService $commentService
-    ) {
-    }
+    ) {}
 
     public function index(TaskListRequest $request): Response
     {
@@ -42,7 +40,7 @@ class TaskController extends Controller
             ->orderBy('order')
             ->get();
 
-        $columns->each(function ($column) use ($filters) {
+        $columns->each(function (Column $column) use ($filters) {
             $column->setRelation(
                 'tasks',
                 $column->tasks()
@@ -57,8 +55,7 @@ class TaskController extends Controller
             );
         });
 
-        $teamMembers = User::query()
-            ->where('team_id', $request->user()->team_id)
+        $teamMembers = User::inTeam($request->user()->team_id)
             ->orderBy('name')
             ->get(['id', 'name']);
 

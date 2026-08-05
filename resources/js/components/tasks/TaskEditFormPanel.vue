@@ -8,7 +8,7 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import type { Tag, TeamMember, TaskAttachment } from '@/types';
+import type { Tag, TaskAttachment, TeamMember } from '@/types';
 import { TaskEditFormState } from '@/types';
 import { Save } from 'lucide-vue-next';
 import { ref } from 'vue';
@@ -29,7 +29,7 @@ const emit = defineEmits<{
     'update:description': [value: string];
     'update:due-date': [value: string];
     'update:assigned-to': [value: number | null];
-    'update:created-by': [value: number | undefined];
+    'update:created-by': [value: number | null];
     'update:tag-ids': [value: number[]];
     'update:attachments': [value: File[]];
     'update:removed-attachment-ids': [value: string[]];
@@ -48,11 +48,13 @@ const onTagsUpdated = (tags: Tag[]) => {
 
 <template>
     <form
-        class="space-y-6 p-6 lg:space-y-0 lg:p-0 lg:flex lg:flex-col lg:h-full lg:min-h-0"
+        class="space-y-6 p-6 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:space-y-0 lg:p-0"
         @submit.prevent="$emit('submit')"
     >
         <!-- Scrollable Content on desktop, normal flow on mobile -->
-        <div class="lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:p-6 lg:pr-8">
+        <div
+            class="lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:p-6 lg:pr-8"
+        >
             <div class="space-y-4">
                 <div class="grid gap-2">
                     <Label for="edit-task-title">Title</Label>
@@ -78,14 +80,20 @@ const onTagsUpdated = (tags: Tag[]) => {
                         :existing-attachments="existingAttachments"
                         :pending-files="form.attachments"
                         :removed-ids="form.removed_attachment_ids"
-                        @update:model-value="$emit('update:description', $event)"
-                        @update:attachments="$emit('update:attachments', $event)"
-                        @update:removed-attachment-ids="$emit('update:removed-attachment-ids', $event)"
+                        @update:model-value="
+                            $emit('update:description', $event)
+                        "
+                        @update:attachments="
+                            $emit('update:attachments', $event)
+                        "
+                        @update:removed-attachment-ids="
+                            $emit('update:removed-attachment-ids', $event)
+                        "
                     />
                     <InputError :message="form.errors.description" />
                 </div>
 
-                <div class="grid gap-2 sm:grid-cols-2">
+                <div class="grid gap-4 sm:grid-cols-2">
                     <div class="grid gap-2">
                         <Label for="edit-task-due-date">Due date</Label>
                         <Input
@@ -113,15 +121,15 @@ const onTagsUpdated = (tags: Tag[]) => {
                     </div>
                 </div>
 
-                <div class="grid gap-4 sm:grid-cols-2">
+                <div class="grid items-start gap-4 sm:grid-cols-2">
                     <div class="grid gap-2">
                         <Label>Reporter</Label>
                         <TaskAssigneeSelect
-                            :model-value="form.created_by ?? null"
+                            :model-value="form.created_by"
                             :team-members="teamMembers"
                             :allow-unassigned="false"
                             @update:model-value="
-                                $emit('update:created-by', $event ?? undefined)
+                                $emit('update:created-by', $event)
                             "
                         />
                         <InputError :message="form.errors.created_by" />
@@ -137,7 +145,9 @@ const onTagsUpdated = (tags: Tag[]) => {
         </div>
 
         <!-- Sticky Footer on desktop, normal flow on mobile -->
-        <div class="pt-4 lg:shrink-0 lg:border-t lg:border-border lg:bg-background lg:px-6 lg:py-4">
+        <div
+            class="pt-4 lg:shrink-0 lg:border-t lg:border-border lg:bg-background lg:px-6 lg:py-4"
+        >
             <DialogFooter>
                 <Button
                     type="button"
@@ -149,7 +159,9 @@ const onTagsUpdated = (tags: Tag[]) => {
                 <Button
                     type="submit"
                     :disabled="
-                        (!form.isDirty && form.attachments.length === 0 && form.removed_attachment_ids.length === 0) ||
+                        (!form.isDirty &&
+                            form.attachments.length === 0 &&
+                            form.removed_attachment_ids.length === 0) ||
                         form.processing ||
                         isLoadingDetails
                     "

@@ -38,6 +38,7 @@ export interface User {
     updated_at: string;
     team_id: number | null;
     team?: Team;
+    role: 'owner' | 'admin' | 'member';
 }
 
 export interface Tag {
@@ -104,7 +105,7 @@ export interface TaskForm {
     description: string;
     due_date: string;
     assigned_to: number | null;
-    created_by?: number;
+    created_by: number | null;
     tag_ids: number[];
     attachments: File[];
 }
@@ -112,6 +113,8 @@ export interface TaskForm {
 export interface TeamMember {
     id: number;
     name: string;
+    email: string;
+    role: 'owner' | 'admin' | 'member';
 }
 
 export interface TaskComment {
@@ -178,7 +181,7 @@ export interface TaskEditFormState {
     description: string;
     due_date: string;
     assigned_to: number | null;
-    created_by?: number;
+    created_by: number | null;
     tag_ids: number[];
     attachments: File[];
     removed_attachment_ids: string[];

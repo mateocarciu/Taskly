@@ -15,6 +15,8 @@ class ColumnSettingsController extends Controller
      */
     public function index(Request $request): Response
     {
+        abort_unless($request->user()->isPrivileged(), 403);
+
         $columns = Column::query()
             ->where('team_id', $request->user()->team_id)
             ->orderBy('order')

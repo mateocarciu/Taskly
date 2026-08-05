@@ -45,7 +45,7 @@ const selectMember = (memberId: number | null) => {
             <Button
                 type="button"
                 variant="outline"
-                class="h-10 w-full justify-between px-3"
+                class="h-9 w-full justify-between px-3"
             >
                 <div class="flex min-w-0 items-center gap-2">
                     <Avatar class="h-6 w-6 border border-border">

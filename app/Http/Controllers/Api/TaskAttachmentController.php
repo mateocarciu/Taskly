@@ -14,7 +14,7 @@ class TaskAttachmentController extends Controller
     {
         $attachment = TaskAttachment::findOrFail($id);
 
-        if ($attachment->team_id !== $request->user()->team_id) {
+        if (!$request->user()->canAccessTeam($attachment->team_id)) {
             abort(403);
         }
 
@@ -37,7 +37,7 @@ class TaskAttachmentController extends Controller
     {
         $attachment = TaskAttachment::findOrFail($id);
 
-        if ($attachment->team_id !== $request->user()->team_id) {
+        if (!$request->user()->canAccessTeam($attachment->team_id)) {
             abort(403);
         }
 

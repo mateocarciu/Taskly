@@ -2,17 +2,28 @@
 
 use App\Models\Column;
 use App\Models\Team;
+use App\Models\TeamMembership;
 use App\Models\User;
 
 beforeEach(function () {
     $this->team = Team::factory()->create();
-    $this->user = User::factory()->create(['team_id' => $this->team->id]);
+    $this->user = User::factory()->admin()->create(['team_id' => $this->team->id]);
+    TeamMembership::create(['team_id' => $this->team->id, 'user_id' => $this->user->id]);
     $this->otherTeam = Team::factory()->create();
 });
 
 test('unauthenticated users cannot access column settings', function () {
     $this->get('/settings/columns')
         ->assertRedirect('/login');
+});
+
+test('members cannot access column settings', function () {
+    $member = User::factory()->create(['team_id' => $this->team->id]);
+    TeamMembership::create(['team_id' => $this->team->id, 'user_id' => $member->id]);
+
+    $this->actingAs($member)
+        ->get(route('settings.columns.index'))
+        ->assertForbidden();
 });
 
 test('authenticated users can access column settings and see their columns', function () {
