@@ -30,8 +30,18 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const { hasSetupData, clearTwoFactorAuthData } = useTwoFactorAuth();
+const { hasSetupData, clearTwoFactorAuthData, fetchSetupData, clearErrors } = useTwoFactorAuth();
 const showSetupModal = ref<boolean>(false);
+
+const handleEnableSuccess = async () => {
+    await fetchSetupData();
+
+    if (hasSetupData.value) {
+        showSetupModal.value = true;
+    } else {
+        clearErrors();
+    }
+};
 
 onUnmounted(() => {
     clearTwoFactorAuthData();
@@ -71,7 +81,7 @@ onUnmounted(() => {
                         <Form
                             v-else
                             v-bind="enable.form()"
-                            @success="showSetupModal = true"
+                            @success="handleEnableSuccess"
                             #default="{ processing }"
                         >
                             <Button type="submit" :disabled="processing">

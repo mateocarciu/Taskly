@@ -83,3 +83,21 @@ test('correct password must be provided to delete account', function () {
 
     expect($user->fresh())->not->toBeNull();
 });
+
+test('owner cannot delete their account until ownership is transferred', function () {
+    $owner = User::factory()->owner()->create();
+
+    $response = $this
+        ->actingAs($owner)
+        ->from(route('profile.edit'))
+        ->delete(route('profile.destroy'), [
+            'password' => 'password',
+        ]);
+
+    $response
+        ->assertSessionHasErrors('password')
+        ->assertRedirect(route('profile.edit'));
+
+    expect($owner->fresh())->not->toBeNull();
+    $this->assertAuthenticatedAs($owner);
+});
