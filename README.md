@@ -4,6 +4,12 @@ Taskly is a modern, collaborative task management application for teams. It allo
 
 This project was bootstrapped from the official [Laravel Vue Starter Kit](https://github.com/laravel/vue-starter-kit).
 
+## Demo
+
+Short demo on YouTube: [Demo](https://youtu.be/Vk0FuN59XUE)
+
+![Taskly homepage](public/images/demo.png)
+
 ## Features
 
 - **Interactive Kanban Board:** Drag-and-drop tasks between columns, rename columns, and adjust task priority sequences.
