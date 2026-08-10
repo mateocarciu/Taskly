@@ -20,3 +20,16 @@ export function toUrl(href: NonNullable<InertiaLinkProps['href']>) {
 export function capitalize(value: string) {
     return value.charAt(0).toUpperCase() + value.slice(1);
 }
+
+export const MIN_LOADING_DURATION_MS = 500;
+
+export function ensureMinimumDelay(
+    startedAt: number,
+    minimumMs = MIN_LOADING_DURATION_MS,
+) {
+    const remaining = Math.max(0, minimumMs - (Date.now() - startedAt));
+
+    return remaining > 0
+        ? new Promise<void>((resolve) => setTimeout(resolve, remaining))
+        : Promise.resolve();
+}

@@ -2,6 +2,7 @@
 import InputError from '@/components/InputError.vue';
 import TagSelector from '@/components/tags/TagSelector.vue';
 import TaskAssigneeSelect from '@/components/tasks/TaskAssigneeSelect.vue';
+import TaskEditFormSkeleton from '@/components/tasks/TaskEditFormSkeleton.vue';
 import TaskRichTextEditor from '@/components/tasks/TaskRichTextEditor.vue';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
@@ -47,7 +48,10 @@ const onTagsUpdated = (tags: Tag[]) => {
 </script>
 
 <template>
+    <TaskEditFormSkeleton v-if="isLoadingDetails" />
+
     <form
+        v-else
         class="space-y-6 p-6 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:space-y-0 lg:p-0"
         @submit.prevent="$emit('submit')"
     >

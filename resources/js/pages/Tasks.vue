@@ -5,6 +5,7 @@ import TaskEditDialog from '@/components/tasks/TaskEditDialog.vue';
 import TaskFilters from '@/components/tasks/TaskFilters.vue';
 import TasksPageSkeleton from '@/components/tasks/TasksPageSkeleton.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { ensureMinimumDelay } from '@/lib/utils';
 import { index } from '@/routes/tasks';
 import type { BreadcrumbItem, Column, Tag, Task, TeamMember } from '@/types';
 import { Head, router, usePage } from '@inertiajs/vue3';
@@ -66,13 +67,10 @@ const handleFilterChange = (newFilters: any) => {
 
 watch(
     () => props.columns,
-    (newCols) => {
+    async (newCols) => {
         if (newCols !== undefined) {
-            const elapsed = Date.now() - startTime;
-            const remaining = Math.max(0, 500 - elapsed);
-            setTimeout(() => {
-                localColumns.value = newCols;
-            }, remaining);
+            await ensureMinimumDelay(startTime);
+            localColumns.value = newCols;
         }
     },
     { immediate: true },
@@ -133,9 +131,7 @@ watch(isEditModalOpen, (isOpen) => {
                     @change="handleFilterChange"
                 />
 
-                <div
-                    class="flex-1 min-h-0 overflow-hidden"
-                >
+                <div class="min-h-0 flex-1 overflow-hidden">
                     <KanbanBoard
                         :columns="localColumns"
                         :filters="filters || {}"

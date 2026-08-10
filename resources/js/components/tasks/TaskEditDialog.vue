@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { formatDateTime as formatTaskDateTime } from '@/composables/useDateFormatter';
 import { useInitials } from '@/composables/useInitials';
+import { ensureMinimumDelay } from '@/lib/utils';
 import { show, update } from '@/routes/tasks';
 import comments from '@/routes/tasks/comments';
 import type { Tag, Task, TaskComment, TaskEvent, TeamMember } from '@/types';
@@ -28,6 +29,7 @@ const { getInitials } = useInitials();
 const isOpen = defineModel<boolean>('open', { default: false });
 const taskDetails = ref<Task | null>(null);
 const isLoadingDetails = ref(false);
+const isLoadingComments = ref(false);
 const commentsList = ref<TaskComment[]>([]);
 
 const activeTask = computed(() => taskDetails.value ?? props.task);
@@ -81,6 +83,8 @@ const loadTaskDetails = async (
         isLoadingDetails.value = true;
     }
 
+    const startedAt = Date.now();
+
     try {
         const response = await fetch(show(taskId).url, {
             headers: { Accept: 'application/json' },
@@ -107,12 +111,19 @@ const loadTaskDetails = async (
         return false;
     } finally {
         if (showLoader) {
+            await ensureMinimumDelay(startedAt);
             isLoadingDetails.value = false;
         }
     }
 };
 
-const loadComments = async (taskId: number) => {
+const loadComments = async (taskId: number, showSkeleton = true) => {
+    if (showSkeleton) {
+        isLoadingComments.value = true;
+    }
+
+    const startedAt = Date.now();
+
     try {
         const response = await fetch(comments.index(taskId).url, {
             headers: { Accept: 'application/json' },
@@ -124,6 +135,11 @@ const loadComments = async (taskId: number) => {
         commentsList.value = data.comments;
     } catch {
         toast.error('Unable to load comments');
+    } finally {
+        if (showSkeleton) {
+            await ensureMinimumDelay(startedAt);
+            isLoadingComments.value = false;
+        }
     }
 };
 
@@ -199,7 +215,7 @@ const submitComment = async () => {
     await commentForm.post(comments.store(taskId).url, {
         onSuccess: async () => {
             commentForm.reset('body');
-            await loadComments(taskId);
+            await loadComments(taskId, false);
             commentForm.reset('body');
             toast.success('Comment posted');
         },
@@ -231,7 +247,7 @@ const submitReply = async (commentId: number) => {
     await replyForm.post(comments.store(taskId).url, {
         onSuccess: async () => {
             replyForm.reset('body');
-            await loadComments(taskId);
+            await loadComments(taskId, false);
             cancelReply();
             toast.success('Reply posted');
         },
@@ -247,7 +263,7 @@ const updateComment = async (commentId: number, body: string) => {
         comments.update({ task: taskId, comment: commentId }).url,
         {
             onSuccess: async () => {
-                await loadComments(taskId);
+                await loadComments(taskId, false);
                 toast.success('Comment updated');
             },
         },
@@ -262,7 +278,7 @@ const deleteComment = async (commentId: number) => {
         comments.destroy({ task: taskId, comment: commentId }).url,
         {
             onSuccess: async () => {
-                await loadComments(taskId);
+                await loadComments(taskId, false);
                 toast.success('Comment deleted');
             },
         },
@@ -347,6 +363,7 @@ watch(
 
                     <TaskActivityDiscussionPanel
                         :is-loading-details="isLoadingDetails"
+                        :is-loading-comments="isLoadingComments"
                         :timeline-events="timelineEvents"
                         :get-event-label="getEventLabel"
                         :format-timeline-date="formatTimelineDate"
