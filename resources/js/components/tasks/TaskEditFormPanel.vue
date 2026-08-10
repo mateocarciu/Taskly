@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import type { Tag, TaskAttachment, TeamMember } from '@/types';
 import { TaskEditFormState } from '@/types';
-import { Save } from 'lucide-vue-next';
+import { Save } from '@lucide/vue';
 import { ref } from 'vue';
 
 const props = defineProps<{

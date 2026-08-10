@@ -11,7 +11,7 @@ import {
     Pencil,
     Trash2,
     X,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -149,7 +149,6 @@ const onDragChange = (event: any) => {
     }
 };
 
-
 watch(
     () => props.column.tasks,
     (newTasks) => {
@@ -165,7 +164,9 @@ watch(
     <div
         class="flex w-[350px] shrink-0 flex-col rounded-xl bg-[color-mix(in_srgb,var(--muted)_40%,var(--background))]"
     >
-        <div class="sticky top-0 z-10 flex items-center justify-between px-4 pt-3 pb-3 bg-[color-mix(in_srgb,var(--muted)_40%,var(--background))] rounded-t-xl">
+        <div
+            class="sticky top-0 z-10 flex items-center justify-between rounded-t-xl bg-[color-mix(in_srgb,var(--muted)_40%,var(--background))] px-4 pt-3 pb-3"
+        >
             <div v-if="isEditingColumn" class="flex flex-1 items-center gap-2">
                 <input
                     v-model="editName"
@@ -234,7 +235,7 @@ watch(
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             @click="isDeleteColumnOpen = true"
-                            class="text-destructive focus:text-destructive focus:bg-destructive/10"
+                            class="text-destructive focus:bg-destructive/10 focus:text-destructive"
                         >
                             <Trash2 class="mr-2 size-3" />
                             <span>Delete</span>
@@ -249,7 +250,7 @@ watch(
                 v-model="localTasks"
                 group="tasks"
                 item-key="id"
-                class="flex flex-1 flex-col gap-3 pb-2 min-h-[100px]"
+                class="flex min-h-[100px] flex-1 flex-col gap-3 pb-2"
                 ghost-class="opacity-50"
                 @change="onDragChange"
             >

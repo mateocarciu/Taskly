@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import type { PreviewData } from '@/types';
-import { X } from 'lucide-vue-next';
+import { X } from '@lucide/vue';
 import { fetchPreview } from '@/utils/linkPreviewBatcher';
 
 const props = defineProps<{ url: string }>();
@@ -41,10 +41,15 @@ const hostname = () => {
             :href="preview.url"
             target="_blank"
             rel="noopener noreferrer"
-            class="lp-card bg-accent/30 hover:bg-accent/80 border-border/60 hover:border-border transition-colors duration-200"
+            class="lp-card border-border/60 bg-accent/30 transition-colors duration-200 hover:border-border hover:bg-accent/80"
         >
             <div v-if="preview.image" class="lp-thumb">
-                <img :src="preview.image" alt="" class="lp-thumb-img" loading="lazy" />
+                <img
+                    :src="preview.image"
+                    alt=""
+                    class="lp-thumb-img"
+                    loading="lazy"
+                />
             </div>
             <div class="lp-body">
                 <div class="lp-meta">
@@ -58,13 +63,15 @@ const hostname = () => {
                     <span class="lp-hostname">{{ hostname() }}</span>
                 </div>
                 <div class="lp-title">{{ preview.title ?? hostname() }}</div>
-                <div v-if="preview.description" class="lp-desc">{{ preview.description }}</div>
+                <div v-if="preview.description" class="lp-desc">
+                    {{ preview.description }}
+                </div>
             </div>
         </a>
         <button
             v-if="!loading && preview"
             @click.stop.prevent="emit('dismiss')"
-            class="absolute top-1.5 right-1.5 z-10 p-1.5 rounded-md text-muted-foreground transition-all hover:bg-black/5 dark:hover:bg-white/10 hover:text-foreground"
+            class="absolute top-1.5 right-1.5 z-10 rounded-md p-1.5 text-muted-foreground transition-all hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10"
             title="Remove preview"
         >
             <X class="size-3.5" />

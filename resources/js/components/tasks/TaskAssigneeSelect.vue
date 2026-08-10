@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useInitials } from '@/composables/useInitials';
 import type { TeamMember } from '@/types';
-import { Check, ChevronsUpDown } from 'lucide-vue-next';
+import { Check, ChevronsUpDown } from '@lucide/vue';
 import { computed } from 'vue';
 
 const props = defineProps<{

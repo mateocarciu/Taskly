@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Card, CardContent } from '@/components/ui/card';
 import type { DashboardStats } from '@/types/index';
-import { AlertTriangle, CalendarDays, ListCheck, Users } from 'lucide-vue-next';
+import { AlertTriangle, CalendarDays, ListCheck, Users } from '@lucide/vue';
 import { computed } from 'vue';
 
 const props = defineProps<{

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDate } from '@/composables/useDateFormatter';
 import { Link } from '@inertiajs/vue3';
 import type { DashboardTaskStat } from '@/types/index';
-import { ChevronDown } from 'lucide-vue-next';
+import { ChevronDown } from '@lucide/vue';
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -64,7 +64,7 @@ onBeforeUnmount(() => {
                         v-for="task in tasks"
                         :key="task.id"
                         :href="`/tasks?id=${task.id}`"
-                        class="flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-accent/40 block"
+                        class="block flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-accent/40"
                     >
                         <div class="min-w-0 space-y-1">
                             <p class="truncate text-sm font-medium">

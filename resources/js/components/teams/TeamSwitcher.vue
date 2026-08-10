@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { Team } from '@/types';
 import { router, usePage } from '@inertiajs/vue3';
-import { Check, ChevronsUpDown, Users } from 'lucide-vue-next';
+import { Check, ChevronsUpDown, Users } from '@lucide/vue';
 import { computed } from 'vue';
 
 const page = usePage();

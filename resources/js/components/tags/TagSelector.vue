@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { Tag } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { Check, Tag as TagIcon } from 'lucide-vue-next';
+import { Check, Tag as TagIcon } from '@lucide/vue';
 import { computed } from 'vue';
 import TagBadge from '../tags/TagBadge.vue';
 

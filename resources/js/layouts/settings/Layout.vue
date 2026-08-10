@@ -13,7 +13,9 @@ import { computed } from 'vue';
 
 const page = usePage();
 const currentUser = computed(() => page.props.auth.user as any);
-const isPrivileged = computed(() => ['owner', 'admin'].includes(currentUser.value?.role));
+const isPrivileged = computed(() =>
+    ['owner', 'admin'].includes(currentUser.value?.role),
+);
 
 const sidebarNavItems: NavItem[] = [
     {
@@ -48,7 +50,10 @@ const sidebarNavItems: NavItem[] = [
 
 const filteredNavItems = computed(() => {
     return sidebarNavItems.filter((item) => {
-        if (item.title === 'User Management' || item.title === 'Columns & Statuses') {
+        if (
+            item.title === 'User Management' ||
+            item.title === 'Columns & Statuses'
+        ) {
             return isPrivileged.value;
         }
         return true;

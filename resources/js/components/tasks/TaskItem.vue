@@ -14,7 +14,15 @@ import { useInitials } from '@/composables/useInitials';
 import { destroy } from '@/routes/tasks';
 import type { Task } from '@/types';
 import { router } from '@inertiajs/vue3';
-import { AlertTriangle, Calendar, Check, ClockAlert, MoreHorizontal, Pencil, Trash2 } from 'lucide-vue-next';
+import {
+    AlertTriangle,
+    Calendar,
+    Check,
+    ClockAlert,
+    MoreHorizontal,
+    Pencil,
+    Trash2,
+} from '@lucide/vue';
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { formatDate } from '@/composables/useDateFormatter';
@@ -26,7 +34,7 @@ const props = withDefaults(
     }>(),
     {
         isDone: false,
-    }
+    },
 );
 
 const emit = defineEmits<{
@@ -91,7 +99,7 @@ const deleteTask = () => {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 @click.stop="showDeleteDialog = true"
-                                class="text-destructive focus:text-destructive focus:bg-destructive/10"
+                                class="text-destructive focus:bg-destructive/10 focus:text-destructive"
                             >
                                 <Trash2 class="mr-2 size-3" />
                                 <span>Delete</span>
@@ -119,7 +127,7 @@ const deleteTask = () => {
 
             <!-- Footer: Meta tags & Avatar -->
             <div
-                class="mt-2 pt-2.5 border-t border-border/40 flex items-center justify-between gap-2"
+                class="mt-2 flex items-center justify-between gap-2 border-t border-border/40 pt-2.5"
             >
                 <div class="flex flex-wrap items-center gap-3">
                     <div
@@ -127,7 +135,7 @@ const deleteTask = () => {
                             task.days_in_column !== null &&
                             task.days_in_column !== undefined
                         "
-                        class="flex items-center gap-1.5 text-[11px] text-muted-foreground/80 font-medium"
+                        class="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground/80"
                         title="Time in column"
                     >
                         <ClockAlert class="size-3.5 text-muted-foreground/80" />
@@ -143,12 +151,15 @@ const deleteTask = () => {
                         :class="[
                             'flex items-center gap-1.5 transition-colors',
                             !isDone && isOverdue(task)
-                                ? 'bg-destructive/10 text-destructive border border-destructive/20 px-2 py-0.5 rounded-md font-semibold text-[10px]'
-                                : 'text-[11px] text-muted-foreground/80 font-medium'
+                                ? 'rounded-md border border-destructive/20 bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold text-destructive'
+                                : 'text-[11px] font-medium text-muted-foreground/80',
                         ]"
                         title="Due date"
                     >
-                        <AlertTriangle v-if="!isDone && isOverdue(task)" class="size-3.5" />
+                        <AlertTriangle
+                            v-if="!isDone && isOverdue(task)"
+                            class="size-3.5"
+                        />
                         <Calendar v-else class="size-3.5" />
                         <span>{{ formatDate(task.due_date) }}</span>
                     </div>

@@ -35,7 +35,7 @@ import {
     Trash2,
     User,
     UserPlus,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 

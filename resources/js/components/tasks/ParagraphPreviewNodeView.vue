@@ -16,7 +16,12 @@ const links = computed<string[]>(() => {
         node.marks?.forEach((mark: any) => {
             if (mark.type.name === 'link') {
                 const href: string = mark.attrs?.href ?? '';
-                if (href && /^https?:\/\//i.test(href) && !seen.has(href) && !locallyDismissed.value.has(href)) {
+                if (
+                    href &&
+                    /^https?:\/\//i.test(href) &&
+                    !seen.has(href) &&
+                    !locallyDismissed.value.has(href)
+                ) {
                     seen.add(href);
                     urls.push(href);
                 }
