@@ -19,7 +19,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useForm } from '@inertiajs/vue3';
-import { Check, ChevronsUpDown, UserPlus } from 'lucide-vue-next';
+import { Check, ChevronsUpDown, UserPlus } from '@lucide/vue';
 import { computed, watch } from 'vue';
 import { toast } from 'vue-sonner';
 

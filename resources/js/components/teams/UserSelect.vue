@@ -7,7 +7,7 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronsUpDown } from 'lucide-vue-next';
+import { ChevronsUpDown } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 interface User {
@@ -36,7 +36,11 @@ const pick = (user: User) => {
     emit('select', user);
 };
 
-defineExpose({ reset: () => { selected.value = null; } });
+defineExpose({
+    reset: () => {
+        selected.value = null;
+    },
+});
 </script>
 
 <template>
@@ -47,7 +51,10 @@ defineExpose({ reset: () => { selected.value = null; } });
                 class="w-full justify-between"
                 :disabled="disabled || users.length === 0"
             >
-                <span class="truncate text-sm" :class="selected ? '' : 'text-muted-foreground'">
+                <span
+                    class="truncate text-sm"
+                    :class="selected ? '' : 'text-muted-foreground'"
+                >
                     {{ label }}
                 </span>
                 <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
@@ -58,7 +65,9 @@ defineExpose({ reset: () => { selected.value = null; } });
             align="start"
             class="w-[--reka-dropdown-menu-trigger-width]"
         >
-            <DropdownMenuLabel class="text-xs text-muted-foreground">Users</DropdownMenuLabel>
+            <DropdownMenuLabel class="text-xs text-muted-foreground"
+                >Users</DropdownMenuLabel
+            >
             <DropdownMenuItem
                 v-for="user in users"
                 :key="user.id"
@@ -67,7 +76,9 @@ defineExpose({ reset: () => { selected.value = null; } });
             >
                 <div class="min-w-0 flex-1">
                     <p class="truncate text-sm font-medium">{{ user.name }}</p>
-                    <p class="truncate text-xs text-muted-foreground">{{ user.email }}</p>
+                    <p class="truncate text-xs text-muted-foreground">
+                        {{ user.email }}
+                    </p>
                 </div>
             </DropdownMenuItem>
         </DropdownMenuContent>

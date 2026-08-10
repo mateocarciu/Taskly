@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AuthCardLayout from '@/layouts/auth/AuthCardLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import { Hourglass, Mail, Sparkles, UserPlus } from 'lucide-vue-next';
+import { Hourglass, Mail, Sparkles, UserPlus } from '@lucide/vue';
 
 const steps = [
     {

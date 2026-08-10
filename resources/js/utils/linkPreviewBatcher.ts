@@ -27,11 +27,14 @@ const flushQueue = async () => {
             params.append('urls[]', url);
         });
 
-        const response = await fetch(`/link-previews/batch?${params.toString()}`, {
-            headers: {
-                Accept: 'application/json',
+        const response = await fetch(
+            `/link-previews/batch?${params.toString()}`,
+            {
+                headers: {
+                    Accept: 'application/json',
+                },
             },
-        });
+        );
 
         if (!response.ok) {
             throw new Error(`Batch request failed: HTTP ${response.status}`);
@@ -48,7 +51,9 @@ const flushQueue = async () => {
                 cache.set(url, result);
                 callbacks.forEach(({ resolve }) => resolve(result));
             } else {
-                callbacks.forEach(({ reject }) => reject(new Error('No preview returned')));
+                callbacks.forEach(({ reject }) =>
+                    reject(new Error('No preview returned')),
+                );
             }
         });
     } catch (err) {

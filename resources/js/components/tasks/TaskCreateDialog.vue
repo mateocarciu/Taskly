@@ -19,7 +19,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { store } from '@/routes/tasks';
 import type { AppPageProps, Tag, TaskForm, TeamMember } from '@/types';
 import { useForm, usePage } from '@inertiajs/vue3';
-import { Plus } from 'lucide-vue-next';
+import { Plus } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 

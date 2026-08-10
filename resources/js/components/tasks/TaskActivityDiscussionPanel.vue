@@ -12,7 +12,7 @@ import {
     Check,
     ClockAlert,
     MessageSquarePlus,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 const props = defineProps<{

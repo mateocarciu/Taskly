@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import type { PaginationLink } from '@/types';
 import { router } from '@inertiajs/vue3';
-import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import { ChevronLeft, ChevronRight } from '@lucide/vue';
 import { computed } from 'vue';
 
 const props = defineProps<{

@@ -15,9 +15,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
-import type { AppPageProps, BreadcrumbItem, PaginationLink, Tag } from '@/types';
+import type {
+    AppPageProps,
+    BreadcrumbItem,
+    PaginationLink,
+    Tag,
+} from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { Pencil, Plus, Save, Trash2 } from 'lucide-vue-next';
+import { Pencil, Plus, Save, Trash2 } from '@lucide/vue';
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -216,8 +221,8 @@ const confirmDelete = () => {
                 >
                     Team Tags ({{ props.tags.total }})
                 </div>
-                <div class="flex flex-1 flex-col min-h-0">
-                    <div class="divide-y divide-border flex-1">
+                <div class="flex min-h-0 flex-1 flex-col">
+                    <div class="flex-1 divide-y divide-border">
                         <div
                             v-if="props.tags.data.length === 0"
                             class="px-4 py-8 text-center text-sm text-muted-foreground"

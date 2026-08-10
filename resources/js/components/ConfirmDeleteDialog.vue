@@ -19,7 +19,7 @@ withDefaults(
     {
         confirmText: 'Delete',
         destructive: true,
-    }
+    },
 );
 
 const isOpen = defineModel<boolean>('open', { default: false });

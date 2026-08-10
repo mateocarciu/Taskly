@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import type { Column, Task } from '@/types';
 import { router } from '@inertiajs/vue3';
-import { Plus } from 'lucide-vue-next';
+import { Plus } from '@lucide/vue';
 import { ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import draggable from 'vuedraggable';
@@ -70,13 +70,11 @@ const onColumnDragChange = (event: {
 </script>
 
 <template>
-    <div
-        class="relative h-full w-full overflow-auto pb-4"
-    >
+    <div class="relative h-full w-full overflow-auto pb-4">
         <draggable
             v-model="localColumns"
             item-key="id"
-            class="flex min-h-full min-w-max w-full items-stretch gap-4"
+            class="flex min-h-full w-full min-w-max items-stretch gap-4"
             handle=".column-drag-handle"
             ghost-class="opacity-60"
             @start="onColumnDragStart"

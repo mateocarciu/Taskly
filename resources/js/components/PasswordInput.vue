@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useVModel } from '@vueuse/core';
-import { Eye, EyeOff } from 'lucide-vue-next';
+import { Eye, EyeOff } from '@lucide/vue';
 import { ref, useAttrs, type HTMLAttributes } from 'vue';
 
 defineOptions({ inheritAttrs: false });

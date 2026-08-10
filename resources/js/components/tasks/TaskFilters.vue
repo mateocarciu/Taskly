@@ -20,7 +20,7 @@ import {
     Tag as TagIcon,
     User,
     X,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { computed, reactive, watch } from 'vue';
 import { formatDate } from '@/composables/useDateFormatter';
 
@@ -62,7 +62,7 @@ watch(
     (newFilters) => {
         localFilters.search = newFilters?.search || '';
         localFilters.assignee_id = newFilters?.assignee_id || '';
-        
+
         // Handle tag_ids correctly, forcing numbers
         if (newFilters?.tag_ids) {
             localFilters.tag_ids = Array.isArray(newFilters.tag_ids)
@@ -71,7 +71,7 @@ watch(
         } else {
             localFilters.tag_ids = [];
         }
-        
+
         localFilters.due_date = newFilters?.due_date || '';
     },
     { immediate: true, deep: true },
@@ -107,10 +107,17 @@ const selectedAssigneeLabel = computed(() => {
 });
 
 const selectedAssigneeMember = computed(() => {
-    if (localFilters.assignee_id === '' || localFilters.assignee_id === 'unassigned') {
+    if (
+        localFilters.assignee_id === '' ||
+        localFilters.assignee_id === 'unassigned'
+    ) {
         return null;
     }
-    return props.teamMembers.find((m) => m.id === Number(localFilters.assignee_id)) || null;
+    return (
+        props.teamMembers.find(
+            (m) => m.id === Number(localFilters.assignee_id),
+        ) || null
+    );
 });
 
 // Tags selection helper
@@ -189,13 +196,13 @@ const hasActiveFilters = computed(() => {
         <!-- Keyword Search -->
         <div class="relative w-full max-w-xs">
             <Search
-                class="absolute top-1/2 left-3 -translate-y-1/2 size-4 text-muted-foreground"
+                class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             />
             <Input
                 v-model="localFilters.search"
                 type="text"
                 placeholder="Search tasks..."
-                class="pl-9 h-9"
+                class="h-9 pl-9"
                 @input="onSearchInput"
             />
         </div>
@@ -289,7 +296,7 @@ const hasActiveFilters = computed(() => {
                     <span>Tags:</span>
                     <span
                         v-if="localFilters.tag_ids.length > 0"
-                        class="font-normal text-primary bg-primary/10 rounded-full px-2 py-0.5 text-xs font-semibold"
+                        class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-normal font-semibold text-primary"
                     >
                         {{ selectedTagsLabel }}
                     </span>
@@ -351,20 +358,32 @@ const hasActiveFilters = computed(() => {
             <DropdownMenuContent class="w-64" align="start">
                 <DropdownMenuLabel>Filter by due date</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                
-                <div class="px-2 py-1 text-xs font-semibold text-muted-foreground">Custom Date</div>
-                <div class="px-2 pb-2 pt-0.5">
+
+                <div
+                    class="px-2 py-1 text-xs font-semibold text-muted-foreground"
+                >
+                    Custom Date
+                </div>
+                <div class="px-2 pt-0.5 pb-2">
                     <Input
                         type="date"
-                        :model-value="isCustomDate(localFilters.due_date) ? localFilters.due_date : ''"
+                        :model-value="
+                            isCustomDate(localFilters.due_date)
+                                ? localFilters.due_date
+                                : ''
+                        "
                         class="h-9"
                         @update:model-value="selectDueDate(String($event))"
                     />
                 </div>
-                
+
                 <DropdownMenuSeparator />
-                
-                <div class="px-2 py-1 text-xs font-semibold text-muted-foreground">Shortcuts</div>
+
+                <div
+                    class="px-2 py-1 text-xs font-semibold text-muted-foreground"
+                >
+                    Shortcuts
+                </div>
                 <DropdownMenuItem
                     class="cursor-pointer gap-2"
                     @click="selectDueDate('')"
@@ -376,7 +395,7 @@ const hasActiveFilters = computed(() => {
                     />
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                    class="cursor-pointer gap-2 text-destructive focus:text-destructive focus:bg-destructive/10"
+                    class="cursor-pointer gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
                     @click="selectDueDate('overdue')"
                 >
                     <span>Overdue</span>

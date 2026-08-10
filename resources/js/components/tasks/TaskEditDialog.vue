@@ -15,7 +15,7 @@ import { show, update } from '@/routes/tasks';
 import comments from '@/routes/tasks/comments';
 import type { Tag, Task, TaskComment, TaskEvent, TeamMember } from '@/types';
 import { useForm, useHttp } from '@inertiajs/vue3';
-import { X } from 'lucide-vue-next';
+import { X } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -178,8 +178,7 @@ const getEventLabel = (event: TaskEvent) => {
 
     if (event.type === 'assigned') {
         const assignedName = event.metadata?.assigned_to_name as
-            | string
-            | undefined;
+            string | undefined;
 
         if (assignedName) {
             return `Assigned to ${assignedName} by ${actorName}`;

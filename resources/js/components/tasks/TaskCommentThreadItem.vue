@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { TaskComment } from '@/types';
 import { usePage } from '@inertiajs/vue3';
-import { MoreHorizontal, Pencil, Trash2 } from 'lucide-vue-next';
+import { MoreHorizontal, Pencil, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 defineOptions({
@@ -46,7 +46,9 @@ const emit = defineEmits<{
 }>();
 
 const page = usePage();
-const isOwner = computed(() => props.comment.user.id === page.props.auth.user?.id);
+const isOwner = computed(
+    () => props.comment.user.id === page.props.auth.user?.id,
+);
 
 const isEditing = ref(false);
 const editBody = ref('');
@@ -137,7 +139,7 @@ const showLessReplies = () => {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 @click="handleDelete"
-                                class="text-destructive focus:text-destructive focus:bg-destructive/10"
+                                class="text-destructive focus:bg-destructive/10 focus:text-destructive"
                             >
                                 <Trash2 class="mr-2 size-3" />
                                 <span>Delete</span>
@@ -147,7 +149,7 @@ const showLessReplies = () => {
                 </div>
             </div>
 
-            <div v-if="isEditing" class="space-y-2 mt-2">
+            <div v-if="isEditing" class="mt-2 space-y-2">
                 <TaskRichTextEditor
                     :model-value="editBody"
                     placeholder="Edit comment..."
@@ -201,8 +203,6 @@ const showLessReplies = () => {
                     Cancel
                 </Button>
 
-
-
                 <Button
                     v-if="
                         canToggleReplies &&
@@ -252,7 +252,12 @@ const showLessReplies = () => {
                         type="button"
                         size="sm"
                         :disabled="postingReply"
-                        @click="() => { emit('submitReply', comment.id); repliesExpanded = true; }"
+                        @click="
+                            () => {
+                                emit('submitReply', comment.id);
+                                repliesExpanded = true;
+                            }
+                        "
                     >
                         Post reply
                     </Button>
@@ -276,8 +281,12 @@ const showLessReplies = () => {
                 @cancel-reply="emit('cancelReply')"
                 @update-reply-body="emit('updateReplyBody', $event)"
                 @submit-reply="emit('submitReply', $event)"
-                @update-comment="(commentId, body) => emit('updateComment', commentId, body)"
-                @delete-comment="(commentId) => emit('deleteComment', commentId)"
+                @update-comment="
+                    (commentId, body) => emit('updateComment', commentId, body)
+                "
+                @delete-comment="
+                    (commentId) => emit('deleteComment', commentId)
+                "
             />
         </div>
 

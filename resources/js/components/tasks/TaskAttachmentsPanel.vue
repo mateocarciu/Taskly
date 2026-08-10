@@ -1,12 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onBeforeUnmount } from 'vue';
-import {
-    FileText,
-    Paperclip,
-    Trash2,
-    RotateCcw,
-    Download
-} from 'lucide-vue-next';
+import { FileText, Paperclip, Trash2, RotateCcw, Download } from '@lucide/vue';
 import type { TaskAttachment, UnifiedAttachment } from '@/types';
 import { Badge } from '@/components/ui/badge';
 
@@ -19,19 +13,27 @@ const removedIds = defineModel<string[]>('removedIds', { default: () => [] });
 
 const pendingPreviews = ref<Record<number, string>>({});
 
-watch(pendingFiles, (newFiles) => {
-    Object.values(pendingPreviews.value).forEach(url => URL.revokeObjectURL(url));
-    const previews: Record<number, string> = {};
-    newFiles.forEach((file, index) => {
-        if (file.type.startsWith('image/')) {
-            previews[index] = URL.createObjectURL(file);
-        }
-    });
-    pendingPreviews.value = previews;
-}, { deep: true, immediate: true });
+watch(
+    pendingFiles,
+    (newFiles) => {
+        Object.values(pendingPreviews.value).forEach((url) =>
+            URL.revokeObjectURL(url),
+        );
+        const previews: Record<number, string> = {};
+        newFiles.forEach((file, index) => {
+            if (file.type.startsWith('image/')) {
+                previews[index] = URL.createObjectURL(file);
+            }
+        });
+        pendingPreviews.value = previews;
+    },
+    { deep: true, immediate: true },
+);
 
 onBeforeUnmount(() => {
-    Object.values(pendingPreviews.value).forEach(url => URL.revokeObjectURL(url));
+    Object.values(pendingPreviews.value).forEach((url) =>
+        URL.revokeObjectURL(url),
+    );
 });
 
 const formatBytes = (bytes: number, decimals = 1) => {
@@ -44,7 +46,10 @@ const formatBytes = (bytes: number, decimals = 1) => {
 };
 
 const isImageFile = (mime: string, name: string) => {
-    return mime?.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i.test(name.toLowerCase());
+    return (
+        mime?.startsWith('image/') ||
+        /\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i.test(name.toLowerCase())
+    );
 };
 
 const isExistingRemoved = (id: string) => {
@@ -107,10 +112,15 @@ const toggleRemoveExisting = (id: string) => {
 
 <template>
     <div v-if="hasAttachments" class="space-y-2.5">
-        <div class="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground select-none uppercase tracking-wider">
+        <div
+            class="flex items-center gap-1.5 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase select-none"
+        >
             <Paperclip class="size-3.5 text-muted-foreground/75" />
             <span>Attachments</span>
-            <Badge variant="secondary" class="rounded-full px-1.5 py-0.2 text-[10px] font-semibold">
+            <Badge
+                variant="secondary"
+                class="py-0.2 rounded-full px-1.5 text-[10px] font-semibold"
+            >
                 {{ unifiedAttachments.length }}
             </Badge>
         </div>
@@ -119,49 +129,54 @@ const toggleRemoveExisting = (id: string) => {
             <div
                 v-for="item in unifiedAttachments"
                 :key="item.key"
-                class="flex flex-col rounded-lg border border-border bg-card/60 relative group overflow-hidden transition-all duration-200 hover:border-primary/30 hover:bg-muted/10 w-[130px] h-[140px] select-none"
-                :class="{ 'opacity-50 border-destructive/20 bg-destructive/5': item.isRemoved }"
+                class="group relative flex h-[140px] w-[130px] flex-col overflow-hidden rounded-lg border border-border bg-card/60 transition-all duration-200 select-none hover:border-primary/30 hover:bg-muted/10"
+                :class="{
+                    'border-destructive/20 bg-destructive/5 opacity-50':
+                        item.isRemoved,
+                }"
             >
                 <a
                     v-if="!item.isRemoved && (item.url || item.previewUrl)"
                     :href="item.url || item.previewUrl"
                     target="_blank"
-                    class="h-[90px] w-full bg-muted/20 border-b border-border/40 relative flex items-center justify-center overflow-hidden cursor-pointer"
+                    class="relative flex h-[90px] w-full cursor-pointer items-center justify-center overflow-hidden border-b border-border/40 bg-muted/20"
                 >
-                    <img 
+                    <img
                         v-if="item.isImage && (item.url || item.previewUrl)"
-                        :src="item.url || item.previewUrl" 
-                        :alt="item.filename" 
-                        class="w-full h-full object-cover"
+                        :src="item.url || item.previewUrl"
+                        :alt="item.filename"
+                        class="h-full w-full object-cover"
                     />
                     <FileText
                         v-else
-                        class="size-7 text-rose-500/90 dark:text-rose-400/90 transition-colors"
+                        class="size-7 text-rose-500/90 transition-colors dark:text-rose-400/90"
                     />
                 </a>
                 <div
                     v-else
-                    class="h-[90px] w-full bg-muted/20 border-b border-border/40 relative flex items-center justify-center overflow-hidden"
+                    class="relative flex h-[90px] w-full items-center justify-center overflow-hidden border-b border-border/40 bg-muted/20"
                 >
-                    <img 
+                    <img
                         v-if="item.isImage && (item.url || item.previewUrl)"
-                        :src="item.url || item.previewUrl" 
-                        :alt="item.filename" 
-                        class="w-full h-full object-cover"
+                        :src="item.url || item.previewUrl"
+                        :alt="item.filename"
+                        class="h-full w-full object-cover"
                     />
                     <FileText
                         v-else
-                        class="size-7 text-rose-500/90 dark:text-rose-400/90 transition-colors"
+                        class="size-7 text-rose-500/90 transition-colors dark:text-rose-400/90"
                     />
                 </div>
 
-                <div class="absolute top-1 right-1 flex items-center gap-1 z-10">
+                <div
+                    class="absolute top-1 right-1 z-10 flex items-center gap-1"
+                >
                     <a
                         v-if="!item.isPending && !item.isRemoved"
                         :href="item.url"
                         target="_blank"
                         download
-                        class="p-1 rounded-md bg-background/90 hover:bg-background border border-border shadow-xs text-muted-foreground hover:text-foreground transition-all duration-150 flex items-center justify-center"
+                        class="flex items-center justify-center rounded-md border border-border bg-background/90 p-1 text-muted-foreground shadow-xs transition-all duration-150 hover:bg-background hover:text-foreground"
                         title="Download file"
                         @click.stop
                     >
@@ -171,7 +186,7 @@ const toggleRemoveExisting = (id: string) => {
                     <button
                         v-if="item.isPending"
                         type="button"
-                        class="p-1 rounded-md bg-background/90 hover:bg-background border border-border shadow-xs text-muted-foreground hover:text-destructive transition-all duration-150 cursor-pointer flex items-center justify-center"
+                        class="flex cursor-pointer items-center justify-center rounded-md border border-border bg-background/90 p-1 text-muted-foreground shadow-xs transition-all duration-150 hover:bg-background hover:text-destructive"
                         title="Remove staging"
                         @click.stop="removePendingFile(item.pendingIndex!)"
                     >
@@ -180,11 +195,11 @@ const toggleRemoveExisting = (id: string) => {
                     <button
                         v-else
                         type="button"
-                        class="p-1 rounded-md bg-background/90 hover:bg-background border border-border shadow-xs transition-all duration-150 cursor-pointer flex items-center justify-center"
+                        class="flex cursor-pointer items-center justify-center rounded-md border border-border bg-background/90 p-1 shadow-xs transition-all duration-150 hover:bg-background"
                         :class="[
                             item.isRemoved
-                                ? 'text-primary border-primary/20 bg-primary/10'
-                                : 'text-muted-foreground hover:text-destructive border-border'
+                                ? 'border-primary/20 bg-primary/10 text-primary'
+                                : 'border-border text-muted-foreground hover:text-destructive',
                         ]"
                         :title="item.isRemoved ? 'Restore file' : 'Delete file'"
                         @click.stop="toggleRemoveExisting(item.id as string)"
@@ -194,36 +209,40 @@ const toggleRemoveExisting = (id: string) => {
                     </button>
                 </div>
 
-                <div class="p-1.5 flex-1 min-w-0 flex flex-col justify-center bg-card">
+                <div
+                    class="flex min-w-0 flex-1 flex-col justify-center bg-card p-1.5"
+                >
                     <a
                         v-if="!item.isRemoved && (item.url || item.previewUrl)"
                         :href="item.url || item.previewUrl"
                         target="_blank"
-                        class="text-[10px] font-medium text-foreground block truncate hover:underline leading-tight"
+                        class="block truncate text-[10px] leading-tight font-medium text-foreground hover:underline"
                         :title="item.filename"
                     >
                         {{ item.filename }}
                     </a>
                     <span
                         v-else
-                        class="text-[10px] font-medium text-muted-foreground block truncate leading-tight"
+                        class="block truncate text-[10px] leading-tight font-medium text-muted-foreground"
                         :title="item.filename"
                         :class="{ 'line-through': item.isRemoved }"
                     >
                         {{ item.filename }}
                     </span>
 
-                    <div class="flex items-center justify-between text-[8px] text-muted-foreground/80 mt-0.5 leading-none">
+                    <div
+                        class="mt-0.5 flex items-center justify-between text-[8px] leading-none text-muted-foreground/80"
+                    >
                         <span>{{ formatBytes(item.size) }}</span>
-                        <span 
-                            v-if="item.isPending" 
-                            class="text-[7px] text-primary font-bold bg-primary/10 px-1 py-0.2 rounded shrink-0"
+                        <span
+                            v-if="item.isPending"
+                            class="py-0.2 shrink-0 rounded bg-primary/10 px-1 text-[7px] font-bold text-primary"
                         >
                             NEW
                         </span>
-                        <span 
-                            v-if="item.isRemoved" 
-                            class="text-[7px] text-destructive font-bold bg-destructive/10 px-1 py-0.2 rounded shrink-0"
+                        <span
+                            v-if="item.isRemoved"
+                            class="py-0.2 shrink-0 rounded bg-destructive/10 px-1 text-[7px] font-bold text-destructive"
                         >
                             DEL
                         </span>

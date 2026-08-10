@@ -17,7 +17,7 @@ import {
     MessageSquare,
     Tag,
     Tags,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 const currentYear = new Date().getFullYear();
 
@@ -395,7 +395,8 @@ const boardColumns = [
                 >
                     <div class="flex items-center gap-2.5">
                         <p class="text-sm text-muted-foreground">
-                            &copy; {{ currentYear }} Taskly. All rights reserved.
+                            &copy; {{ currentYear }} Taskly. All rights
+                            reserved.
                         </p>
                     </div>
                     <a

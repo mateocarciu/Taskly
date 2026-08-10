@@ -28,8 +28,8 @@ import {
     Shield,
     Trash2,
     UserPlus,
-    User as UserIcon
-} from 'lucide-vue-next';
+    User as UserIcon,
+} from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 

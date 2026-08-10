@@ -14,7 +14,7 @@ import {
     ListOrdered,
     Pilcrow,
     Paperclip,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { onBeforeUnmount, ref, watch, computed } from 'vue';
 import TaskAttachmentsPanel from '@/components/tasks/TaskAttachmentsPanel.vue';
 import type { TaskAttachment } from '@/types';
@@ -26,7 +26,7 @@ const isAllowedFile = (file: File): boolean => {
         'image/png',
         'image/svg+xml',
         'image/jpeg',
-        'image/jpg'
+        'image/jpg',
     ];
     if (allowedTypes.includes(file.type)) return true;
 
@@ -47,7 +47,9 @@ const filterFiles = (files: File[]): File[] => {
     }
 
     if (rejected.length > 0) {
-        toast.error(`Only PDF and image files (PNG, SVG, JPEG) are allowed. Rejected: ${rejected.join(', ')}`);
+        toast.error(
+            `Only PDF and image files (PNG, SVG, JPEG) are allowed. Rejected: ${rejected.join(', ')}`,
+        );
     }
 
     return allowed;
@@ -74,7 +76,7 @@ const props = withDefaults(
         existingAttachments: () => [],
         pendingFiles: () => [],
         removedIds: () => [],
-    }
+    },
 );
 
 const emit = defineEmits<{
@@ -84,7 +86,9 @@ const emit = defineEmits<{
 }>();
 
 const hasAttachments = computed(() => {
-    return props.existingAttachments.length > 0 || props.pendingFiles.length > 0;
+    return (
+        props.existingAttachments.length > 0 || props.pendingFiles.length > 0
+    );
 });
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
@@ -96,7 +100,10 @@ const handleFileInputChange = (event: Event) => {
     if (files && files.length > 0) {
         const allowedFiles = filterFiles(Array.from(files));
         if (allowedFiles.length > 0) {
-            emit('update:attachments', [...props.pendingFiles, ...allowedFiles]);
+            emit('update:attachments', [
+                ...props.pendingFiles,
+                ...allowedFiles,
+            ]);
         }
         (event.target as HTMLInputElement).value = '';
     }
@@ -146,7 +153,10 @@ const editor = useEditor({
             if (files.length > 0) {
                 const allowedFiles = filterFiles(files);
                 if (allowedFiles.length > 0) {
-                    emit('update:attachments', [...props.pendingFiles, ...allowedFiles]);
+                    emit('update:attachments', [
+                        ...props.pendingFiles,
+                        ...allowedFiles,
+                    ]);
                 }
                 return true;
             }
@@ -154,12 +164,15 @@ const editor = useEditor({
         },
         handleDrop(view, event, slice, moved) {
             if (!props.showAttachments) return false;
-            
+
             if (!moved && event.dataTransfer?.files?.length) {
                 const files = Array.from(event.dataTransfer.files);
                 const allowedFiles = filterFiles(files);
                 if (allowedFiles.length > 0) {
-                    emit('update:attachments', [...props.pendingFiles, ...allowedFiles]);
+                    emit('update:attachments', [
+                        ...props.pendingFiles,
+                        ...allowedFiles,
+                    ]);
                 }
                 return true;
             }
@@ -168,7 +181,7 @@ const editor = useEditor({
             if (html && html.includes('<img')) {
                 return true;
             }
-            
+
             return false;
         },
     },
@@ -200,7 +213,9 @@ onBeforeUnmount(() => {
     <div
         class="overflow-hidden rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow]"
     >
-        <div class="flex flex-wrap items-center gap-1 border-b border-input p-2">
+        <div
+            class="flex flex-wrap items-center gap-1 border-b border-input p-2"
+        >
             <Button
                 type="button"
                 size="icon-sm"
@@ -300,7 +315,9 @@ onBeforeUnmount(() => {
                 :pending-files="props.pendingFiles"
                 :removed-ids="props.removedIds"
                 @update:pending-files="emit('update:attachments', $event)"
-                @update:removed-ids="emit('update:removed-attachment-ids', $event)"
+                @update:removed-ids="
+                    emit('update:removed-attachment-ids', $event)
+                "
             />
         </div>
     </div>
