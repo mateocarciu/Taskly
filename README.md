@@ -28,7 +28,7 @@ Short demo on YouTube: [Demo](https://youtu.be/Vk0FuN59XUE)
 
 ## Tech Stack
 
-- **Backend:** Laravel 12 (PHP >= 8.4), Inertia.js V3
+- **Backend:** Laravel 13 (PHP >= 8.4), Inertia.js V3
 - **Frontend:** Vue 3
 - **Styling:** Tailwind CSS & Shadcn
 - **CI/CD:** GitHub Actions workflow for automated testing, linting and deployment.
