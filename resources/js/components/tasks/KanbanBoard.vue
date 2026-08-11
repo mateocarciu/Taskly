@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import type { Column, Task } from '@/types';
-import { router } from '@inertiajs/vue3';
+import type { AppPageProps, Column, Task } from '@/types';
+import { router, usePage } from '@inertiajs/vue3';
 import { Plus } from '@lucide/vue';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import draggable from 'vuedraggable';
 import ColumnCreateDialog from './ColumnCreateDialog.vue';
@@ -13,6 +13,11 @@ const props = defineProps<{
     columns: Column[];
     filters: Record<string, any>;
 }>();
+
+const page = usePage<AppPageProps>();
+const canManageColumns = computed(() =>
+    ['owner', 'admin'].includes(page.props.auth.user.role),
+);
 
 const emit = defineEmits<{
     edit: [task: Task];
@@ -74,6 +79,7 @@ const onColumnDragChange = (event: {
         <draggable
             v-model="localColumns"
             item-key="id"
+            :disabled="!canManageColumns"
             class="flex min-h-full w-full min-w-max items-stretch gap-4"
             handle=".column-drag-handle"
             ghost-class="opacity-60"
@@ -84,12 +90,13 @@ const onColumnDragChange = (event: {
                 <KanbanColumn
                     :column="element"
                     :filters="filters"
+                    :can-manage-columns="canManageColumns"
                     @edit="emit('edit', $event)"
                 />
             </template>
 
             <template #footer>
-                <div class="mt-0 shrink-0 p-1">
+                <div v-if="canManageColumns" class="mt-0 shrink-0 p-1">
                     <Button
                         variant="outline"
                         class="border-dashed text-muted-foreground shadow-sm transition-all hover:border-foreground hover:text-foreground"

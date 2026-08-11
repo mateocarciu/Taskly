@@ -143,7 +143,10 @@ class Task extends Model
             })
             ->when($dueDate, function ($query, $dueDate) {
                 if ($dueDate === 'overdue') {
-                    $query->whereDate('due_date', '<', now()->toDateString());
+                    $query->whereDate('due_date', '<', now()->toDateString())
+                        ->whereDoesntHave('column', function ($q) {
+                            $q->where('type', 'done');
+                        });
                 } elseif ($dueDate === 'today') {
                     $query->whereDate('due_date', '=', now()->toDateString());
                 } elseif ($dueDate === 'week') {

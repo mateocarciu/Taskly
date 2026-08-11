@@ -27,6 +27,7 @@ import TaskItem from './TaskItem.vue';
 const props = defineProps<{
     column: Column;
     filters: Record<string, any>;
+    canManageColumns: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -35,6 +36,11 @@ const emit = defineEmits<{
 
 const isEditingColumn = ref(false);
 const editName = ref(props.column.name);
+
+const startEditColumn = () => {
+    if (!props.canManageColumns) return;
+    isEditingColumn.value = true;
+};
 
 const localTasks = ref<Task[]>([...(props.column.tasks || [])]);
 const pagination = ref<Column['pagination']>(
@@ -195,9 +201,10 @@ watch(
             <h3
                 v-else
                 class="flex items-center font-semibold"
-                @dblclick="isEditingColumn = true"
+                @dblclick="startEditColumn"
             >
                 <button
+                    v-if="canManageColumns"
                     type="button"
                     class="column-drag-handle mr-1 rounded p-0.5 text-muted-foreground hover:cursor-grab hover:bg-accent hover:text-foreground active:cursor-grabbing"
                     title="Drag to reorder column"
@@ -217,7 +224,7 @@ watch(
                 />
             </h3>
 
-            <div v-if="!isEditingColumn">
+            <div v-if="!isEditingColumn && canManageColumns">
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
                         <Button
