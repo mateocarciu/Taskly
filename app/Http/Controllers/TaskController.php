@@ -9,12 +9,10 @@ use App\Http\Requests\TaskListRequest;
 use App\Http\Requests\TaskUpdateRequest;
 use App\Http\Resources\ColumnResource;
 use App\Http\Resources\CommentResource;
+use App\Http\Resources\TagResource;
 use App\Http\Resources\TaskResource;
-use App\Models\Column;
-use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TaskComment;
-use App\Models\User;
 use App\Services\CommentService;
 use App\Services\TaskService;
 use Illuminate\Http\JsonResponse;
@@ -35,39 +33,12 @@ class TaskController extends Controller
     {
         $filters = $request->validated();
 
-        $columns = Column::query()
-            ->where('team_id', $request->user()->team_id)
-            ->orderBy('order')
-            ->get();
-
-        $columns->each(function (Column $column) use ($filters) {
-            $column->setRelation(
-                'tasks',
-                $column->tasks()
-                    ->with([
-                        'creator:id,name',
-                        'assignee:id,name',
-                        'tags:id,name,color',
-                    ])
-                    ->filter($filters)
-                    ->orderBy('order')
-                    ->paginate(10)
-            );
-        });
-
-        $teamMembers = User::inTeam($request->user()->team_id)
-            ->orderBy('name')
-            ->get(['id', 'name']);
-
-        $tags = Tag::query()
-            ->where('team_id', $request->user()->team_id)
-            ->orderBy('name')
-            ->get(['id', 'name', 'color']);
+        $data = $this->taskService->indexData($request->user(), $filters);
 
         return Inertia::render('Tasks', [
-            'columns' => Inertia::defer(fn () => ColumnResource::collection($columns)),
-            'teamMembers' => $teamMembers,
-            'tags' => $tags,
+            'columns' => Inertia::defer(fn () => ColumnResource::collection($data['columns'])),
+            'teamMembers' => $data['teamMembers'],
+            'tags' => TagResource::collection($data['tags'])->resolve($request),
             'filters' => $filters,
         ]);
     }
@@ -76,30 +47,9 @@ class TaskController extends Controller
     {
         $this->authorize('view', $task);
 
-        $task->load([
-            'column:id,name,type',
-            'creator:id,name',
-            'assignee:id,name',
-            'tags:id,name,color',
-            'taskAttachments',
-            'events.actor:id,name',
-        ]);
-
-        return response()->json((new TaskResource($task))->resolve());
-    }
-
-    public function indexComments(Task $task): JsonResponse
-    {
-        $this->authorize('view', $task);
-
-        $comments = $task->comments()
-            ->whereNull('parent_id')
-            ->with(['user:id,name', 'replies.user:id,name'])
-            ->get();
-
-        return response()->json([
-            'comments' => CommentResource::collection($comments)->resolve(),
-        ]);
+        return response()->json(
+            (new TaskResource($this->taskService->loadDetails($task)))->resolve()
+        );
     }
 
     public function store(TaskCreateRequest $request): RedirectResponse
@@ -125,6 +75,17 @@ class TaskController extends Controller
         $this->taskService->deleteTask($task);
 
         return back();
+    }
+
+    public function indexComments(Task $task): JsonResponse
+    {
+        $this->authorize('view', $task);
+
+        return response()->json([
+            'comments' => CommentResource::collection(
+                $this->commentService->listComments($task)
+            )->resolve(),
+        ]);
     }
 
     public function storeComment(TaskCommentStoreRequest $request, Task $task): HttpResponse|JsonResponse

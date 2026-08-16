@@ -160,11 +160,7 @@ class TaskResource extends JsonResource
             ),
             'tags' => $this->whenLoaded(
                 'tags',
-                fn() => $this->tags->map(fn($tag) => [
-                    'id' => $tag->id,
-                    'name' => $tag->name,
-                    'color' => $tag->color,
-                ])->values()
+                fn() => TagResource::collection($this->tags)->resolve()
             ),
             'attachments' => $this->whenLoaded(
                 'taskAttachments',

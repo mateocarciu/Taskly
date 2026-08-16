@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Task;
 use App\Models\Column;
+use App\Models\Tag;
 use App\Models\TaskAttachment;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +12,64 @@ use Illuminate\Support\Facades\Storage;
 
 class TaskService
 {
+    /**
+     * Gather all the data needed to render the Kanban board.
+     *
+     * @return array{columns: \Illuminate\Database\Eloquent\Collection<int, Column>, teamMembers: \Illuminate\Database\Eloquent\Collection<int, User>, tags: \Illuminate\Database\Eloquent\Collection<int, Tag>}
+     */
+    public function indexData(User $user, array $filters = []): array
+    {
+        $columns = Column::query()
+            ->where('team_id', $user->team_id)
+            ->orderBy('order')
+            ->get();
+
+        $columns->each(function (Column $column) use ($filters) {
+            $column->setRelation(
+                'tasks',
+                $column->tasks()
+                    ->with([
+                        'creator:id,name',
+                        'assignee:id,name',
+                        'tags:id,name,color',
+                    ])
+                    ->filter($filters)
+                    ->orderBy('order')
+                    ->paginate(10)
+            );
+        });
+
+        $teamMembers = User::inTeam($user->team_id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $tags = Tag::query()
+            ->where('team_id', $user->team_id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'color']);
+
+        return [
+            'columns' => $columns,
+            'teamMembers' => $teamMembers,
+            'tags' => $tags,
+        ];
+    }
+
+    /**
+     * Eager-load the relations needed to display a task's details.
+     */
+    public function loadDetails(Task $task): Task
+    {
+        return $task->load([
+            'column:id,name,type',
+            'creator:id,name',
+            'assignee:id,name',
+            'tags:id,name,color',
+            'taskAttachments',
+            'events.actor:id,name',
+        ]);
+    }
+
     /**
      * Create a new task.
      */
