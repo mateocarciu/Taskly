@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\TeamMemberStoreRequest;
 use App\Http\Requests\TeamSaveRequest;
+use App\Http\Resources\TeamResource;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\TeamService;
@@ -22,16 +23,10 @@ class TeamController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $team = $user->team_id ? $user->team()->with('memberships.user')->first() : null;
+        $team = $this->teamService->currentTeam($user);
 
         return Inertia::render('settings/Teams', [
-            'teams' => $this->teamService->listForSettings($user)
-                ->map(fn (Team $team) => [
-                    'id' => $team->id,
-                    'name' => $team->name,
-                    'users_count' => $team->users_count,
-                    'is_current' => $user->team_id === $team->id,
-                ]),
+            'teams' => TeamResource::collection($this->teamService->listForSettings($user)),
             'currentTeamId' => $user->team_id,
             'members' => $team ? $this->teamService->members($team) : [],
             'availableUsers' => $team ? $this->teamService->availableUsers($team) : [],
@@ -113,9 +108,7 @@ class TeamController extends Controller
     {
         $this->authorize('addMember', $team);
 
-        $user = User::query()->findOrFail($request->validated('user_id'));
-
-        $this->teamService->addMember($team, $user);
+        $user = $this->teamService->addMember($team, $request->validated('user_id'));
 
         return redirect()->route('teams.index')
             ->with('success', "{$user->name} added to {$team->name}.");

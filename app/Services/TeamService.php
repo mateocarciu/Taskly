@@ -63,16 +63,35 @@ class TeamService
         ]);
     }
 
-    public function addMember(Team $team, User $user): void
+    /**
+     * Get the user's current team with its memberships, if any.
+     */
+    public function currentTeam(User $user): ?Team
     {
+        if ($user->team_id === null) {
+            return null;
+        }
+
+        return $user->team()->with('memberships.user')->first();
+    }
+
+    /**
+     * Add a user to a team. Accepts either a User instance or a user id.
+     */
+    public function addMember(Team $team, User|int $user): User
+    {
+        $member = $user instanceof User ? $user : User::query()->findOrFail($user);
+
         TeamMembership::firstOrCreate([
             'team_id' => $team->id,
-            'user_id' => $user->id,
+            'user_id' => $member->id,
         ]);
 
-        if ($user->team_id === null) {
-            $user->update(['team_id' => $team->id]);
+        if ($member->team_id === null) {
+            $member->update(['team_id' => $team->id]);
         }
+
+        return $member;
     }
 
     public function removeMember(Team $team, User $user): void
