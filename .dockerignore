@@ -1,0 +1,16 @@
+.git
+.github
+docker-compose.prod.yml
+Dockerfile
+.dockerignore
+.editorconfig
+.prettierrc
+.prettierignore
+node_modules
+vendor
+tests
+.env
+.env.example
+README.md
+LICENSE
+*.md
