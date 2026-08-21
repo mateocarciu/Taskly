@@ -1,0 +1,42 @@
+services:
+  app:
+    image: mateocarciu/taskly:${TAG:-latest}
+    container_name: taskly
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./data/storage:/var/www/storage
+      - ./.env:/var/www/.env:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  queue-worker:
+    image: mateocarciu/taskly:${TAG:-latest}
+    container_name: taskly-queue
+    restart: unless-stopped
+    volumes:
+      - ./data/storage:/var/www/storage
+      - ./.env:/var/www/.env:ro
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.4
+    container_name: taskly-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 3s
+      retries: 20

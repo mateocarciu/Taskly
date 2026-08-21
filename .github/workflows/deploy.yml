@@ -1,36 +1,121 @@
-name: Deploy to Debian
+name: Test & Deploy
 
 on:
-  workflow_run:
-    workflows: ["tests"]
-    types: [completed]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag (default: latest)"
+        required: false
+        default: "latest"
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+env:
+  IMAGE: mateocarciu/taskly
 
 jobs:
-  deploy:
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
+  tests:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, exif, pcntl, bcmath, gd, pdo_sqlite
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress && npm ci
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Prepare application
+        run: |
+          cp .env.example .env
+          touch database/database.sqlite
+          php artisan key:generate
+
+      - name: Run tests
+        run: composer test
+
+  release:
+    needs: tests
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.semrel.outputs.released }}
+      version: ${{ steps.semrel.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Semantic release
+        id: semrel
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm install --no-save semantic-release@25 @semantic-release/exec@7 >/dev/null 2>&1
+          npx semantic-release
+          if [ -f .version ]; then
+            echo "released=true" >> "$GITHUB_OUTPUT"
+            echo "version=$(cat .version)" >> "$GITHUB_OUTPUT"
+          else
+            echo "released=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: [tests, release]
+    if: always() && needs.tests.result == 'success' && (needs.release.result == 'skipped' || needs.release.outputs.released == 'true')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          username: mateocarciu
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ github.event_name == 'push' && format('{0}:{1}', env.IMAGE, needs.release.outputs.version) || format('{0}:{1}', env.IMAGE, inputs.tag || 'latest') }}
+            ${{ env.IMAGE }}:sha-${{ github.sha }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/app/Taskly
-            git fetch origin main
-            git reset --hard origin/main
 
-            docker compose up -d --build
+            TAG=${{ github.event_name == 'push' && needs.release.outputs.version || inputs.tag || 'latest' }}
+            export TAG
 
-            docker exec laravel-app git config --global --add safe.directory /var/www
-            
-            docker exec laravel-app composer install --ignore-platform-reqs
-            
-            docker exec laravel-app npm ci
-            docker exec laravel-app npm run build
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d --wait --remove-orphans
+            docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
 
-            docker exec laravel-app php artisan migrate --force
-
-            docker exec laravel-app sh -lc "mkdir -p storage bootstrap/cache database && touch database/database.sqlite && chown -R 1000:33 storage bootstrap/cache && chown 1000:33 database/database.sqlite"
             docker image prune -f
