@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Column;
-use App\Http\Resources\TaskResource;
 use App\Http\Requests\TaskListRequest;
+use App\Http\Resources\TaskResource;
+use App\Models\Column;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ColumnTaskController extends Controller

@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ColumnResource extends JsonResource
 {

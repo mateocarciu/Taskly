@@ -9,9 +9,7 @@ use Illuminate\Http\RedirectResponse;
 
 class TaskSequenceController extends Controller
 {
-    public function __construct(private TaskService $taskService)
-    {
-    }
+    public function __construct(private TaskService $taskService) {}
 
     public function update(TaskSequenceUpdateRequest $request, Task $task): RedirectResponse
     {

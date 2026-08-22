@@ -12,7 +12,7 @@ Route::get('dashboard', DashboardController::class)
     ->middleware(['auth', 'verified', 'hasTeam'])
     ->name('dashboard');
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/tags.php';
-require __DIR__ . '/teams.php';
-require __DIR__ . '/tasks.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/tags.php';
+require __DIR__.'/teams.php';
+require __DIR__.'/tasks.php';

@@ -28,9 +28,9 @@ class CommentService
     public function createComment(Task $task, array $data, User $user): TaskComment
     {
         return $task->comments()->create([
-            'user_id'   => $user->id,
+            'user_id' => $user->id,
             'parent_id' => $data['parent_id'] ?? null,
-            'body'      => $data['body'],
+            'body' => $data['body'],
         ]);
     }
 

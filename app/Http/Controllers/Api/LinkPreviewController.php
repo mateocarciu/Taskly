@@ -28,7 +28,7 @@ class LinkPreviewController extends Controller
 
         foreach ($urls as $url) {
             $host = strtolower(parse_url($url, PHP_URL_HOST) ?? '');
-            
+
             if (in_array($host, $localHosts)) {
                 $results[$url] = [
                     'url' => $url,
@@ -37,10 +37,11 @@ class LinkPreviewController extends Controller
                     'image' => null,
                     'favicon' => null,
                 ];
+
                 continue;
             }
 
-            $cacheKey = 'link_preview_' . md5($url);
+            $cacheKey = 'link_preview_'.md5($url);
             $cached = Cache::get($cacheKey);
 
             if ($cached) {
@@ -50,7 +51,7 @@ class LinkPreviewController extends Controller
             }
         }
 
-        if (!empty($urlsToFetch)) {
+        if (! empty($urlsToFetch)) {
             $responses = Http::pool(function ($pool) use ($urlsToFetch) {
                 return array_map(function ($url) use ($pool) {
                     return $pool->timeout(3)
@@ -63,11 +64,11 @@ class LinkPreviewController extends Controller
 
             foreach ($urlsToFetch as $index => $url) {
                 $response = $responses[$index];
-                $cacheKey = 'link_preview_' . md5($url);
+                $cacheKey = 'link_preview_'.md5($url);
 
                 try {
-                    if ($response instanceof \Exception || !$response->successful()) {
-                        throw new \Exception('Failed to fetch ' . $url);
+                    if ($response instanceof \Exception || ! $response->successful()) {
+                        throw new \Exception('Failed to fetch '.$url);
                     }
                     $data = $this->parseResponse($response, $url);
                 } catch (\Exception $e) {
@@ -95,7 +96,7 @@ class LinkPreviewController extends Controller
             return [
                 'url' => $url,
                 'title' => basename($url) ?: parse_url($url, PHP_URL_HOST),
-                'description' => 'Link to file: ' . $contentType,
+                'description' => 'Link to file: '.$contentType,
                 'image' => null,
                 'favicon' => null,
             ];
@@ -112,7 +113,7 @@ class LinkPreviewController extends Controller
         }
 
         // Parse HTML using DOMDocument
-        $doc = new \DOMDocument();
+        $doc = new \DOMDocument;
         // Suppress HTML parsing warnings
         @$doc->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'), LIBXML_NOERROR | LIBXML_NOWARNING);
 
@@ -169,6 +170,7 @@ class LinkPreviewController extends Controller
                 return $nodes->item(0)->nodeValue;
             }
         }
+
         return null;
     }
 
@@ -179,22 +181,21 @@ class LinkPreviewController extends Controller
         }
 
         $parts = parse_url($baseUrl);
-        $domain = $parts['scheme'] . '://' . $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '');
+        $domain = $parts['scheme'].'://'.$parts['host'].(isset($parts['port']) ? ':'.$parts['port'] : '');
 
         if (strpos($path, '//') === 0) {
-            return $parts['scheme'] . ':' . $path;
+            return $parts['scheme'].':'.$path;
         }
 
         if (strpos($path, '/') === 0) {
-            return $domain . $path;
+            return $domain.$path;
         }
 
         $basePath = isset($parts['path']) ? $parts['path'] : '/';
         if (substr($basePath, -1) !== '/') {
-            $basePath = dirname($basePath) . '/';
+            $basePath = dirname($basePath).'/';
         }
 
-        return $domain . $basePath . $path;
+        return $domain.$basePath.$path;
     }
-
 }

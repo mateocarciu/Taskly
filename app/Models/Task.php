@@ -2,16 +2,19 @@
 
 namespace App\Models;
 
+use Database\Factories\TaskFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Task extends Model
 {
-    /** @use HasFactory<\Database\Factories\TaskFactory> */
+    /** @use HasFactory<TaskFactory> */
     use HasFactory;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -111,9 +114,8 @@ class Task extends Model
     /**
      * Scope a query to filter tasks based on array parameters.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param array $filters
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
+     * @return Builder
      */
     public function scopeFilter($query, array $filters)
     {
@@ -126,7 +128,7 @@ class Task extends Model
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
-                      ->orWhere('description', 'like', "%{$search}%");
+                        ->orWhere('description', 'like', "%{$search}%");
                 });
             })
             ->when($assigneeId, function ($query, $assigneeId) {
@@ -152,7 +154,7 @@ class Task extends Model
                 } elseif ($dueDate === 'week') {
                     $query->whereBetween('due_date', [
                         now()->startOfWeek()->toDateString(),
-                        now()->endOfWeek()->toDateString()
+                        now()->endOfWeek()->toDateString(),
                     ]);
                 } elseif ($dueDate === 'none') {
                     $query->whereNull('due_date');

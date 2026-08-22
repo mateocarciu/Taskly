@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\Task;
 use App\Models\Column;
 use App\Models\Tag;
+use App\Models\Task;
 use App\Models\TaskAttachment;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -15,7 +16,7 @@ class TaskService
     /**
      * Gather all the data needed to render the Kanban board.
      *
-     * @return array{columns: \Illuminate\Database\Eloquent\Collection<int, Column>, teamMembers: \Illuminate\Database\Eloquent\Collection<int, User>, tags: \Illuminate\Database\Eloquent\Collection<int, Tag>}
+     * @return array{columns: Collection<int, Column>, teamMembers: Collection<int, User>, tags: Collection<int, Tag>}
      */
     public function indexData(User $user, array $filters = []): array
     {
@@ -78,7 +79,7 @@ class TaskService
         $columnId = $data['column_id'] ?? null;
         $tagIds = $data['tag_ids'] ?? null;
 
-        if (!$columnId) {
+        if (! $columnId) {
             $columnId = Column::where('team_id', $user->team_id)->orderBy('order')->value('id');
         }
 
@@ -113,7 +114,7 @@ class TaskService
                 $task->tags()->sync($tagIds);
             }
 
-            if (!empty($task->assigned_to)) {
+            if (! empty($task->assigned_to)) {
                 $assignedUserName = User::query()->where('id', $task->assigned_to)->value('name');
 
                 $task->events()->create([
@@ -131,13 +132,13 @@ class TaskService
                 $path = $file->store('attachments', 'local');
 
                 TaskAttachment::create([
-                    'team_id'   => $user->team_id,
-                    'task_id'   => $task->id,
-                    'user_id'   => $user->id,
-                    'path'      => $path,
-                    'filename'  => $file->getClientOriginalName(),
+                    'team_id' => $user->team_id,
+                    'task_id' => $task->id,
+                    'user_id' => $user->id,
+                    'path' => $path,
+                    'filename' => $file->getClientOriginalName(),
                     'mime_type' => $file->getMimeType(),
-                    'size'      => $file->getSize(),
+                    'size' => $file->getSize(),
                 ]);
             }
 
@@ -158,7 +159,7 @@ class TaskService
 
         $updated = $task->update($data);
 
-        if (!$updated) {
+        if (! $updated) {
             return false;
         }
 
@@ -184,7 +185,7 @@ class TaskService
             ]);
         }
 
-        if (!empty($removedIds)) {
+        if (! empty($removedIds)) {
             $toRemove = TaskAttachment::whereIn('id', $removedIds)
                 ->where('team_id', $actor->team_id)
                 ->get();
@@ -199,13 +200,13 @@ class TaskService
             $path = $file->store('attachments', 'local');
 
             TaskAttachment::create([
-                'team_id'   => $actor->team_id,
-                'task_id'   => $task->id,
-                'user_id'   => $actor->id,
-                'path'      => $path,
-                'filename'  => $file->getClientOriginalName(),
+                'team_id' => $actor->team_id,
+                'task_id' => $task->id,
+                'user_id' => $actor->id,
+                'path' => $path,
+                'filename' => $file->getClientOriginalName(),
                 'mime_type' => $file->getMimeType(),
-                'size'      => $file->getSize(),
+                'size' => $file->getSize(),
             ]);
         }
 
@@ -225,7 +226,7 @@ class TaskService
             ->pluck('name', 'id');
 
         DB::transaction(function () use ($task, $newColumnId, $newOrder, $oldColumnId, $oldOrder, $isDifferentColumn, $actor, $columnNames) {
-            if (!$isDifferentColumn) {
+            if (! $isDifferentColumn) {
                 // Moving within the same column
                 if ($oldOrder < $newOrder) {
                     Task::where('column_id', $newColumnId)

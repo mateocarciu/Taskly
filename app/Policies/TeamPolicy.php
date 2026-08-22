@@ -69,7 +69,7 @@ class TeamPolicy
     {
         return $user->isOwner() && ! $target->isOwner();
     }
-    
+
     /**
      * Everyone can switch to a team they have access to.
      */

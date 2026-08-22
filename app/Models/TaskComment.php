@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use Database\Factories\TaskCommentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Model;
 
 class TaskComment extends Model
 {
-    /** @use HasFactory<\Database\Factories\TaskCommentFactory> */
+    /** @use HasFactory<TaskCommentFactory> */
     use HasFactory;
 
     /**
