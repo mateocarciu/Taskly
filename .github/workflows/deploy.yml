@@ -124,7 +124,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ github.event_name == 'push' && format('{0}:v{1}', env.IMAGE, needs.release.outputs.version) || format('{0}:{1}', env.IMAGE, inputs.tag || 'latest') }}
+            ${{ github.event_name == 'push' && needs.release.outputs.released == 'true' && format('{0}:v{1}', env.IMAGE, needs.release.outputs.version) || format('{0}:{1}', env.IMAGE, inputs.tag || 'latest') }}
             ${{ github.event_name == 'push' && format('{0}:latest', env.IMAGE) || '' }}
 
   deploy:
@@ -140,11 +140,7 @@ jobs:
             set -e
             cd ~/app/Taskly
 
-            TAG=${{ github.event_name == 'push' && format('v{0}', needs.release.outputs.version) || inputs.tag || 'latest' }}
-            case "$TAG" in
-              latest|v[0-9]*.[0-9]*.[0-9]*) ;;
-              *) echo "::error::Tag invalide: '$TAG' (attendu: latest ou vX.Y.Z)" && exit 1 ;;
-            esac
+            TAG=${{ github.event_name == 'push' && needs.release.outputs.released == 'true' && format('v{0}', needs.release.outputs.version) || inputs.tag || 'latest' }}
             export TAG
 
             docker compose -f docker-compose.prod.yml pull
