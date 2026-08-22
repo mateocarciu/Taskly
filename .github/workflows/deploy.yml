@@ -137,6 +137,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            set -e
             cd ~/app/Taskly
 
             TAG=${{ github.event_name == 'push' && format('v{0}', needs.release.outputs.version) || inputs.tag || 'latest' }}
