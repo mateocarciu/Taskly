@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Settings;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -10,7 +11,7 @@ class ProfileDestroyRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -21,7 +22,8 @@ class ProfileDestroyRequest extends FormRequest
 
     /**
      * Get the "after" validation callables for the request.
-     * @return array<int, \Closure(\Illuminate\Validation\Validator): void>
+     *
+     * @return array<int, \Closure(Validator): void>
      */
     public function after(): array
     {

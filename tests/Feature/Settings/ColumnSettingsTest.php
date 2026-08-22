@@ -34,7 +34,7 @@ test('authenticated users can access column settings and see their columns', fun
         ->get(route('settings.columns.index'));
 
     $response->assertStatus(200);
-    
+
     $response->assertInertia(fn ($page) => $page
         ->component('settings/Columns')
         ->has('columns', 1)

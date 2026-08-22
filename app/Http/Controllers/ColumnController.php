@@ -7,14 +7,12 @@ use App\Http\Requests\ColumnStoreRequest;
 use App\Http\Requests\ColumnUpdateRequest;
 use App\Models\Column;
 use App\Services\ColumnService;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class ColumnController extends Controller
 {
-    public function __construct(private ColumnService $columnService)
-    {
-    }
+    public function __construct(private ColumnService $columnService) {}
 
     public function store(ColumnStoreRequest $request): RedirectResponse
     {

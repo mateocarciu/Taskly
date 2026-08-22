@@ -49,7 +49,7 @@ class HandleInertiaRequests extends Middleware
             'teams' => $request->user()
                 ? $request->user()->accessibleTeamsQuery()->orderBy('name')->get(['id', 'name'])
                 : [],
-            'sidebarOpen' => !$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }
 }

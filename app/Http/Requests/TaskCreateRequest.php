@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\Column;
 use App\Models\User;
 use Closure;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -14,7 +15,7 @@ class TaskCreateRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -42,7 +43,8 @@ class TaskCreateRequest extends FormRequest
 
     /**
      * Get the "after" validation callables for the request.
-     * @return array<int, \Closure(\Illuminate\Validation\Validator): void>
+     *
+     * @return array<int, Closure(Validator): void>
      */
     public function after(): array
     {

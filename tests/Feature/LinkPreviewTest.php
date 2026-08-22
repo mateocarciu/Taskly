@@ -34,7 +34,7 @@ class LinkPreviewTest extends TestCase
 
     public function test_unauthenticated_users_cannot_access_link_preview_batch()
     {
-        $response = $this->getJson('/link-previews/batch?urls[]=' . urlencode('https://example.com'));
+        $response = $this->getJson('/link-previews/batch?urls[]='.urlencode('https://example.com'));
 
         $response->assertStatus(401);
     }
@@ -70,7 +70,7 @@ class LinkPreviewTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->getJson('/link-previews/batch?urls[]=' . urlencode('https://example1.com') . '&urls[]=' . urlencode('https://example2.com'));
+            ->getJson('/link-previews/batch?urls[]='.urlencode('https://example1.com').'&urls[]='.urlencode('https://example2.com'));
 
         $response->assertStatus(200)
             ->assertJson([

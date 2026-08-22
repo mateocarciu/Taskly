@@ -2,15 +2,15 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
-use App\Models\Team;
+use App\Models\Column;
 use App\Models\Task;
 use App\Models\TaskComment;
-use App\Models\Column;
+use App\Models\Team;
 use App\Models\TeamMembership;
-use Illuminate\Support\Str;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -66,21 +66,21 @@ class DatabaseSeeder extends Seeder
                 'team_id' => $team->id,
                 'name' => 'To Do',
                 'order' => 1,
-                'type' => 'todo'
+                'type' => 'todo',
             ]);
 
             $progressColumn = Column::create([
                 'team_id' => $team->id,
                 'name' => 'In Progress',
                 'order' => 2,
-                'type' => 'in_progress'
+                'type' => 'in_progress',
             ]);
 
             $doneColumn = Column::create([
                 'team_id' => $team->id,
                 'name' => 'Done',
                 'order' => 3,
-                'type' => 'done'
+                'type' => 'done',
             ]);
 
             $teamUsers = User::query()
@@ -90,8 +90,8 @@ class DatabaseSeeder extends Seeder
 
             $tasks = Task::factory(10)->create([
                 'team_id' => $team->id,
-                'created_by' => fn() => $teamUsers->random(),
-                'assigned_to' => fn() => rand(0, 100) < 80 ? $teamUsers->random() : null,
+                'created_by' => fn () => $teamUsers->random(),
+                'assigned_to' => fn () => rand(0, 100) < 80 ? $teamUsers->random() : null,
             ]);
 
             $todoOrder = 0;

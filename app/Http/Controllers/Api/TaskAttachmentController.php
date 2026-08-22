@@ -9,16 +9,15 @@ use Illuminate\Support\Facades\Storage;
 
 class TaskAttachmentController extends Controller
 {
-
     public function show(Request $request, string $id)
     {
         $attachment = TaskAttachment::findOrFail($id);
 
-        if (!$request->user()->canAccessTeam($attachment->team_id)) {
+        if (! $request->user()->canAccessTeam($attachment->team_id)) {
             abort(403);
         }
 
-        if (!Storage::disk('local')->exists($attachment->path)) {
+        if (! Storage::disk('local')->exists($attachment->path)) {
             abort(404);
         }
 
@@ -37,7 +36,7 @@ class TaskAttachmentController extends Controller
     {
         $attachment = TaskAttachment::findOrFail($id);
 
-        if (!$request->user()->canAccessTeam($attachment->team_id)) {
+        if (! $request->user()->canAccessTeam($attachment->team_id)) {
             abort(403);
         }
 

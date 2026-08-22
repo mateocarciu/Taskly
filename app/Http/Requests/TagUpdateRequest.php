@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class TagUpdateRequest extends FormRequest
@@ -9,14 +10,14 @@ class TagUpdateRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         $tagId = $this->route('tag')->id ?? null;
 
         return [
-            'name' => ['sometimes', 'string', 'max:50', 'unique:tags,name,' . $tagId . ',id,team_id,' . $this->user()?->team_id],
+            'name' => ['sometimes', 'string', 'max:50', 'unique:tags,name,'.$tagId.',id,team_id,'.$this->user()?->team_id],
             'color' => ['sometimes', 'regex:/^#[0-9A-Fa-f]{6}$/'],
         ];
     }

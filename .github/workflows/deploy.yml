@@ -49,8 +49,36 @@ jobs:
       - name: Run tests
         run: composer test
 
+  style:
+    name: Style (Pint, Prettier, ESLint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress && npm ci
+
+      - name: Pint (check only)
+        run: vendor/bin/pint --test
+
+      - name: Prettier (check only)
+        run: npm run format:check
+
+      - name: ESLint (no fix)
+        run: npx eslint .
+
   release:
-    needs: tests
+    needs: [tests, style]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     outputs:
@@ -80,8 +108,8 @@ jobs:
           fi
 
   build:
-    needs: [tests, release]
-    if: always() && needs.tests.result == 'success' && (needs.release.result == 'skipped' || needs.release.outputs.released == 'true')
+    needs: [tests, style, release]
+    if: always() && needs.tests.result == 'success' && needs.style.result == 'success' && (needs.release.result == 'skipped' || needs.release.outputs.released == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -96,8 +124,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ github.event_name == 'push' && format('{0}:{1}', env.IMAGE, needs.release.outputs.version) || format('{0}:{1}', env.IMAGE, inputs.tag || 'latest') }}
-            ${{ env.IMAGE }}:sha-${{ github.sha }}
+            ${{ github.event_name == 'push' && format('{0}:v{1}', env.IMAGE, needs.release.outputs.version) || format('{0}:{1}', env.IMAGE, inputs.tag || 'latest') }}
+            ${{ github.event_name == 'push' && format('{0}:latest', env.IMAGE) || '' }}
 
   deploy:
     needs: build
@@ -111,7 +139,7 @@ jobs:
           script: |
             cd ~/app/Taskly
 
-            TAG=${{ github.event_name == 'push' && needs.release.outputs.version || inputs.tag || 'latest' }}
+            TAG=${{ github.event_name == 'push' && format('v{0}', needs.release.outputs.version) || inputs.tag || 'latest' }}
             export TAG
 
             docker compose -f docker-compose.prod.yml pull

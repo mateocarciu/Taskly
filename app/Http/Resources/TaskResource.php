@@ -19,13 +19,13 @@ class TaskResource extends JsonResource
 
         try {
             $dom->loadHTML(
-                '<?xml encoding="utf-8" ?><div id="preview">' . $html . '</div>',
+                '<?xml encoding="utf-8" ?><div id="preview">'.$html.'</div>',
                 LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
             );
 
             $container = $dom->getElementById('preview');
 
-            if (!$container) {
+            if (! $container) {
                 return null;
             }
 
@@ -70,7 +70,7 @@ class TaskResource extends JsonResource
             $snippet = mb_substr($text, 0, $remaining);
             $remaining = 0;
 
-            return $dom->createTextNode(rtrim($snippet) . '...');
+            return $dom->createTextNode(rtrim($snippet).'...');
         }
 
         $clone = $dom->createElement($node->nodeName);
@@ -130,22 +130,22 @@ class TaskResource extends JsonResource
             'due_date' => $this->due_date,
             'created_by' => $this->created_by,
             'assigned_to' => $this->assigned_to,
-            'creator' => $this->whenLoaded('creator', fn() => [
+            'creator' => $this->whenLoaded('creator', fn () => [
                 'id' => $this->creator->id,
                 'name' => $this->creator->name,
             ]),
-            'assignee' => $this->whenLoaded('assignee', fn() => [
+            'assignee' => $this->whenLoaded('assignee', fn () => [
                 'id' => $this->assignee->id,
                 'name' => $this->assignee->name,
             ]),
-            'column' => $this->whenLoaded('column', fn() => [
+            'column' => $this->whenLoaded('column', fn () => [
                 'id' => $this->column->id,
                 'name' => $this->column->name,
                 'type' => $this->column->type,
             ]),
             'events' => $this->whenLoaded(
                 'events',
-                fn() => $this->events->map(fn($event) => [
+                fn () => $this->events->map(fn ($event) => [
                     'id' => $event->id,
                     'type' => $event->type,
                     'created_at' => $event->created_at?->toIso8601String(),
@@ -160,17 +160,17 @@ class TaskResource extends JsonResource
             ),
             'tags' => $this->whenLoaded(
                 'tags',
-                fn() => TagResource::collection($this->tags)->resolve()
+                fn () => TagResource::collection($this->tags)->resolve()
             ),
             'attachments' => $this->whenLoaded(
                 'taskAttachments',
-                fn() => $this->taskAttachments
-                    ->map(fn($a) => [
-                        'id'        => $a->id,
-                        'filename'  => $a->filename,
+                fn () => $this->taskAttachments
+                    ->map(fn ($a) => [
+                        'id' => $a->id,
+                        'filename' => $a->filename,
                         'mime_type' => $a->mime_type,
-                        'size'      => $a->size,
-                        'url'       => route('attachments.show', $a->id),
+                        'size' => $a->size,
+                        'url' => route('attachments.show', $a->id),
                     ])->values()
             ),
         ];
