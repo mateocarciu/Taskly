@@ -192,14 +192,16 @@ const getEventLabel = (event: TaskEvent) => {
 
 const submit = () => {
     if (!activeTask.value) return;
+    const taskId = activeTask.value.id;
 
     form.transform((data) => ({
         ...data,
         _method: 'PUT',
-    })).post(update(activeTask.value.id).url, {
+    })).post(update(taskId).url, {
         preserveScroll: true,
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success('Task updated');
+            await loadTaskDetails(taskId, false, true);
         },
     });
 };
