@@ -9,7 +9,6 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { Textarea } from '@/components/ui/textarea';
 import DateTimeField from '@/components/calendar/DateTimeField.vue';
 import type { Tag, TaskAttachment, TeamMember } from '@/types';
 import { TaskEditFormState } from '@/types';
