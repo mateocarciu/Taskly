@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import DateTimeField from '@/components/calendar/DateTimeField.vue';
 import TagSelector from '@/components/tags/TagSelector.vue';
 import TaskAssigneeSelect from '@/components/tasks/TaskAssigneeSelect.vue';
 import TaskRichTextEditor from '@/components/tasks/TaskRichTextEditor.vue';
@@ -120,13 +121,11 @@ const submit = () => {
                     </div>
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div class="grid gap-2">
-                            <Label for="task-due-date">Due date</Label>
-                            <Input
-                                id="task-due-date"
-                                type="datetime-local"
+                            <Label>Due date</Label>
+                            <DateTimeField
                                 v-model="form.due_date"
+                                :error="form.errors.due_date"
                             />
-                            <InputError :message="form.errors.due_date" />
                         </div>
 
                         <div class="grid gap-2">

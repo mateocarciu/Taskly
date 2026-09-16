@@ -9,6 +9,8 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { Textarea } from '@/components/ui/textarea';
+import DateTimeField from '@/components/calendar/DateTimeField.vue';
 import type { Tag, TaskAttachment, TeamMember } from '@/types';
 import { TaskEditFormState } from '@/types';
 import { Save } from '@lucide/vue';
@@ -99,16 +101,12 @@ const onTagsUpdated = (tags: Tag[]) => {
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div class="grid gap-2">
-                        <Label for="edit-task-due-date">Due date</Label>
-                        <Input
-                            id="edit-task-due-date"
-                            type="datetime-local"
+                        <Label>Due date</Label>
+                        <DateTimeField
                             :model-value="form.due_date"
-                            @update:model-value="
-                                $emit('update:due-date', String($event))
-                            "
+                            :error="form.errors.due_date"
+                            @update:model-value="$emit('update:due-date', $event)"
                         />
-                        <InputError :message="form.errors.due_date" />
                     </div>
 
                     <div class="grid gap-2">

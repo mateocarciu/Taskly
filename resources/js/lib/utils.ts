@@ -10,7 +10,9 @@ export function urlIsActive(
     urlToCheck: NonNullable<InertiaLinkProps['href']>,
     currentUrl: string,
 ) {
-    return toUrl(urlToCheck) === currentUrl;
+    const cleanUrlToCheck = toUrl(urlToCheck).split(/[?#]/)[0];
+    const cleanCurrentUrl = currentUrl.split(/[?#]/)[0];
+    return cleanUrlToCheck === cleanCurrentUrl;
 }
 
 export function toUrl(href: NonNullable<InertiaLinkProps['href']>) {
