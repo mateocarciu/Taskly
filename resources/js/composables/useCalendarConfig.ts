@@ -1,11 +1,11 @@
+import type { CalendarEventIndex } from '@/types';
+import type { CalendarOptions, DatesSetInfo } from '@fullcalendar/vue3';
+import dayGridPlugin from '@fullcalendar/vue3/daygrid';
+import interactionPlugin from '@fullcalendar/vue3/interaction';
+import formaTheme from '@fullcalendar/vue3/themes/forma';
+import timeGridPlugin from '@fullcalendar/vue3/timegrid';
 import { computed, type Ref } from 'vue';
 import { toDateInputValue } from './useDateFormatter';
-import type { CalendarOptions, DatesSetInfo } from '@fullcalendar/vue3';
-import formaTheme from '@fullcalendar/vue3/themes/forma';
-import interactionPlugin from '@fullcalendar/vue3/interaction';
-import dayGridPlugin from '@fullcalendar/vue3/daygrid';
-import timeGridPlugin from '@fullcalendar/vue3/timegrid';
-import type { CalendarEventIndex } from '@/types';
 
 interface CalendarCallbacks {
     onDateClick: (date: Date, allDay: boolean) => void;
@@ -41,7 +41,12 @@ export function useCalendarConfig(
 
     const calendarOptions = computed<CalendarOptions>(() => {
         const options: CalendarOptions = {
-            plugins: [formaTheme, interactionPlugin, dayGridPlugin, timeGridPlugin],
+            plugins: [
+                formaTheme,
+                interactionPlugin,
+                dayGridPlugin,
+                timeGridPlugin,
+            ],
             initialView,
             headerToolbar: false,
             views: {
@@ -49,7 +54,11 @@ export function useCalendarConfig(
                     type: 'timeGrid',
                     duration: { weeks: 1 },
                     allDaySlot: false,
-                    titleFormat: { year: 'numeric', month: 'short', day: 'numeric' },
+                    titleFormat: {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                    },
                 },
                 timeGridDay: {
                     type: 'timeGrid',
@@ -83,7 +92,8 @@ export function useCalendarConfig(
             },
             dateClick: (info: { date: Date }) => {
                 const start = new Date(info.date);
-                const allDay = start.getHours() === 0 && start.getMinutes() === 0;
+                const allDay =
+                    start.getHours() === 0 && start.getMinutes() === 0;
                 callbacks.onDateClick(start, allDay);
             },
             select: (info: { start: Date; end: Date; allDay: boolean }) => {

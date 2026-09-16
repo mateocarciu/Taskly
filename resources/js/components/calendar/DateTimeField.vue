@@ -61,27 +61,27 @@ const fieldId = computed(() => props.label.toLowerCase().replace(/\s+/g, '-'));
 </script>
 
 <template>
-        <Label v-if="label" :for="fieldId" class="text-xs text-muted-foreground">
-            {{ label }}
-        </Label>
-        <div class="flex gap-2">
-            <Input
-                :id="`${fieldId}-date`"
-                type="date"
-                class="h-9 flex-1"
-                :model-value="dateInput"
-                :disabled="disabled"
-                @update:model-value="onDateInput"
-            />
-            <Input
-                :id="`${fieldId}-time`"
-                type="time"
-                step="60"
-                class="h-9 w-28 shrink-0"
-                :model-value="timeInput"
-                :disabled="disabled"
-                @update:model-value="onTimeInput"
-            />
-        </div>
-        <InputError :message="error" />
+    <Label v-if="label" :for="fieldId" class="text-xs text-muted-foreground">
+        {{ label }}
+    </Label>
+    <div class="flex gap-2">
+        <Input
+            :id="`${fieldId}-date`"
+            type="date"
+            class="h-9 flex-1"
+            :model-value="dateInput"
+            :disabled="disabled"
+            @update:model-value="onDateInput"
+        />
+        <Input
+            :id="`${fieldId}-time`"
+            type="time"
+            step="60"
+            class="h-9 w-28 shrink-0"
+            :model-value="timeInput"
+            :disabled="disabled"
+            @update:model-value="onTimeInput"
+        />
+    </div>
+    <InputError :message="error" />
 </template>

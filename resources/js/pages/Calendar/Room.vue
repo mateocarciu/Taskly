@@ -5,7 +5,10 @@ import type { CalendarEvent } from '@/types';
 import { ChevronLeft, Loader2, Video } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { useExternalScript } from '@/composables/useExternalScript';
-import { formatShortDate, formatShortTime } from '@/composables/useDateFormatter';
+import {
+    formatShortDate,
+    formatShortTime,
+} from '@/composables/useDateFormatter';
 
 declare global {
     interface Window {

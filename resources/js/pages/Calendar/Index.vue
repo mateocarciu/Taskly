@@ -4,7 +4,12 @@ import { Head, router } from '@inertiajs/vue3';
 import FullCalendar, {
     type CalendarApi as FullCalendarApi,
 } from '@fullcalendar/vue3';
-import type { CalendarEvent, CalendarEventIndex, BreadcrumbItem, TeamMember } from '@/types';
+import type {
+    CalendarEvent,
+    CalendarEventIndex,
+    BreadcrumbItem,
+    TeamMember,
+} from '@/types';
 import { ChevronLeft, ChevronRight, Plus } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -38,15 +43,17 @@ const toUrlView = (fc: string): string => VIEW_ALIASES_REVERSE[fc] ?? fc;
 const STORAGE_KEY = 'taskly_calendar_view';
 
 //  Initial State — priority: backend prop > localStorage > default
-const storageAlias = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
+const storageAlias =
+    typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
 
 const resolvedAlias = props.view || storageAlias || 'month';
 const initialView = toFcView(resolvedAlias);
 const initialDate = props.start || null;
 
-const initialEventId = typeof window !== 'undefined'
-    ? new URLSearchParams(window.location.search).get('event')
-    : null;
+const initialEventId =
+    typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('event')
+        : null;
 
 const isDialogOpen = ref(false);
 const activeEvent = ref<CalendarEvent | null>(null);
@@ -77,7 +84,9 @@ const openCreateFromDate = (date: Date, allDay: boolean) => {
 
     activeEvent.value = null;
     selectedStart.value = start.toISOString();
-    selectedEnd.value = new Date(start.getTime() + 60 * 60 * 1000).toISOString();
+    selectedEnd.value = new Date(
+        start.getTime() + 60 * 60 * 1000,
+    ).toISOString();
     isDialogOpen.value = true;
 };
 
@@ -107,7 +116,7 @@ const openEvent = async (id: string | number) => {
         isLoadingEvent.value = true;
         const response = await fetch(`/calendar/events/${id}`);
         if (!response.ok) throw new Error('Failed to fetch event');
-        
+
         activeEvent.value = await response.json();
         isDialogOpen.value = true;
     } catch (error) {
@@ -150,9 +159,10 @@ const { calendarOptions } = useCalendarConfig(
                 localStorage.setItem(STORAGE_KEY, urlAlias);
             }
 
-            const currentEvent = isDialogOpen.value && activeEvent.value
-                ? activeEvent.value.id
-                : undefined;
+            const currentEvent =
+                isDialogOpen.value && activeEvent.value
+                    ? activeEvent.value.id
+                    : undefined;
 
             router.get(
                 '/calendar',
@@ -201,16 +211,16 @@ const { calendarOptions } = useCalendarConfig(
                         size="icon"
                         aria-label="Previous"
                         @click="goPrev"
-                        ><ChevronLeft class="size-4" /></Button
-                    >
+                        ><ChevronLeft class="size-4"
+                    /></Button>
                     <Button
                         type="button"
                         variant="outline"
                         size="icon"
                         aria-label="Next"
                         @click="goNext"
-                        ><ChevronRight class="size-4" /></Button
-                    >
+                        ><ChevronRight class="size-4"
+                    /></Button>
                     <Button type="button" variant="outline" @click="goToday">
                         Today
                     </Button>
@@ -220,7 +230,9 @@ const { calendarOptions } = useCalendarConfig(
                     <Button
                         type="button"
                         :variant="
-                            currentView === 'dayGridMonth' ? 'default' : 'outline'
+                            currentView === 'dayGridMonth'
+                                ? 'default'
+                                : 'outline'
                         "
                         class="rounded-r-none"
                         @click="setView('dayGridMonth')"
@@ -229,7 +241,9 @@ const { calendarOptions } = useCalendarConfig(
                     <Button
                         type="button"
                         :variant="
-                            currentView === 'timeGridWeek' ? 'default' : 'outline'
+                            currentView === 'timeGridWeek'
+                                ? 'default'
+                                : 'outline'
                         "
                         class="-ml-px rounded-none"
                         @click="setView('timeGridWeek')"
@@ -238,7 +252,9 @@ const { calendarOptions } = useCalendarConfig(
                     <Button
                         type="button"
                         :variant="
-                            currentView === 'timeGridDay' ? 'default' : 'outline'
+                            currentView === 'timeGridDay'
+                                ? 'default'
+                                : 'outline'
                         "
                         class="-ml-px rounded-l-none"
                         @click="setView('timeGridDay')"
@@ -268,8 +284,16 @@ const { calendarOptions } = useCalendarConfig(
 <style>
 body {
     --fc-forma-primary: var(--primary);
-    --fc-forma-primary-over: color-mix(in srgb, var(--primary) 90%, transparent);
-    --fc-forma-primary-down: color-mix(in srgb, var(--primary) 80%, transparent);
+    --fc-forma-primary-over: color-mix(
+        in srgb,
+        var(--primary) 90%,
+        transparent
+    );
+    --fc-forma-primary-down: color-mix(
+        in srgb,
+        var(--primary) 80%,
+        transparent
+    );
     --fc-forma-primary-foreground: var(--primary-foreground);
 
     --fc-forma-event: var(--primary);

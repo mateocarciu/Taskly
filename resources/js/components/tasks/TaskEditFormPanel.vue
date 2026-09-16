@@ -105,7 +105,9 @@ const onTagsUpdated = (tags: Tag[]) => {
                         <DateTimeField
                             :model-value="form.due_date"
                             :error="form.errors.due_date"
-                            @update:model-value="$emit('update:due-date', $event)"
+                            @update:model-value="
+                                $emit('update:due-date', $event)
+                            "
                         />
                     </div>
 

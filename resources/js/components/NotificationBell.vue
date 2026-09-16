@@ -10,7 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Bell, BellOff, CalendarDays, Check, CheckCheck, X } from '@lucide/vue';
 import { respond } from '@/routes/calendar/events';
 import { readAll } from '@/routes/notifications';
-import { relativeTime, formatDateTimeRange } from '@/composables/useDateFormatter';
+import {
+    relativeTime,
+    formatDateTimeRange,
+} from '@/composables/useDateFormatter';
 import type { AppNotification, NotificationType } from '@/types';
 
 const isType = (notification: AppNotification, type: NotificationType) =>

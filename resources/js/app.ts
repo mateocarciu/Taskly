@@ -2,8 +2,8 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { initializeTheme } from './composables/useAppearance';
 
 import '@fullcalendar/vue3/skeleton.css';
-import '@fullcalendar/vue3/themes/forma/theme.css';
 import '@fullcalendar/vue3/themes/forma/palettes/purple.css';
+import '@fullcalendar/vue3/themes/forma/theme.css';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Taskly';
 
