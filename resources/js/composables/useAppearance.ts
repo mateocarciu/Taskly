@@ -13,12 +13,21 @@ export function updateTheme(value: Appearance) {
         );
         const systemTheme = mediaQueryList.matches ? 'dark' : 'light';
 
-        document.documentElement.classList.toggle(
-            'dark',
-            systemTheme === 'dark',
-        );
+        const isDark = systemTheme === 'dark';
+        document.documentElement.classList.toggle('dark', isDark);
+        if (isDark) {
+            document.documentElement.setAttribute('data-color-scheme', 'dark');
+        } else {
+            document.documentElement.removeAttribute('data-color-scheme');
+        }
     } else {
-        document.documentElement.classList.toggle('dark', value === 'dark');
+        const isDark = value === 'dark';
+        document.documentElement.classList.toggle('dark', isDark);
+        if (isDark) {
+            document.documentElement.setAttribute('data-color-scheme', 'dark');
+        } else {
+            document.documentElement.removeAttribute('data-color-scheme');
+        }
     }
 }
 
