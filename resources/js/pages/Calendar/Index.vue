@@ -14,10 +14,12 @@ import { ChevronLeft, ChevronRight, Plus } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import EventDialog from '@/components/calendar/EventDialog.vue';
+import CalendarPageSkeleton from '@/components/calendar/CalendarPageSkeleton.vue';
 import { useCalendarConfig } from '@/composables/useCalendarConfig';
+import { ensureMinimumDelay } from '@/lib/utils';
 
 const props = defineProps<{
-    events: CalendarEventIndex[];
+    events?: CalendarEventIndex[];
     teamMembers: TeamMember[];
     view?: string | null;
     start?: string | null;
@@ -66,6 +68,9 @@ const viewTitle = ref('');
 
 const getApi = () => calendarRef.value?.getApi();
 
+const localEvents = ref<CalendarEventIndex[] | null>(null);
+const startTime = Date.now();
+
 const goPrev = () => getApi()?.prev();
 const goNext = () => getApi()?.next();
 const goToday = () => getApi()?.today();
@@ -112,16 +117,26 @@ const openCreateFromRange = (start: Date, end: Date, allDay: boolean) => {
 const isLoadingEvent = ref(false);
 
 const openEvent = async (id: string | number) => {
+    const partialEvent = props.events.find((e) => String(e.id) === String(id));
+    if (partialEvent) {
+        activeEvent.value = partialEvent as unknown as CalendarEvent;
+    } else {
+        activeEvent.value = { id: Number(id) } as CalendarEvent;
+    }
+
+    isDialogOpen.value = true;
+    const startedAt = Date.now();
+
     try {
         isLoadingEvent.value = true;
         const response = await fetch(`/calendar/events/${id}`);
         if (!response.ok) throw new Error('Failed to fetch event');
 
         activeEvent.value = await response.json();
-        isDialogOpen.value = true;
     } catch (error) {
         console.error(error);
     } finally {
+        await ensureMinimumDelay(startedAt);
         isLoadingEvent.value = false;
     }
 };
@@ -130,26 +145,13 @@ if (initialEventId) {
     setTimeout(() => openEvent(initialEventId), 0);
 }
 
-watch(isDialogOpen, (isOpen) => {
-    if (typeof window === 'undefined') return;
-
-    const url = new URL(window.location.href);
-    if (isOpen && activeEvent.value) {
-        url.searchParams.set('event', String(activeEvent.value.id));
-    } else {
-        url.searchParams.delete('event');
-        if (!isOpen) activeEvent.value = null;
-    }
-    window.history.replaceState(null, '', url.pathname + url.search);
-});
-
 const { calendarOptions } = useCalendarConfig(
-    toRef(() => props.events),
+    toRef(() => localEvents.value || []),
     {
         onDateClick: openCreateFromDate,
         onRangeSelect: openCreateFromRange,
         onEventClick: openEvent,
-        onDateRangeChange: (start, end, viewType, title) => {
+        onDateRangeChange: (start, end, viewType, title, isInitial) => {
             currentView.value = viewType;
             viewTitle.value = title;
 
@@ -157,6 +159,10 @@ const { calendarOptions } = useCalendarConfig(
 
             if (typeof window !== 'undefined') {
                 localStorage.setItem(STORAGE_KEY, urlAlias);
+            }
+
+            if (isInitial) {
+                return;
             }
 
             const currentEvent =
@@ -184,6 +190,30 @@ const { calendarOptions } = useCalendarConfig(
     initialView,
     initialDate,
 );
+
+watch(
+    () => props.events,
+    async (newEvents) => {
+        if (newEvents !== undefined) {
+            await ensureMinimumDelay(startTime);
+            localEvents.value = newEvents;
+        }
+    },
+    { immediate: true },
+);
+
+watch(isDialogOpen, (isOpen) => {
+    if (typeof window === 'undefined') return;
+
+    const url = new URL(window.location.href);
+    if (isOpen && activeEvent.value) {
+        url.searchParams.set('event', String(activeEvent.value.id));
+    } else {
+        url.searchParams.delete('event');
+        if (!isOpen) activeEvent.value = null;
+    }
+    window.history.replaceState(null, '', url.pathname + url.search);
+});
 </script>
 
 <template>
@@ -263,7 +293,8 @@ const { calendarOptions } = useCalendarConfig(
                 </div>
             </div>
 
-            <div class="min-h-0 flex-1 overflow-hidden">
+            <CalendarPageSkeleton v-if="!localEvents" />
+            <div v-else class="min-h-0 flex-1 overflow-hidden">
                 <FullCalendar
                     ref="calendarRef"
                     :options="calendarOptions"
@@ -277,6 +308,7 @@ const { calendarOptions } = useCalendarConfig(
             :default-start="selectedStart"
             :default-end="selectedEnd"
             :event="activeEvent"
+            :is-loading="isLoadingEvent"
         />
     </AppLayout>
 </template>

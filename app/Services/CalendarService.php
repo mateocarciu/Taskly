@@ -32,11 +32,11 @@ class CalendarService
             ->orderBy('name')
             ->get(['id', 'name', 'email']);
 
-        if (! $start || ! $end) {
-            return [
-                'events' => collect(),
-                'teamMembers' => $teamMembers,
-            ];
+        if (! $start) {
+            $start = now()->startOfMonth()->subDays(14)->toIso8601String();
+        }
+        if (! $end) {
+            $end = now()->endOfMonth()->addDays(14)->toIso8601String();
         }
 
         $events = Event::query()

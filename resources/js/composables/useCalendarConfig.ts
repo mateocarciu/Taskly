@@ -16,6 +16,7 @@ interface CalendarCallbacks {
         end: string,
         viewType: string,
         viewTitle: string,
+        isInitial: boolean,
     ) => void;
 }
 
@@ -38,6 +39,8 @@ export function useCalendarConfig(
             extendedProps: { hasVideo: event.has_video },
         })),
     );
+
+    let isInitialDatesSet = true;
 
     const calendarOptions = computed<CalendarOptions>(() => {
         const options: CalendarOptions = {
@@ -83,11 +86,15 @@ export function useCalendarConfig(
             selectable: true,
             events: calendarEvents.value,
             datesSet: (info: DatesSetInfo) => {
+                const isInitial = isInitialDatesSet;
+                isInitialDatesSet = false;
+
                 callbacks.onDateRangeChange(
                     toDateInputValue(info.start),
                     toDateInputValue(info.end),
                     info.view.type,
                     info.view.title,
+                    isInitial,
                 );
             },
             dateClick: (info: { date: Date }) => {

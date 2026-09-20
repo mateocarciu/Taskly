@@ -18,13 +18,14 @@ import InputError from '@/components/InputError.vue';
 import DateTimeField from '@/components/calendar/DateTimeField.vue';
 import { store, update, destroy, room } from '@/routes/calendar/events';
 import type { CalendarEvent, TeamMember } from '@/types';
-import { Check, EyeOff, UserPlus, Video, X } from '@lucide/vue';
+import { Save, Check, Trash, UserPlus, Video, X } from '@lucide/vue';
 
 const props = defineProps<{
     teamMembers: TeamMember[];
     defaultStart?: string | null;
     defaultEnd?: string | null;
     event?: CalendarEvent | null;
+    isLoading?: boolean;
 }>();
 
 const isOpen = defineModel<boolean>('open', { default: false });
@@ -83,6 +84,16 @@ watch(isOpen, () => {
         applyDefaultStart();
     }
 });
+
+watch(
+    () => props.event,
+    (newEvent) => {
+        if (newEvent && isOpen.value) {
+            fillFromEvent();
+        }
+    },
+    { deep: true }
+);
 
 const submit = () => {
     if (props.event) {
@@ -154,7 +165,8 @@ const joinRoom = () => {
                         <span class="sr-only">Close</span>
                     </button>
                 </DialogHeader>
-                <form class="space-y-5 px-6 pt-4 pb-6" @submit.prevent="submit">
+                
+                <form :class="{ 'opacity-60 pointer-events-none transition-opacity duration-200': isLoading }" class="relative space-y-5 px-6 pt-4 pb-6" @submit.prevent="submit">
                     <div class="space-y-2">
                         <Label for="title">Event title</Label>
                         <Input
@@ -254,14 +266,29 @@ const joinRoom = () => {
                             </label>
                         </div>
                     </div>
+                    <div
+                        v-if="isReadOnly && event?.has_video"
+                        class="flex items-center gap-3 rounded-xl border border-violet-200 bg-violet-50 p-3.5 dark:border-violet-900/30 dark:bg-violet-900/10"
+                    >
+                        <span
+                            class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600"
+                        >
+                            <Video class="size-4" />
+                        </span>
+                        <div class="flex-1">
+                            <span class="block text-sm font-medium text-violet-900 dark:text-violet-100"
+                                >Video Meeting</span
+                            >
+                            <span class="block text-xs text-violet-700 dark:text-violet-300"
+                                >This event has a Jitsi room attached</span
+                            >
+                        </div>
+                    </div>
+
                     <label
+                        v-else-if="!isReadOnly"
                         class="flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-colors hover:bg-muted/50"
-                        :class="[
-                            form.has_video
-                                ? 'border-primary/40 bg-primary/4'
-                                : '',
-                            isReadOnly ? 'cursor-default' : '',
-                        ]"
+                        :class="form.has_video ? 'border-primary/40 bg-primary/4' : ''"
                     >
                         <span
                             class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted"
@@ -298,72 +325,52 @@ const joinRoom = () => {
                             v-model="form.has_video"
                             type="checkbox"
                             class="sr-only"
-                            :disabled="isReadOnly"
                         />
                     </label>
-                    <DialogFooter class="pt-4">
-                        <template v-if="isEdit && event?.has_video">
+                    <DialogFooter class="pt-4 sm:justify-between flex-col gap-3 sm:flex-row">
+                        <div class="flex flex-col gap-2 sm:flex-row">
                             <Button
+                                v-if="isEdit && event?.has_video"
                                 type="button"
                                 variant="outline"
-                                class="text-violet-600 hover:text-violet-600"
+                                class="text-violet-600 hover:text-violet-600 w-full sm:w-auto"
                                 @click="joinRoom"
                             >
                                 <Video class="mr-2 size-4" />
                                 Join room
                             </Button>
-                        </template>
 
-                        <template v-if="isReadOnly">
                             <Button
+                                v-if="isEdit"
                                 type="button"
                                 variant="outline"
-                                class="text-destructive hover:text-destructive"
+                                class="text-destructive hover:text-destructive w-full sm:w-auto"
                                 @click="removeEvent"
-                                ><EyeOff class="mr-2 size-4" />Remove from my
-                                calendar</Button
                             >
+                                <Trash class="mr-2 size-4" />
+                                Remove
+                            </Button>
+                        </div>
+                        
+                        <div class="flex flex-col gap-2 sm:flex-row">
                             <Button
                                 type="button"
                                 variant="outline"
+                                class="w-full sm:w-auto"
                                 @click="isOpen = false"
-                                >Close</Button
                             >
-                        </template>
-
-                        <template v-else-if="isEdit">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                class="text-destructive hover:text-destructive"
-                                @click="removeEvent"
-                                ><EyeOff class="mr-2 size-4" />Remove from my
-                                calendar</Button
-                            >
-                            <Button
-                                type="button"
-                                variant="outline"
-                                @click="isOpen = false"
-                                >Cancel</Button
-                            >
-                            <Button type="submit" :disabled="form.processing"
-                                ><Check class="mr-2 size-4" />Save
-                                changes</Button
-                            >
-                        </template>
-
-                        <template v-else>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                @click="isOpen = false"
-                                >Cancel</Button
-                            >
-                            <Button type="submit" :disabled="form.processing"
-                                ><UserPlus class="mr-2 size-4" />Create
-                                event</Button
-                            >
-                        </template>
+                                {{ isReadOnly ? 'Close' : 'Cancel' }}
+                            </Button>
+                            
+                            <Button v-if="!isReadOnly" type="submit" :disabled="form.processing" class="w-full sm:w-auto">
+                                <template v-if="isEdit">
+                                    <Save class="mr-2 size-4" />Save changes
+                                </template>
+                                <template v-else>
+                                    <UserPlus class="mr-2 size-4" />Create event
+                                </template>
+                            </Button>
+                        </div>
                     </DialogFooter>
                 </form>
             </div>

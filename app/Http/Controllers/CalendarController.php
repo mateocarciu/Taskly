@@ -28,7 +28,7 @@ class CalendarController extends Controller
         );
 
         return Inertia::render('Calendar/Index', [
-            'events' => EventIndexResource::collection($data['events'])->resolve($request),
+            'events' => Inertia::defer(fn () => EventIndexResource::collection($data['events'])->resolve($request)),
             'teamMembers' => $data['teamMembers'],
             'view' => $request->query('view'),
             'start' => $request->query('start'),
