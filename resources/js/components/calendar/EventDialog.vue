@@ -92,7 +92,7 @@ watch(
             fillFromEvent();
         }
     },
-    { deep: true }
+    { deep: true },
 );
 
 const submit = () => {
@@ -165,8 +165,15 @@ const joinRoom = () => {
                         <span class="sr-only">Close</span>
                     </button>
                 </DialogHeader>
-                
-                <form :class="{ 'opacity-60 pointer-events-none transition-opacity duration-200': isLoading }" class="relative space-y-5 px-6 pt-4 pb-6" @submit.prevent="submit">
+
+                <form
+                    :class="{
+                        'pointer-events-none opacity-60 transition-opacity duration-200':
+                            isLoading,
+                    }"
+                    class="relative space-y-5 px-6 pt-4 pb-6"
+                    @submit.prevent="submit"
+                >
                     <div class="space-y-2">
                         <Label for="title">Event title</Label>
                         <Input
@@ -276,10 +283,12 @@ const joinRoom = () => {
                             <Video class="size-4" />
                         </span>
                         <div class="flex-1">
-                            <span class="block text-sm font-medium text-violet-900 dark:text-violet-100"
+                            <span
+                                class="block text-sm font-medium text-violet-900 dark:text-violet-100"
                                 >Video Meeting</span
                             >
-                            <span class="block text-xs text-violet-700 dark:text-violet-300"
+                            <span
+                                class="block text-xs text-violet-700 dark:text-violet-300"
                                 >This event has a Jitsi room attached</span
                             >
                         </div>
@@ -288,7 +297,11 @@ const joinRoom = () => {
                     <label
                         v-else-if="!isReadOnly"
                         class="flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-colors hover:bg-muted/50"
-                        :class="form.has_video ? 'border-primary/40 bg-primary/4' : ''"
+                        :class="
+                            form.has_video
+                                ? 'border-primary/40 bg-primary/4'
+                                : ''
+                        "
                     >
                         <span
                             class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted"
@@ -327,13 +340,15 @@ const joinRoom = () => {
                             class="sr-only"
                         />
                     </label>
-                    <DialogFooter class="pt-4 sm:justify-between flex-col gap-3 sm:flex-row">
+                    <DialogFooter
+                        class="flex-col gap-3 pt-4 sm:flex-row sm:justify-between"
+                    >
                         <div class="flex flex-col gap-2 sm:flex-row">
                             <Button
                                 v-if="isEdit && event?.has_video"
                                 type="button"
                                 variant="outline"
-                                class="text-violet-600 hover:text-violet-600 w-full sm:w-auto"
+                                class="w-full text-violet-600 hover:text-violet-600 sm:w-auto"
                                 @click="joinRoom"
                             >
                                 <Video class="mr-2 size-4" />
@@ -344,14 +359,14 @@ const joinRoom = () => {
                                 v-if="isEdit"
                                 type="button"
                                 variant="outline"
-                                class="text-destructive hover:text-destructive w-full sm:w-auto"
+                                class="w-full text-destructive hover:text-destructive sm:w-auto"
                                 @click="removeEvent"
                             >
                                 <Trash class="mr-2 size-4" />
                                 Remove
                             </Button>
                         </div>
-                        
+
                         <div class="flex flex-col gap-2 sm:flex-row">
                             <Button
                                 type="button"
@@ -361,8 +376,13 @@ const joinRoom = () => {
                             >
                                 {{ isReadOnly ? 'Close' : 'Cancel' }}
                             </Button>
-                            
-                            <Button v-if="!isReadOnly" type="submit" :disabled="form.processing" class="w-full sm:w-auto">
+
+                            <Button
+                                v-if="!isReadOnly"
+                                type="submit"
+                                :disabled="form.processing"
+                                class="w-full sm:w-auto"
+                            >
                                 <template v-if="isEdit">
                                     <Save class="mr-2 size-4" />Save changes
                                 </template>

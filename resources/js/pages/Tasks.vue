@@ -6,7 +6,8 @@ import TaskFilters from '@/components/tasks/TaskFilters.vue';
 import TasksPageSkeleton from '@/components/tasks/TasksPageSkeleton.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { ensureMinimumDelay } from '@/lib/utils';
-import { index } from '@/routes/tasks';
+import { index, show } from '@/routes/tasks';
+import { toast } from 'vue-sonner';
 import type { BreadcrumbItem, Column, Tag, Task, TeamMember } from '@/types';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
@@ -78,12 +79,43 @@ watch(
 
 watch(
     taskIdFromUrl,
-    (id) => {
+    async (id) => {
         if (id) {
-            if (!taskToEdit.value || taskToEdit.value.id !== id) {
-                taskToEdit.value = { id } as Task;
+            let partialTask = undefined;
+            if (localColumns.value) {
+                for (const col of localColumns.value) {
+                    partialTask = col.tasks.find((t) => t.id === id);
+                    if (partialTask) break;
+                }
             }
-            isEditModalOpen.value = true;
+
+            if (partialTask) {
+                if (!taskToEdit.value || taskToEdit.value.id !== id) {
+                    taskToEdit.value = partialTask;
+                }
+                isEditModalOpen.value = true;
+            } else {
+                taskToEdit.value = { id } as Task;
+                try {
+                    const response = await fetch(show(id).url, {
+                        headers: { Accept: 'application/json' },
+                    });
+                    if (!response.ok) throw new Error('Task not found');
+                    if (!isEditModalOpen.value) {
+                        isEditModalOpen.value = true;
+                    }
+                } catch (error) {
+                    console.error(error);
+                    toast.error('Task not found');
+                    isEditModalOpen.value = false;
+                    taskToEdit.value = null;
+                    if (typeof window !== 'undefined') {
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete('id');
+                        window.history.replaceState({}, '', url.toString());
+                    }
+                }
+            }
         } else {
             isEditModalOpen.value = false;
         }

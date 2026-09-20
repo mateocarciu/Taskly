@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, toRef, watch } from 'vue';
-import { Head, router } from '@inertiajs/vue3';
+import { computed, ref, toRef, watch } from 'vue';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
 import FullCalendar, {
     type CalendarApi as FullCalendarApi,
 } from '@fullcalendar/vue3';
@@ -52,10 +53,13 @@ const resolvedAlias = props.view || storageAlias || 'month';
 const initialView = toFcView(resolvedAlias);
 const initialDate = props.start || null;
 
-const initialEventId =
-    typeof window !== 'undefined'
-        ? new URLSearchParams(window.location.search).get('event')
-        : null;
+const page = usePage();
+const eventIdFromUrl = computed(() => {
+    if (typeof window === 'undefined') return null;
+    const url = new URL(page.url, window.location.origin);
+    const val = url.searchParams.get('id');
+    return val ? parseInt(val, 10) : null;
+});
 
 const isDialogOpen = ref(false);
 const activeEvent = ref<CalendarEvent | null>(null);
@@ -117,14 +121,16 @@ const openCreateFromRange = (start: Date, end: Date, allDay: boolean) => {
 const isLoadingEvent = ref(false);
 
 const openEvent = async (id: string | number) => {
-    const partialEvent = props.events.find((e) => String(e.id) === String(id));
+    const partialEvent = (props.events || []).find(
+        (e) => String(e.id) === String(id),
+    );
     if (partialEvent) {
         activeEvent.value = partialEvent as unknown as CalendarEvent;
+        isDialogOpen.value = true;
     } else {
         activeEvent.value = { id: Number(id) } as CalendarEvent;
     }
 
-    isDialogOpen.value = true;
     const startedAt = Date.now();
 
     try {
@@ -133,17 +139,24 @@ const openEvent = async (id: string | number) => {
         if (!response.ok) throw new Error('Failed to fetch event');
 
         activeEvent.value = await response.json();
+        if (!isDialogOpen.value) {
+            isDialogOpen.value = true;
+        }
     } catch (error) {
         console.error(error);
+        toast.error('Event not found');
+        isDialogOpen.value = false;
+        activeEvent.value = null;
+        if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('id');
+            window.history.replaceState({}, '', url.toString());
+        }
     } finally {
         await ensureMinimumDelay(startedAt);
         isLoadingEvent.value = false;
     }
 };
-
-if (initialEventId) {
-    setTimeout(() => openEvent(initialEventId), 0);
-}
 
 const { calendarOptions } = useCalendarConfig(
     toRef(() => localEvents.value || []),
@@ -151,7 +164,7 @@ const { calendarOptions } = useCalendarConfig(
         onDateClick: openCreateFromDate,
         onRangeSelect: openCreateFromRange,
         onEventClick: openEvent,
-        onDateRangeChange: (start, end, viewType, title, isInitial) => {
+        onDateRangeChange: (start, end, viewType, title) => {
             currentView.value = viewType;
             viewTitle.value = title;
 
@@ -159,10 +172,6 @@ const { calendarOptions } = useCalendarConfig(
 
             if (typeof window !== 'undefined') {
                 localStorage.setItem(STORAGE_KEY, urlAlias);
-            }
-
-            if (isInitial) {
-                return;
             }
 
             const currentEvent =
@@ -176,7 +185,7 @@ const { calendarOptions } = useCalendarConfig(
                     view: urlAlias,
                     start,
                     end,
-                    ...(currentEvent ? { event: currentEvent } : {}),
+                    ...(currentEvent ? { id: currentEvent } : {}),
                 },
                 {
                     preserveState: true,
@@ -202,17 +211,30 @@ watch(
     { immediate: true },
 );
 
+watch(
+    eventIdFromUrl,
+    (id) => {
+        if (id) {
+            if (!activeEvent.value || activeEvent.value.id !== id) {
+                openEvent(id);
+            }
+        } else {
+            isDialogOpen.value = false;
+        }
+    },
+    { immediate: true },
+);
+
 watch(isDialogOpen, (isOpen) => {
     if (typeof window === 'undefined') return;
-
     const url = new URL(window.location.href);
     if (isOpen && activeEvent.value) {
-        url.searchParams.set('event', String(activeEvent.value.id));
+        url.searchParams.set('id', activeEvent.value.id.toString());
     } else {
-        url.searchParams.delete('event');
+        url.searchParams.delete('id');
         if (!isOpen) activeEvent.value = null;
     }
-    window.history.replaceState(null, '', url.pathname + url.search);
+    window.history.replaceState({}, '', url.toString());
 });
 </script>
 
