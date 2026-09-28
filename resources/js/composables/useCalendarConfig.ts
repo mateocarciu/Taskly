@@ -35,7 +35,9 @@ export function useCalendarConfig(
             title: event.title,
             start: event.start_at,
             end: event.end_at,
-            classNames: event.has_video ? ['event-video'] : ['event-standard'],
+            class: event.has_video
+                ? 'taskly-event event-video'
+                : 'taskly-event event-standard',
             extendedProps: { hasVideo: event.has_video },
         })),
     );

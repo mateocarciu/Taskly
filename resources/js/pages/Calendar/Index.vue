@@ -362,7 +362,12 @@ body {
     font-size: 0.875rem;
 }
 
-.taskly-full-calendar .fc-event.event-video {
+.taskly-full-calendar .taskly-event,
+.taskly-full-calendar .taskly-event * {
+    cursor: pointer;
+}
+
+.taskly-full-calendar .event-video {
     --fc-forma-event: var(--chart-2);
     --fc-forma-event-contrast: #fff;
 }
