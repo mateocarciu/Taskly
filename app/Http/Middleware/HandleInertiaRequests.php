@@ -2,13 +2,15 @@
 
 namespace App\Http\Middleware;
 
-use App\Http\Resources\NotificationResource;
+use App\Services\NotificationService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
+    public function __construct(private readonly NotificationService $notificationService) {}
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -51,14 +53,7 @@ class HandleInertiaRequests extends Middleware
                 ? $request->user()->accessibleTeamsQuery()->orderBy('name')->get(['id', 'name'])
                 : [],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'notifications' => fn () => $request->user()
-                ? [
-                    'unreadCount' => $request->user()->unreadNotifications()->count(),
-                    'notifications' => NotificationResource::collection(
-                        $request->user()->notifications()->latest()->limit(15)->get()
-                    )->resolve($request),
-                ]
-                : ['unreadCount' => 0, 'notifications' => []],
+            'notifications' => fn () => $this->notificationService->dropdown($request->user(), $request),
         ];
     }
 }

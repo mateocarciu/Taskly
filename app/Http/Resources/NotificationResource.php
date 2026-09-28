@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Notifications\EventInvitation;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,6 +20,24 @@ class NotificationResource extends JsonResource
     private const TYPE_ALIASES = [
         EventInvitation::class => 'event_invitation',
     ];
+
+    /**
+     * Transform a page of notifications into the payload the dropdown loads.
+     *
+     * @return array{data: array<int, array<string, mixed>>, pagination: array{current_page: int, last_page: int, total: int, has_more: bool}}
+     */
+    public static function paginated(LengthAwarePaginator $notifications, Request $request): array
+    {
+        return [
+            'data' => self::collection($notifications->items())->resolve($request),
+            'pagination' => [
+                'current_page' => $notifications->currentPage(),
+                'last_page' => $notifications->lastPage(),
+                'total' => $notifications->total(),
+                'has_more' => $notifications->hasMorePages(),
+            ],
+        ];
+    }
 
     /**
      * Transform the resource into an array.

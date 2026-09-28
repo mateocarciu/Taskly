@@ -28,9 +28,17 @@ export type AppPageProps<
     sidebarOpen: boolean;
     notifications: {
         unreadCount: number;
-        notifications: AppNotification[];
+        data: AppNotification[];
+        pagination: PaginationMeta;
     };
 };
+
+export interface PaginationMeta {
+    current_page: number;
+    last_page: number;
+    total: number;
+    has_more: boolean;
+}
 
 export interface User {
     id: number;
@@ -96,12 +104,7 @@ export interface Column {
     type: 'todo' | 'in_progress' | 'done';
     order: number;
     tasks: Task[];
-    pagination?: {
-        current_page: number;
-        last_page: number;
-        total: number;
-        has_more: boolean;
-    };
+    pagination?: PaginationMeta;
 }
 
 export interface TaskForm {

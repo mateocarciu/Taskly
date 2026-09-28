@@ -7,22 +7,46 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Bell, BellOff, CalendarDays, Check, CheckCheck, X } from '@lucide/vue';
+import { Spinner } from '@/components/ui/spinner';
+import {
+    Bell,
+    BellOff,
+    CalendarDays,
+    Check,
+    CheckCheck,
+    ChevronDown,
+    X,
+} from '@lucide/vue';
 import { respond } from '@/routes/calendar/events';
-import { readAll } from '@/routes/notifications';
+import { index, readAll } from '@/routes/notifications';
 import {
     relativeTime,
     formatDateTimeRange,
 } from '@/composables/useDateFormatter';
+import { usePaginatedList } from '@/composables/usePaginatedList';
 import type { AppNotification, NotificationType } from '@/types';
 
 const isType = (notification: AppNotification, type: NotificationType) =>
     notification.type === type;
 
-const notifications = computed(
-    () => usePage().props.notifications.notifications,
+const page = usePage();
+const unreadCount = computed(() => page.props.notifications.unreadCount);
+const {
+    items: notifications,
+    pagination,
+    isLoadingMore,
+    loadMore,
+} = usePaginatedList(
+    () => ({
+        items: page.props.notifications.data,
+        pagination: page.props.notifications.pagination,
+    }),
+    {
+        urlForPage: (page) => index({ query: { page } }).url,
+        errorMessage: 'Failed to load more notifications',
+        preserveLoadedItems: true,
+    },
 );
-const unreadCount = computed(() => usePage().props.notifications.unreadCount);
 
 const response = (notification: AppNotification) =>
     notification.data.response && notification.data.response !== 'needs_action'
@@ -201,6 +225,25 @@ const respondTo = (eventId: number, response: 'accepted' | 'declined') =>
                         Notifications for invitations and updates will appear
                         here.
                     </p>
+                </div>
+
+                <div v-if="pagination?.has_more" class="border-t p-2">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        class="h-8 w-full text-xs text-muted-foreground"
+                        :disabled="isLoadingMore"
+                        @click="loadMore"
+                    >
+                        <template v-if="isLoadingMore">
+                            <Spinner class="mr-1.5 size-3.5" />
+                            Loading...
+                        </template>
+                        <template v-else>
+                            Load more notifications
+                            <ChevronDown class="ml-1.5 size-3" />
+                        </template>
+                    </Button>
                 </div>
             </div>
         </DropdownMenuContent>
