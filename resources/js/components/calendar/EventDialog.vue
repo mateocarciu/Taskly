@@ -275,20 +275,18 @@ const joinRoom = () => {
                     </div>
                     <div
                         v-if="isReadOnly && event?.has_video"
-                        class="flex items-center gap-3 rounded-xl border border-violet-200 bg-violet-50 p-3.5 dark:border-violet-900/30 dark:bg-violet-900/10"
+                        class="flex items-center gap-3 rounded-xl border border-chart-2/40 bg-chart-2/5 p-3.5"
                     >
                         <span
-                            class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600"
+                            class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-chart-2/15 text-chart-2"
                         >
                             <Video class="size-4" />
                         </span>
                         <div class="flex-1">
-                            <span
-                                class="block text-sm font-medium text-violet-900 dark:text-violet-100"
+                            <span class="block text-sm font-medium"
                                 >Video Meeting</span
                             >
-                            <span
-                                class="block text-xs text-violet-700 dark:text-violet-300"
+                            <span class="block text-xs text-muted-foreground"
                                 >This event has a Jitsi room attached</span
                             >
                         </div>
@@ -299,7 +297,7 @@ const joinRoom = () => {
                         class="flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-colors hover:bg-muted/50"
                         :class="
                             form.has_video
-                                ? 'border-primary/40 bg-primary/4'
+                                ? 'border-chart-2/40 bg-chart-2/5'
                                 : ''
                         "
                     >
@@ -307,7 +305,7 @@ const joinRoom = () => {
                             class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted"
                             :class="
                                 form.has_video
-                                    ? 'bg-violet-500/10 text-violet-600'
+                                    ? 'bg-chart-2/15 text-chart-2'
                                     : ''
                             "
                         >
@@ -323,7 +321,7 @@ const joinRoom = () => {
                         </span>
                         <span
                             class="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors"
-                            :class="form.has_video ? 'bg-primary' : 'bg-input'"
+                            :class="form.has_video ? 'bg-chart-2' : 'bg-input'"
                         >
                             <span
                                 class="inline-block size-4 transform rounded-full bg-background shadow transition-transform"
@@ -348,7 +346,7 @@ const joinRoom = () => {
                                 v-if="isEdit && event?.has_video"
                                 type="button"
                                 variant="outline"
-                                class="w-full text-violet-600 hover:text-violet-600 sm:w-auto"
+                                class="w-full text-chart-2 hover:text-chart-2 sm:w-auto"
                                 @click="joinRoom"
                             >
                                 <Video class="mr-2 size-4" />

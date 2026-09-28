@@ -7,16 +7,17 @@ import timeGridPlugin from '@fullcalendar/vue3/timegrid';
 import { computed, type Ref } from 'vue';
 import { toDateInputValue } from './useDateFormatter';
 
-interface CalendarCallbacks {
+export interface CalendarHandlers {
+    initialView: string;
+    initialDate: string | null;
     onDateClick: (date: Date, allDay: boolean) => void;
     onRangeSelect: (start: Date, end: Date, allDay: boolean) => void;
     onEventClick: (id: string) => void;
-    onDateRangeChange: (
+    onRangeChange: (
         start: string,
         end: string,
         viewType: string,
-        viewTitle: string,
-        isInitial: boolean,
+        title: string,
     ) => void;
 }
 
@@ -25,9 +26,7 @@ interface CalendarCallbacks {
  */
 export function useCalendarConfig(
     events: Ref<CalendarEventIndex[]>,
-    callbacks: CalendarCallbacks,
-    initialView = 'dayGridMonth',
-    initialDate: string | null = null,
+    handlers: CalendarHandlers,
 ) {
     const calendarEvents = computed(() =>
         events.value.map((event) => ({
@@ -42,83 +41,62 @@ export function useCalendarConfig(
         })),
     );
 
-    let isInitialDatesSet = true;
-
-    const calendarOptions = computed<CalendarOptions>(() => {
-        const options: CalendarOptions = {
-            plugins: [
-                formaTheme,
-                interactionPlugin,
-                dayGridPlugin,
-                timeGridPlugin,
-            ],
-            initialView,
-            headerToolbar: false,
-            views: {
-                timeGridWeek: {
-                    type: 'timeGrid',
-                    duration: { weeks: 1 },
-                    allDaySlot: false,
-                    titleFormat: {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                    },
-                },
-                timeGridDay: {
-                    type: 'timeGrid',
-                    duration: { days: 1 },
-                    allDaySlot: false,
-                    titleFormat: {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                    },
+    const calendarOptions = computed<CalendarOptions>(() => ({
+        plugins: [formaTheme, interactionPlugin, dayGridPlugin, timeGridPlugin],
+        initialView: handlers.initialView,
+        initialDate: handlers.initialDate ?? undefined,
+        headerToolbar: false,
+        views: {
+            timeGridWeek: {
+                type: 'timeGrid',
+                duration: { weeks: 1 },
+                allDaySlot: false,
+                titleFormat: {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
                 },
             },
-            locale: 'en-gb',
-            firstDay: 1,
-            nowIndicator: true,
-            dayMaxEvents: true,
-            height: '100%',
-            expandRows: true,
-            navLinks: true,
-            navLinkDayClick: 'timeGridDay',
-            selectable: true,
-            events: calendarEvents.value,
-            datesSet: (info: DatesSetInfo) => {
-                const isInitial = isInitialDatesSet;
-                isInitialDatesSet = false;
-
-                callbacks.onDateRangeChange(
-                    toDateInputValue(info.start),
-                    toDateInputValue(info.end),
-                    info.view.type,
-                    info.view.title,
-                    isInitial,
-                );
+            timeGridDay: {
+                type: 'timeGrid',
+                duration: { days: 1 },
+                allDaySlot: false,
+                titleFormat: {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                },
             },
-            dateClick: (info: { date: Date }) => {
-                const start = new Date(info.date);
-                const allDay =
-                    start.getHours() === 0 && start.getMinutes() === 0;
-                callbacks.onDateClick(start, allDay);
-            },
-            select: (info: { start: Date; end: Date; allDay: boolean }) => {
-                callbacks.onRangeSelect(info.start, info.end, info.allDay);
-            },
-            eventClick: (info: { event: { id?: string } }) => {
-                if (info.event.id) callbacks.onEventClick(info.event.id);
-            },
-        };
-
-        if (initialDate) {
-            options.initialDate = initialDate;
-        }
-
-        return options;
-    });
+        },
+        locale: 'en-gb',
+        firstDay: 1,
+        nowIndicator: true,
+        dayMaxEvents: true,
+        height: '100%',
+        expandRows: true,
+        navLinks: true,
+        navLinkDayClick: 'timeGridDay',
+        selectable: true,
+        events: calendarEvents.value,
+        datesSet: (info: DatesSetInfo) =>
+            handlers.onRangeChange(
+                toDateInputValue(info.start),
+                toDateInputValue(info.end),
+                info.view.type,
+                info.view.title,
+            ),
+        dateClick: (info: { date: Date }) => {
+            const start = new Date(info.date);
+            const allDay = start.getHours() === 0 && start.getMinutes() === 0;
+            handlers.onDateClick(start, allDay);
+        },
+        select: (info: { start: Date; end: Date; allDay: boolean }) =>
+            handlers.onRangeSelect(info.start, info.end, info.allDay),
+        eventClick: (info: { event: { id?: string } }) => {
+            if (info.event.id) handlers.onEventClick(info.event.id);
+        },
+    }));
 
     return { calendarOptions };
 }
