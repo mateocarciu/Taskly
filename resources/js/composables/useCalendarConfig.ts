@@ -5,7 +5,7 @@ import interactionPlugin from '@fullcalendar/vue3/interaction';
 import formaTheme from '@fullcalendar/vue3/themes/forma';
 import timeGridPlugin from '@fullcalendar/vue3/timegrid';
 import { computed, type Ref } from 'vue';
-import { toDateInputValue } from './useDateFormatter';
+import { toDateInputValue, toTimeInputValue } from './useDateFormatter';
 
 export interface CalendarHandlers {
     initialView: string;
@@ -72,6 +72,7 @@ export function useCalendarConfig(
         locale: 'en-gb',
         firstDay: 1,
         nowIndicator: true,
+        scrollTime: toTimeInputValue(new Date()),
         dayMaxEvents: true,
         height: '100%',
         expandRows: true,
