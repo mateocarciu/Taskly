@@ -2,11 +2,8 @@
 
 namespace App\Services;
 
-use App\Http\Resources\NotificationResource;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator as Paginator;
 
 class NotificationService
 {
@@ -29,34 +26,5 @@ class NotificationService
     public function unreadCountFor(User $user): int
     {
         return $user->unreadNotifications()->count();
-    }
-
-    /**
-     * Build the notification dropdown payload for the shared Inertia props.
-     *
-     * @return array{unreadCount: int, data: array<int, array<string, mixed>>, pagination: array{current_page: int, last_page: int, total: int, has_more: bool}}
-     */
-    public function dropdown(?User $user, Request $request): array
-    {
-        if (! $user) {
-            return [
-                'unreadCount' => 0,
-                'data' => [],
-                'pagination' => ['current_page' => 1, 'last_page' => 1, 'total' => 0, 'has_more' => false],
-            ];
-        }
-
-        return [
-            'unreadCount' => $this->unreadCountFor($user),
-            ...NotificationResource::paginated($this->paginateFor($user), $request),
-        ];
-    }
-
-    /**
-     * An empty first page, for guests and users without notifications.
-     */
-    public static function emptyPaginator(): LengthAwarePaginator
-    {
-        return new Paginator([], 1, self::PER_PAGE, 1);
     }
 }

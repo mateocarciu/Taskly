@@ -28,8 +28,6 @@ export type AppPageProps<
     sidebarOpen: boolean;
     notifications: {
         unreadCount: number;
-        data: AppNotification[];
-        pagination: PaginationMeta;
     };
 };
 

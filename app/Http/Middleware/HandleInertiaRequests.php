@@ -53,7 +53,11 @@ class HandleInertiaRequests extends Middleware
                 ? $request->user()->accessibleTeamsQuery()->orderBy('name')->get(['id', 'name'])
                 : [],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'notifications' => fn () => $this->notificationService->dropdown($request->user(), $request),
+            'notifications' => fn () => [
+                'unreadCount' => $request->user()
+                    ? $this->notificationService->unreadCountFor($request->user())
+                    : 0,
+            ],
         ];
     }
 }

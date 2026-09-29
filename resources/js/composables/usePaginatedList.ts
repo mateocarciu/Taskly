@@ -85,17 +85,15 @@ export function usePaginatedList<T extends { id: string | number }>(
             : undefined;
     };
 
-    sync();
-
-    watch(source, sync, { deep: true });
-
-    const loadMore = async () => {
-        if (!pagination.value?.has_more || isLoadingMore.value) return;
+    const loadPage = async (
+        pageNumber: number,
+        append: boolean,
+    ): Promise<boolean> => {
+        if (isLoadingMore.value) return false;
 
         isLoadingMore.value = true;
         try {
-            const nextPage = pagination.value.current_page + 1;
-            const response = await fetch(options.urlForPage(nextPage), {
+            const response = await fetch(options.urlForPage(pageNumber), {
                 headers: {
                     Accept: 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
@@ -110,18 +108,38 @@ export function usePaginatedList<T extends { id: string | number }>(
                 meta,
             }: PaginatedPage<T> = await response.json();
 
-            items.value.push(...data);
+            if (append) {
+                items.value.push(...data);
+            } else {
+                items.value = [...data];
+            }
+
             if (nextPagination) {
                 pagination.value = { ...nextPagination };
             } else if (meta) {
                 pagination.value = toPaginationMeta(meta);
             }
+
+            return true;
         } catch {
             toast.error(options.errorMessage);
+            return false;
         } finally {
             isLoadingMore.value = false;
         }
     };
 
-    return { items, pagination, isLoadingMore, loadMore };
+    sync();
+
+    watch(source, sync, { deep: true });
+
+    const loadFirstPage = () => loadPage(1, false);
+
+    const loadMore = async () => {
+        if (!pagination.value?.has_more) return;
+
+        await loadPage(pagination.value.current_page + 1, true);
+    };
+
+    return { items, pagination, isLoadingMore, loadFirstPage, loadMore };
 }

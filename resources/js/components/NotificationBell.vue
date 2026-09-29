@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import {
     DropdownMenu,
@@ -35,11 +35,12 @@ const {
     items: notifications,
     pagination,
     isLoadingMore,
+    loadFirstPage,
     loadMore,
-} = usePaginatedList(
+} = usePaginatedList<AppNotification>(
     () => ({
-        items: page.props.notifications.data,
-        pagination: page.props.notifications.pagination,
+        items: [],
+        pagination: undefined,
     }),
     {
         urlForPage: (page) => index({ query: { page } }).url,
@@ -47,6 +48,13 @@ const {
         preserveLoadedItems: true,
     },
 );
+const notificationsLoaded = ref(false);
+
+const handleOpenChange = async (open: boolean) => {
+    if (!open || notificationsLoaded.value) return;
+
+    notificationsLoaded.value = await loadFirstPage();
+};
 
 const response = (notification: AppNotification) =>
     notification.data.response && notification.data.response !== 'needs_action'
@@ -62,16 +70,25 @@ const eventDateTime = (notification: AppNotification): string | null =>
 const markAllAsRead = () =>
     router.post(readAll().url, {}, { preserveScroll: true });
 
-const respondTo = (eventId: number, response: 'accepted' | 'declined') =>
+const respondTo = (
+    notification: AppNotification,
+    response: 'accepted' | 'declined',
+) =>
     router.post(
-        respond({ event: eventId, response }).url,
+        respond({ event: notification.data.event_id!, response }).url,
         {},
-        { preserveScroll: true },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                notification.data.response = response;
+                notification.read_at = new Date().toISOString();
+            },
+        },
     );
 </script>
 
 <template>
-    <DropdownMenu>
+    <DropdownMenu @update:open="handleOpenChange">
         <DropdownMenuTrigger as-child>
             <Button
                 variant="ghost"
@@ -114,7 +131,15 @@ const respondTo = (eventId: number, response: 'accepted' | 'declined') =>
             </div>
 
             <div class="max-h-[28rem] overflow-y-auto">
-                <template v-if="notifications.length > 0">
+                <div
+                    v-if="isLoadingMore && notifications.length === 0"
+                    class="flex items-center justify-center gap-2 px-4 py-12 text-sm text-muted-foreground"
+                >
+                    <Spinner class="size-4" />
+                    Loading notifications...
+                </div>
+
+                <template v-else-if="notifications.length > 0">
                     <div
                         v-for="notification in notifications"
                         :key="notification.id"
@@ -161,12 +186,7 @@ const respondTo = (eventId: number, response: 'accepted' | 'declined') =>
                                 <Button
                                     size="sm"
                                     class="h-8"
-                                    @click="
-                                        respondTo(
-                                            notification.data.event_id!,
-                                            'accepted',
-                                        )
-                                    "
+                                    @click="respondTo(notification, 'accepted')"
                                 >
                                     <Check class="mr-1.5 size-3.5" />
                                     Accept
@@ -175,12 +195,7 @@ const respondTo = (eventId: number, response: 'accepted' | 'declined') =>
                                     size="sm"
                                     variant="outline"
                                     class="h-8 text-muted-foreground hover:text-foreground"
-                                    @click="
-                                        respondTo(
-                                            notification.data.event_id!,
-                                            'declined',
-                                        )
-                                    "
+                                    @click="respondTo(notification, 'declined')"
                                 >
                                     <X class="mr-1.5 size-3.5" />
                                     Decline
