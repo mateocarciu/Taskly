@@ -66,16 +66,9 @@ export function useEventDialog({ events, focusOn }: EventDialogOptions) {
         ).toISOString();
     };
 
-    const openCreateAtRange = (start: Date, end: Date, allDay: boolean) => {
+    const openCreateAtRange = (start: Date, end: Date) => {
         const from = new Date(start);
         const to = new Date(end);
-
-        if (allDay) {
-            from.setHours(9, 0, 0, 0);
-            to.setDate(to.getDate() - 1);
-            if (to < from) to.setTime(from.getTime());
-            to.setHours(10, 0, 0, 0);
-        }
 
         openCreate();
         defaultStart.value = from.toISOString();

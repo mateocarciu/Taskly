@@ -73,12 +73,37 @@ export function useCalendarConfig(
         firstDay: 1,
         nowIndicator: true,
         scrollTime: toTimeInputValue(new Date()),
+        snapDuration: '00:15:00',
+        selectable: true,
+        unselectAuto: false,
+        selectMirror: true,
+        eventContent: (arg) => {
+            const content = document.createElement('div');
+            const title = document.createElement('div');
+            const time = document.createElement('div');
+
+            title.textContent = arg.isMirror
+                ? 'New event'
+                : arg.event.title || 'Untitled event';
+
+            if (arg.view.type === 'dayGridMonth') {
+                content.append(title);
+
+                return { domNodes: [content] };
+            }
+
+            time.textContent = arg.isMirror
+                ? `From ${toTimeInputValue(arg.event.start)} to ${toTimeInputValue(arg.event.end)}`
+                : arg.timeText;
+            content.append(title, time);
+
+            return { domNodes: [content] };
+        },
         dayMaxEvents: true,
         height: '100%',
         expandRows: true,
         navLinks: true,
         navLinkDayClick: 'timeGridDay',
-        selectable: true,
         events: calendarEvents.value,
         datesSet: (info: DatesSetInfo) =>
             handlers.onRangeChange(

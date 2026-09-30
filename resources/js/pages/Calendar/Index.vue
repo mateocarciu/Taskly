@@ -58,6 +58,27 @@ const dialog = reactive(
         focusOn: view.focusOn,
     }),
 );
+const hasDragSelection = ref(false);
+
+const openCreateAtRange = (start: Date, end: Date, allDay: boolean) => {
+    hasDragSelection.value = true;
+    dialog.openCreateAtRange(start, end, allDay);
+};
+
+const openEvent = (id: string) => {
+    hasDragSelection.value = false;
+    dialog.open(id);
+};
+
+watch(
+    () => dialog.isOpen,
+    (isOpen, wasOpen) => {
+        if (!isOpen && wasOpen && hasDragSelection.value) {
+            hasDragSelection.value = false;
+            calendarRef.value?.getApi().unselect();
+        }
+    },
+);
 
 const { calendarOptions } = useCalendarConfig(
     toRef(() => localEvents.value || []),
@@ -65,8 +86,8 @@ const { calendarOptions } = useCalendarConfig(
         initialView: view.initialView,
         initialDate: view.initialDate,
         onDateClick: dialog.openCreateAtDate,
-        onRangeSelect: dialog.openCreateAtRange,
-        onEventClick: dialog.open,
+        onRangeSelect: openCreateAtRange,
+        onEventClick: openEvent,
         onRangeChange: view.onRangeChange,
     },
 );
