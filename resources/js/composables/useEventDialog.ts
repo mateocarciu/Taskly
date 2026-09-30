@@ -84,6 +84,7 @@ export function useEventDialog({ events, focusOn }: EventDialogOptions) {
         const partial = (events.value ?? []).find(
             (e) => String(e.id) === String(id),
         );
+        const hasPartial = Boolean(partial);
 
         if (partial) {
             event.value = partial as unknown as CalendarEvent;
@@ -96,7 +97,7 @@ export function useEventDialog({ events, focusOn }: EventDialogOptions) {
         const startedAt = Date.now();
 
         try {
-            isLoading.value = true;
+            isLoading.value = !hasPartial;
 
             const response = await fetch(`/calendar/events/${id}`);
             if (!response.ok) throw new Error('Failed to fetch event');
