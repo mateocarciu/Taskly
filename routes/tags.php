@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'verified', 'hasTeam'])
     ->group(function () {
         Route::controller(TagController::class)->group(function () {
-            Route::get('tags', 'index')->name('tags.index');
+            Route::get('settings/tags', 'index')->name('settings.tags.index');
             Route::post('tags', 'store')->name('tags.store');
             Route::put('tags/{tag}', 'update')->name('tags.update');
             Route::delete('tags/{tag}', 'destroy')->name('tags.destroy');

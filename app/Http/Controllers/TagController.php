@@ -20,7 +20,7 @@ class TagController extends Controller
     {
         $tags = $this->tagService->listForTeam($request->user()->team_id);
 
-        return Inertia::render('Tags', [
+        return Inertia::render('settings/Tags', [
             'tags' => $tags->through(
                 fn (Tag $tag) => (new TagResource($tag))->resolve($request)
             ),
@@ -31,7 +31,7 @@ class TagController extends Controller
     {
         $this->tagService->create($request->validated(), $request->user());
 
-        return to_route('tags.index');
+        return to_route('settings.tags.index');
     }
 
     public function update(TagUpdateRequest $request, Tag $tag): RedirectResponse
@@ -40,7 +40,7 @@ class TagController extends Controller
 
         $this->tagService->update($tag, $request->validated());
 
-        return to_route('tags.index');
+        return to_route('settings.tags.index');
     }
 
     public function destroy(Request $request, Tag $tag): RedirectResponse
@@ -49,6 +49,6 @@ class TagController extends Controller
 
         $this->tagService->delete($tag);
 
-        return to_route('tags.index');
+        return to_route('settings.tags.index');
     }
 }

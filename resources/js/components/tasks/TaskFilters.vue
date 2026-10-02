@@ -23,6 +23,7 @@ import {
 } from '@lucide/vue';
 import { computed, reactive, watch } from 'vue';
 import { formatDate } from '@/composables/useDateFormatter';
+import { Link } from '@inertiajs/vue3';
 
 interface FilterState {
     search: string;
@@ -332,6 +333,16 @@ const hasActiveFilters = computed(() => {
                         />
                     </DropdownMenuItem>
                 </template>
+                <DropdownMenuSeparator />
+                <div class="px-2 py-1.5 text-xs text-muted-foreground">
+                    <Link
+                        href="/settings/tags"
+                        class="flex items-center gap-1.5 font-medium text-primary hover:underline"
+                    >
+                        <TagIcon class="size-3" />
+                        Manage tags
+                    </Link>
+                </div>
             </DropdownMenuContent>
         </DropdownMenu>
 

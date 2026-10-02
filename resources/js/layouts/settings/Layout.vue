@@ -39,6 +39,10 @@ const sidebarNavItems: NavItem[] = [
         href: '/settings/columns',
     },
     {
+        title: 'Tags',
+        href: '/settings/tags',
+    },
+    {
         title: 'User Management',
         href: '/settings/users',
     },
