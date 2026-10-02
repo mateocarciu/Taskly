@@ -66,7 +66,7 @@ const stripRichText = (value: string) => {
 const hydrateFormsFromTask = (task: Task) => {
     form.title = task.title;
     form.description = task.description || '';
-    form.due_date = task.due_date ? task.due_date.slice(0, 16) : '';
+    form.due_date = task.due_date || '';
     form.assigned_to = task.assigned_to ?? null;
     form.created_by = task.created_by;
     form.tag_ids = task.tags?.map((t) => t.id) ?? [];
@@ -98,7 +98,7 @@ const loadTaskDetails = async (
         if (hydrateForm) {
             form.title = task.title;
             form.description = task.description || '';
-            form.due_date = task.due_date ? task.due_date.slice(0, 16) : '';
+            form.due_date = task.due_date || '';
             form.assigned_to = task.assigned_to ?? null;
             form.created_by = task.created_by;
             form.attachments = [];

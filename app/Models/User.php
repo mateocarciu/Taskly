@@ -89,6 +89,26 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the calendars the user is a member of.
+     */
+    public function calendars(): BelongsToMany
+    {
+        return $this->belongsToMany(Calendar::class, 'calendar_members')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the events the user attends.
+     */
+    public function attendedEvents(): BelongsToMany
+    {
+        return $this->belongsToMany(Event::class, 'event_attendees')
+            ->withPivot(['participation_status', 'responded_at', 'hidden_at'])
+            ->withTimestamps();
+    }
+
+    /**
      * Determine if the user is an owner.
      */
     public function isOwner(): bool

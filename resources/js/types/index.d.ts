@@ -26,7 +26,17 @@ export type AppPageProps<
     currentTeam?: Team | null;
     teams?: Team[];
     sidebarOpen: boolean;
+    notifications: {
+        unreadCount: number;
+    };
 };
+
+export interface PaginationMeta {
+    current_page: number;
+    last_page: number;
+    total: number;
+    has_more: boolean;
+}
 
 export interface User {
     id: number;
@@ -92,12 +102,7 @@ export interface Column {
     type: 'todo' | 'in_progress' | 'done';
     order: number;
     tasks: Task[];
-    pagination?: {
-        current_page: number;
-        last_page: number;
-        total: number;
-        has_more: boolean;
-    };
+    pagination?: PaginationMeta;
 }
 
 export interface TaskForm {
@@ -146,6 +151,32 @@ export interface Team {
     count_days_in_column_tasks?: number;
 }
 
+export interface AppNotificationData {
+    event_id?: number;
+    title?: string | null;
+    description?: string | null;
+    start_time?: string | null;
+    end_time?: string | null;
+    inviter?: string | null;
+    has_video?: boolean;
+    response?: 'needs_action' | 'accepted' | 'declined' | 'tentative';
+    [key: string]: unknown;
+}
+
+/**
+ * Notification type aliases — must match the TYPE_ALIASES map in
+ * App\Http\Resources\NotificationResource.
+ */
+export type NotificationType = 'event_invitation' | (string & {});
+
+export interface AppNotification {
+    id: string;
+    type: NotificationType;
+    data: AppNotificationData;
+    read_at: string | null;
+    created_at: string;
+}
+
 export interface PaginationLink {
     url: string | null;
     label: string;
@@ -167,13 +198,6 @@ export interface PaginatedTasks {
     prev_page_url: string | null;
     to: number;
     total: number;
-}
-
-export interface PaginationLink {
-    url: string | null;
-    label: string;
-    page: number | null;
-    active: boolean;
 }
 
 export interface TaskEditFormState {
@@ -239,4 +263,34 @@ export interface UnifiedAttachment {
     isPending: boolean;
     isRemoved: boolean;
     pendingIndex?: number;
+}
+
+export interface CalendarEventIndex {
+    id: number;
+    title: string;
+    start_at: string;
+    end_at: string;
+    has_video: boolean;
+}
+
+export interface CalendarEvent {
+    id: number;
+    calendar_id: number;
+    organizer_id: number;
+    title: string;
+    description: string | null;
+    start_at: string;
+    end_at: string;
+    timezone: string;
+    room_name: string | null;
+    has_video: boolean;
+    status: 'confirmed' | 'cancelled';
+    organizer?: {
+        id: number;
+        name: string;
+    };
+    attendees?: {
+        id: number;
+        name: string;
+    }[];
 }

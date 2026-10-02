@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'jitsi' => [
+        'domain' => env('JITSI_DOMAIN') ?: 'meet.jit.si',
+        'app_id' => env('JITSI_APP_ID'),
+        'secret' => env('JITSI_APP_SECRET'),
+    ],
+
 ];

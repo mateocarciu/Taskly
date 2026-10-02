@@ -24,6 +24,15 @@ Short demo on YouTube: [Demo](https://youtu.be/Vk0FuN59XUE)
   - Detailed activity log timeline for full auditability.
   - **Document Uploads:** Attach files directly to tasks (currently supporting Images and PDFs).
   - **Smart Link Previews:** Automatic, rich previews for URLs embedded in task descriptions and comments.
+- **Interactive Calendar & Scheduling:**
+  - Full-featured calendar supporting Month, Week, and Day views.
+  - Drag-and-drop time range selection to quickly create events.
+  - Event creation and editing with descriptions, date/time pickers, and attendee assignments.
+  - Team member invitations with RSVP statuses (Accepted, Declined, Pending) and event privacy/hiding controls.
+- **Integrated Video Conferencing (Jitsi Meet):**
+  - One-click video call generation directly linked to scheduled events.
+  - Dedicated in-app meeting room view with Jitsi Meet integration.
+  - Support for custom self-hosted (on-premise) instances or automatic fallback to public servers (`meet.jit.si`).
 - **Workload Dashboard:** Team workspace overview featuring task metrics, urgent "To Handle Now" tasks, column breakdowns, and a recent activity feed.
 
 ## Tech Stack
@@ -31,6 +40,7 @@ Short demo on YouTube: [Demo](https://youtu.be/Vk0FuN59XUE)
 - **Backend:** Laravel 13 (PHP >= 8.4), Inertia.js V3
 - **Frontend:** Vue 3
 - **Styling:** Tailwind CSS & Shadcn
+- **Video Conferencing:** Jitsi Meet
 - **CI/CD:** GitHub Actions workflow for automated testing, linting and deployment.
 - **Deployment:** Docker, with a production-ready Dockerfile included in the repository.
 
@@ -94,3 +104,21 @@ Taskly ships with a single-tenant role model. Every account holds one of three *
 - **Removing & demoting:** privileged users cannot be removed from a team (they always retain access). Demoting an Admin keeps them as an explicit member of the team the demotion happened in, so they don't silently vanish from the member list.
 - **New teams** are bootstrapped with default columns (To Do, In Progress, Done), matching the seeder.
 
+## Video Conferencing Setup (Jitsi Meet)
+
+Taskly includes integrated video conferencing for calendar events powered by Jitsi Meet. It works out of the box with zero configuration, while supporting private, on-premise deployments:
+
+- **Public Fallback (Default):** If `JITSI_DOMAIN` is omitted or left empty, Taskly automatically connects to the public instance (`meet.jit.si`). No API keys or extra configuration are needed.
+- **Self-Hosted / On-Premise:** If your organization hosts its own Jitsi Meet server, point Taskly to it by setting `JITSI_DOMAIN` to your instance domain (e.g., `meet.yourcompany.com`).
+- **JWT Authentication & Moderation:** For self-hosted instances secured with token authentication (JWT), define `JITSI_APP_ID` and `JITSI_APP_SECRET`. Taskly will automatically issue signed HS256 JWT tokens to grant moderator privileges to the event organizer.
+
+Add or update these variables in your `.env` file:
+
+```env
+# Jitsi Meet domain (defaults to meet.jit.si if left blank)
+JITSI_DOMAIN=meet.jit.si
+
+# Optional: required only for authenticated / self-hosted Jitsi instances
+JITSI_APP_ID=
+JITSI_APP_SECRET=
+```

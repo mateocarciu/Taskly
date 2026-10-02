@@ -127,7 +127,7 @@ class TaskResource extends JsonResource
             'title' => $this->title,
             'description' => $description,
             'days_in_column' => $daysInColumn,
-            'due_date' => $this->due_date,
+            'due_date' => $this->due_date?->toIso8601String(),
             'created_by' => $this->created_by,
             'assigned_to' => $this->assigned_to,
             'creator' => $this->whenLoaded('creator', fn () => [

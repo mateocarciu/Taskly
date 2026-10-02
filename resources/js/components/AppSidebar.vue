@@ -16,7 +16,7 @@ import { dashboard } from '@/routes';
 import { index } from '@/routes/tasks';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { Folder, LayoutGrid, ListCheck, Tag } from '@lucide/vue';
+import { Folder, LayoutGrid, ListCheck, Calendar } from '@lucide/vue';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -31,9 +31,9 @@ const mainNavItems: NavItem[] = [
         icon: ListCheck,
     },
     {
-        title: 'Tags',
-        href: '/tags',
-        icon: Tag,
+        title: 'Calendar',
+        href: '/calendar',
+        icon: Calendar,
     },
 ];
 

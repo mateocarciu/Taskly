@@ -18,10 +18,11 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import draggable from 'vuedraggable';
 import ConfirmDeleteDialog from '@/components/ConfirmDeleteDialog.vue';
+import { usePaginatedList } from '@/composables/usePaginatedList';
 import TaskItem from './TaskItem.vue';
 
 const props = defineProps<{
@@ -42,68 +43,49 @@ const startEditColumn = () => {
     isEditingColumn.value = true;
 };
 
-const localTasks = ref<Task[]>([...(props.column.tasks || [])]);
-const pagination = ref<Column['pagination']>(
-    props.column.pagination ? { ...props.column.pagination } : undefined,
-);
-const isLoadingMore = ref(false);
 const isDone = computed(() => props.column.type === 'done');
 
-const loadMoreTasks = async () => {
-    if (!pagination.value || !pagination.value.has_more) return;
+const {
+    items: localTasks,
+    pagination,
+    isLoadingMore,
+    loadMore: loadMoreTasks,
+} = usePaginatedList(
+    () => ({
+        items: props.column.tasks,
+        pagination: props.column.pagination,
+    }),
+    {
+        urlForPage: (page) => {
+            const params = new URLSearchParams();
+            params.append('page', page.toString());
 
-    isLoadingMore.value = true;
-    try {
-        const nextPage = pagination.value.current_page + 1;
-        const params = new URLSearchParams();
-        params.append('page', nextPage.toString());
+            if (props.filters.search) {
+                params.append('search', props.filters.search);
+            }
+            if (props.filters.assignee_id) {
+                params.append(
+                    'assignee_id',
+                    props.filters.assignee_id.toString(),
+                );
+            }
+            if (props.filters.tag_ids) {
+                const tagIds = Array.isArray(props.filters.tag_ids)
+                    ? props.filters.tag_ids
+                    : [props.filters.tag_ids];
+                tagIds.forEach((id: any) => {
+                    params.append('tag_ids[]', id.toString());
+                });
+            }
+            if (props.filters.due_date) {
+                params.append('due_date', props.filters.due_date);
+            }
 
-        if (props.filters.search) {
-            params.append('search', props.filters.search);
-        }
-        if (props.filters.assignee_id) {
-            params.append('assignee_id', props.filters.assignee_id.toString());
-        }
-        if (props.filters.tag_ids) {
-            const tagIds = Array.isArray(props.filters.tag_ids)
-                ? props.filters.tag_ids
-                : [props.filters.tag_ids];
-            tagIds.forEach((id: any) => {
-                params.append('tag_ids[]', id.toString());
-            });
-        }
-        if (props.filters.due_date) {
-            params.append('due_date', props.filters.due_date);
-        }
-
-        const response = await fetch(
-            `/columns/${props.column.id}/tasks?${params.toString()}`,
-            {
-                headers: {
-                    Accept: 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            },
-        );
-
-        if (!response.ok) throw new Error('Network error');
-
-        const { data, meta } = await response.json();
-
-        localTasks.value.push(...data);
-
-        pagination.value = {
-            current_page: meta.current_page,
-            last_page: meta.last_page,
-            total: meta.total,
-            has_more: meta.current_page < meta.last_page,
-        };
-    } catch {
-        toast.error('Failed to load more tasks');
-    } finally {
-        isLoadingMore.value = false;
-    }
-};
+            return `/columns/${props.column.id}/tasks?${params.toString()}`;
+        },
+        errorMessage: 'Failed to load more tasks',
+    },
+);
 
 const saveColumnName = () => {
     if (editName.value.trim() && editName.value !== props.column.name) {
@@ -154,16 +136,6 @@ const onDragChange = (event: any) => {
         );
     }
 };
-
-watch(
-    () => props.column.tasks,
-    (newTasks) => {
-        localTasks.value = [...(newTasks || [])];
-        if (props.column.pagination) {
-            pagination.value = { ...props.column.pagination };
-        }
-    },
-);
 </script>
 
 <template>

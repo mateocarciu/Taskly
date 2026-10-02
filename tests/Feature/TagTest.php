@@ -20,7 +20,7 @@ test('can create tag for team', function () {
             'name' => 'Urgent',
             'color' => '#ff0000',
         ])
-        ->assertRedirect('/tags');
+        ->assertRedirect('/settings/tags');
 
     $this->assertDatabaseHas('tags', [
         'name' => 'Urgent',
@@ -33,10 +33,10 @@ test('can list team tags', function () {
     Tag::factory(3)->create(['team_id' => $this->team->id]);
 
     $this->actingAs($this->user)
-        ->get('/tags')
+        ->get('/settings/tags')
         ->assertStatus(200)
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Tags')
+            ->component('settings/Tags')
             ->has('tags.data', 3)
             ->where('tags.total', 3)
         );

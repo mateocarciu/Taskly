@@ -85,7 +85,7 @@ const triggerLabel = computed(() => {
                 >
                     No tags available.
                     <Link
-                        href="/tags"
+                        href="/settings/tags"
                         class="font-medium text-primary hover:underline"
                     >
                         Create one
@@ -113,7 +113,7 @@ const triggerLabel = computed(() => {
                     <DropdownMenuSeparator />
                     <div class="px-2 py-1.5 text-xs text-muted-foreground">
                         <Link
-                            href="/tags"
+                            href="/settings/tags"
                             class="font-medium text-primary hover:underline"
                         >
                             Manage tags
