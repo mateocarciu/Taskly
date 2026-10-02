@@ -23,9 +23,6 @@ RUN npm ci
 COPY . .
 
 RUN composer dump-autoload --optimize --no-dev \
-    && php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache \
     && npm run build
 
 # ── Runtime Stage ────────────────────────────────────────────
@@ -48,6 +45,7 @@ COPY --from=build /var/www /var/www
 RUN rm -rf node_modules tests .git .editorconfig .prettierrc .prettierignore \
     && rm -f docker-compose.prod.yml Dockerfile .dockerignore \
     && rm -f README.md LICENSE \
+    && rm -f bootstrap/cache/*.php \
     && mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
