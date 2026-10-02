@@ -128,7 +128,8 @@ jobs:
             ${{ github.event_name == 'push' && format('{0}:latest', env.IMAGE) || '' }}
 
   deploy:
-    needs: build
+    needs: [build, release]
+    if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: appleboy/ssh-action@v1
