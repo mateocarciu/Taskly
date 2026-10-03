@@ -238,6 +238,23 @@ describe('store', function () {
             'description' => 'This is a detailed narrative.',
         ]);
     });
+
+    test('sanitizes task description to remove disallowed tags and attributes', function () {
+        $taskData = [
+            'title' => 'Task with malicious html',
+            'description' => '<p>Valid text</p><script>alert("xss")</script><img src="x" onerror="alert(1)">',
+        ];
+
+        $this->actingAs($this->user)
+            ->post(route('tasks.store'), $taskData)
+            ->assertRedirect(route('tasks.index'));
+
+        $task = Task::query()->where('title', 'Task with malicious html')->firstOrFail();
+
+        expect($task->description)->toContain('<p>Valid text</p>')
+            ->and($task->description)->not->toContain('<script>')
+            ->and($task->description)->not->toContain('onerror');
+    });
 });
 
 describe('update', function () {

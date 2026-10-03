@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\CleanHtml;
 use Database\Factories\TaskCommentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,6 +25,18 @@ class TaskComment extends Model
         'parent_id',
         'body',
     ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'body' => CleanHtml::class,
+        ];
+    }
 
     /**
      * Get the task that owns the comment.

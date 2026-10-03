@@ -126,4 +126,23 @@ describe('comments', function () {
             ->assertJsonPath('comments.0.body', 'Top level comment')
             ->assertJsonPath('comments.0.replies.0.body', 'Nested reply');
     });
+
+    test('sanitizes comment body to remove disallowed tags and attributes', function () {
+        $task = Task::factory()->create([
+            'team_id' => $this->team->id,
+            'column_id' => $this->column->id,
+        ]);
+
+        $this->actingAs($this->user)
+            ->post(route('tasks.comments.store', $task), [
+                'body' => '<p>Helpful comment</p><script>alert("xss")</script><a href="javascript:alert(1)">link</a>',
+            ])
+            ->assertStatus(204);
+
+        $comment = TaskComment::query()->where('task_id', $task->id)->firstOrFail();
+
+        expect($comment->body)->toContain('<p>Helpful comment</p>')
+            ->and($comment->body)->not->toContain('<script>')
+            ->and($comment->body)->not->toContain('javascript:');
+    });
 });
