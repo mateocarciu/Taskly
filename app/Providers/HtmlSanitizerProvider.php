@@ -11,7 +11,7 @@ class HtmlSanitizerProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(HtmlSanitizer::class, function () {
-            $config = (new HtmlSanitizerConfig())
+            $config = (new HtmlSanitizerConfig)
                 ->allowSafeElements()
                 ->allowRelativeLinks()
                 ->allowLinkSchemes(['http', 'https', 'mailto'])
