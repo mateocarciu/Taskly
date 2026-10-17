@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\NotifyTaskCommentStakeholders;
 use App\Models\Task;
 use App\Models\TaskComment;
 use App\Models\User;
@@ -27,11 +28,15 @@ class CommentService
      */
     public function createComment(Task $task, array $data, User $user): TaskComment
     {
-        return $task->comments()->create([
+        $comment = $task->comments()->create([
             'user_id' => $user->id,
             'parent_id' => $data['parent_id'] ?? null,
             'body' => $data['body'],
         ]);
+
+        NotifyTaskCommentStakeholders::dispatch($task, $comment, $user);
+
+        return $comment;
     }
 
     /**

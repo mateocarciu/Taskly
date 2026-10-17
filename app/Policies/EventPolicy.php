@@ -29,8 +29,7 @@ class EventPolicy
      */
     public function delete(User $user, Event $event): bool
     {
-        return $event->calendar?->team_id !== null
-            && $user->canAccessTeam($event->calendar->team_id);
+        return $user->id === $event->organizer_id;
     }
 
     /**

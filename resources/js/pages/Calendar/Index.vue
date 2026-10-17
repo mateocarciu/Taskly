@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { reactive, ref, toRef, watch } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { onMounted, onUnmounted, reactive, ref, toRef, watch } from 'vue';
+import { Head, usePage } from '@inertiajs/vue3';
 import FullCalendar, {
     type CalendarApi as FullCalendarApi,
 } from '@fullcalendar/vue3';
@@ -22,6 +22,8 @@ const props = defineProps<{
     start?: string | null;
     end?: string | null;
 }>();
+
+const page = usePage();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Calendar', href: '/calendar' },
@@ -60,9 +62,9 @@ const dialog = reactive(
 );
 const hasDragSelection = ref(false);
 
-const openCreateAtRange = (start: Date, end: Date, allDay: boolean) => {
+const openCreateAtRange = (start: Date, end: Date) => {
     hasDragSelection.value = true;
-    dialog.openCreateAtRange(start, end, allDay);
+    dialog.openCreateAtRange(start, end);
 };
 
 const openEvent = (id: string) => {
@@ -70,15 +72,38 @@ const openEvent = (id: string) => {
     dialog.open(id);
 };
 
-watch(
-    () => dialog.isOpen,
-    (isOpen, wasOpen) => {
-        if (!isOpen && wasOpen && hasDragSelection.value) {
-            hasDragSelection.value = false;
-            calendarRef.value?.getApi().unselect();
-        }
-    },
-);
+const handleEventResponded = (response: 'accepted' | 'declined') => {
+    if (!dialog.event) return;
+
+    dialog.event = {
+        ...dialog.event,
+        user_participation_status: response,
+        attendees: dialog.event.attendees?.map((a) =>
+            a.id === page.props.auth.user.id
+                ? { ...a, participation_status: response }
+                : a,
+        ),
+    };
+
+    const existing = localEvents.value?.find((e) => e.id === dialog.event?.id);
+    if (existing) {
+        existing.is_declined = response === 'declined';
+    } else if (localEvents.value && dialog.event) {
+        localEvents.value.push({
+            id: dialog.event.id,
+            title: dialog.event.title,
+            start_at: dialog.event.start_at,
+            end_at: dialog.event.end_at,
+            has_video: dialog.event.has_video,
+            is_declined: response === 'declined',
+        });
+    }
+};
+
+const handleOpenEventMessage = (e: Event) => {
+    const { eventId } = (e as CustomEvent<{ eventId: number }>).detail;
+    openEvent(String(eventId));
+};
 
 const { calendarOptions } = useCalendarConfig(
     toRef(() => localEvents.value || []),
@@ -90,6 +115,21 @@ const { calendarOptions } = useCalendarConfig(
         onEventClick: openEvent,
         onRangeChange: view.onRangeChange,
     },
+);
+
+watch(
+    () => dialog.isOpen,
+    (isOpen, wasOpen) => {
+        if (!isOpen && wasOpen && hasDragSelection.value) {
+            hasDragSelection.value = false;
+            calendarRef.value?.getApi().unselect();
+        }
+    },
+);
+
+onMounted(() => window.addEventListener('open-event', handleOpenEventMessage));
+onUnmounted(() =>
+    window.removeEventListener('open-event', handleOpenEventMessage),
 );
 </script>
 
@@ -186,6 +226,7 @@ const { calendarOptions } = useCalendarConfig(
             :default-end="dialog.defaultEnd"
             :event="dialog.event"
             :is-loading="dialog.isLoading"
+            @responded="handleEventResponded"
         />
     </AppLayout>
 </template>
@@ -225,5 +266,16 @@ body {
 .taskly-full-calendar .event-video {
     --fc-forma-event: var(--chart-2);
     --fc-forma-event-contrast: #fff;
+}
+
+.taskly-full-calendar .event-declined {
+    --fc-forma-event: var(--muted);
+    --fc-forma-event-contrast: var(--muted-foreground);
+    opacity: 0.65;
+    border-style: dashed !important;
+}
+
+.taskly-full-calendar .taskly-event-declined-title {
+    text-decoration: line-through;
 }
 </style>

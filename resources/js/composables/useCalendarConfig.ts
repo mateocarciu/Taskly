@@ -5,7 +5,11 @@ import interactionPlugin from '@fullcalendar/vue3/interaction';
 import formaTheme from '@fullcalendar/vue3/themes/forma';
 import timeGridPlugin from '@fullcalendar/vue3/timegrid';
 import { computed, type Ref } from 'vue';
-import { toDateInputValue, toTimeInputValue } from './useDateFormatter';
+import {
+    scrollTimeBeforeNow,
+    toDateInputValue,
+    toTimeInputValue,
+} from './useDateFormatter';
 
 export interface CalendarHandlers {
     initialView: string;
@@ -29,17 +33,31 @@ export function useCalendarConfig(
     handlers: CalendarHandlers,
 ) {
     const calendarEvents = computed(() =>
-        events.value.map((event) => ({
-            id: String(event.id),
-            title: event.title,
-            start: event.start_at,
-            end: event.end_at,
-            class: event.has_video
-                ? 'taskly-event event-video'
-                : 'taskly-event event-standard',
-            extendedProps: { hasVideo: event.has_video },
-        })),
+        events.value.map((event) => {
+            const classes = ['taskly-event'];
+            if (event.is_declined) {
+                classes.push('event-declined');
+            } else if (event.has_video) {
+                classes.push('event-video');
+            } else {
+                classes.push('event-standard');
+            }
+
+            return {
+                id: String(event.id),
+                title: event.title,
+                start: event.start_at,
+                end: event.end_at,
+                class: classes.join(' '),
+                extendedProps: {
+                    hasVideo: event.has_video,
+                    isDeclined: Boolean(event.is_declined),
+                },
+            };
+        }),
     );
+
+    const scrollTime = scrollTimeBeforeNow();
 
     const calendarOptions = computed<CalendarOptions>(() => ({
         plugins: [formaTheme, interactionPlugin, dayGridPlugin, timeGridPlugin],
@@ -72,7 +90,7 @@ export function useCalendarConfig(
         locale: 'en-gb',
         firstDay: 1,
         nowIndicator: true,
-        scrollTime: toTimeInputValue(new Date()),
+        scrollTime,
         snapDuration: '00:15:00',
         selectable: true,
         unselectAuto: false,
@@ -85,6 +103,11 @@ export function useCalendarConfig(
             title.textContent = arg.isMirror
                 ? 'New event'
                 : arg.event.title || 'Untitled event';
+
+            if (arg.event.extendedProps.isDeclined) {
+                content.classList.add('taskly-event-declined');
+                title.classList.add('taskly-event-declined-title');
+            }
 
             if (arg.view.type === 'dayGridMonth') {
                 content.append(title);

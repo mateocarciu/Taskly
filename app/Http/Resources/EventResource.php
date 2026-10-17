@@ -26,6 +26,13 @@ class EventResource extends JsonResource
             'room_name' => $this->room_name,
             'has_video' => $this->has_video,
             'status' => $this->status,
+            'user_participation_status' => $this->whenLoaded('attendees', function () use ($request) {
+                if ($this->organizer_id === $request->user()?->id) {
+                    return 'accepted';
+                }
+
+                return $this->attendees->firstWhere('id', $request->user()?->id)?->pivot?->participation_status;
+            }),
             'organizer' => $this->whenLoaded('organizer', fn () => [
                 'id' => $this->organizer->id,
                 'name' => $this->organizer->name,
@@ -34,6 +41,7 @@ class EventResource extends JsonResource
                 ->map(fn ($attendee) => [
                     'id' => $attendee->id,
                     'name' => $attendee->name,
+                    'participation_status' => $attendee->pivot?->participation_status,
                 ])->values()),
         ];
     }
