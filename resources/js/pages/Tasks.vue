@@ -6,11 +6,10 @@ import TaskFilters from '@/components/tasks/TaskFilters.vue';
 import TasksPageSkeleton from '@/components/tasks/TasksPageSkeleton.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { ensureMinimumDelay } from '@/lib/utils';
-import { index, show } from '@/routes/tasks';
-import { toast } from 'vue-sonner';
+import { index } from '@/routes/tasks';
 import type { BreadcrumbItem, Column, Tag, Task, TeamMember } from '@/types';
 import { Head, router, usePage } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 const props = defineProps<{
     columns?: Column[];
@@ -79,9 +78,9 @@ watch(
 
 watch(
     taskIdFromUrl,
-    async (id) => {
+    (id) => {
         if (id) {
-            let partialTask = undefined;
+            let partialTask: Task | undefined;
             if (localColumns.value) {
                 for (const col of localColumns.value) {
                     partialTask = col.tasks.find((t) => t.id === id);
@@ -89,39 +88,38 @@ watch(
                 }
             }
 
-            if (partialTask) {
-                if (!taskToEdit.value || taskToEdit.value.id !== id) {
-                    taskToEdit.value = partialTask;
-                }
-                isEditModalOpen.value = true;
-            } else {
-                taskToEdit.value = { id } as Task;
-                try {
-                    const response = await fetch(show(id).url, {
-                        headers: { Accept: 'application/json' },
-                    });
-                    if (!response.ok) throw new Error('Task not found');
-                    if (!isEditModalOpen.value) {
-                        isEditModalOpen.value = true;
-                    }
-                } catch (error) {
-                    console.error(error);
-                    toast.error('Task not found');
-                    isEditModalOpen.value = false;
-                    taskToEdit.value = null;
-                    if (typeof window !== 'undefined') {
-                        const url = new URL(window.location.href);
-                        url.searchParams.delete('id');
-                        window.history.replaceState({}, '', url.toString());
-                    }
-                }
+            if (!taskToEdit.value || taskToEdit.value.id !== id) {
+                taskToEdit.value = partialTask ?? ({ id } as Task);
             }
+            isEditModalOpen.value = true;
         } else {
             isEditModalOpen.value = false;
         }
     },
     { immediate: true },
 );
+
+const handleOpenTaskEvent = (e: Event) => {
+    const { taskId } = (e as CustomEvent<{ taskId: number }>).detail;
+
+    let partialTask: Task | undefined;
+    if (localColumns.value) {
+        for (const col of localColumns.value) {
+            partialTask = col.tasks.find((t) => t.id === taskId);
+            if (partialTask) break;
+        }
+    }
+
+    taskToEdit.value = partialTask ?? ({ id: taskId } as Task);
+    isEditModalOpen.value = true;
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('id', taskId.toString());
+    window.history.replaceState(null, '', url.pathname + url.search);
+};
+
+onMounted(() => window.addEventListener('open-task', handleOpenTaskEvent));
+onUnmounted(() => window.removeEventListener('open-task', handleOpenTaskEvent));
 
 watch(isEditModalOpen, (isOpen) => {
     const url = new URL(window.location.href);

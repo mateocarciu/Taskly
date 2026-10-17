@@ -160,6 +160,13 @@ export interface AppNotificationData {
     inviter?: string | null;
     has_video?: boolean;
     response?: 'needs_action' | 'accepted' | 'declined' | 'tentative';
+    task_id?: number;
+    task_title?: string;
+    assigner?: string;
+    commenter?: string;
+    comment?: string;
+    due_date?: string | null;
+    is_reply?: boolean;
     [key: string]: unknown;
 }
 
@@ -167,7 +174,8 @@ export interface AppNotificationData {
  * Notification type aliases — must match the TYPE_ALIASES map in
  * App\Http\Resources\NotificationResource.
  */
-export type NotificationType = 'event_invitation' | (string & {});
+export type NotificationType =
+    'event_invitation' | 'task_assigned' | 'task_commented' | (string & {});
 
 export interface AppNotification {
     id: string;
@@ -271,6 +279,7 @@ export interface CalendarEventIndex {
     start_at: string;
     end_at: string;
     has_video: boolean;
+    is_declined?: boolean;
 }
 
 export interface CalendarEvent {
@@ -285,6 +294,8 @@ export interface CalendarEvent {
     room_name: string | null;
     has_video: boolean;
     status: 'confirmed' | 'cancelled';
+    user_participation_status?:
+        'needs_action' | 'accepted' | 'declined' | 'tentative' | null;
     organizer?: {
         id: number;
         name: string;
@@ -292,5 +303,7 @@ export interface CalendarEvent {
     attendees?: {
         id: number;
         name: string;
+        participation_status?:
+            'needs_action' | 'accepted' | 'declined' | 'tentative';
     }[];
 }

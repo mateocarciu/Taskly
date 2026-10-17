@@ -25,8 +25,14 @@ export function useEventDialog({ events, focusOn }: EventDialogOptions) {
     const urlEventId = computed(() => {
         if (typeof window === 'undefined') return null;
 
-        const url = new URL(page.url, window.location.origin);
-        const id = parseInt(url.searchParams.get('id') ?? '', 10);
+        const currentUrl = page.url || window.location.href;
+        const url = new URL(currentUrl, window.location.origin);
+        let idStr = url.searchParams.get('id');
+        if (!idStr && typeof window !== 'undefined') {
+            const winUrl = new URL(window.location.href);
+            idStr = winUrl.searchParams.get('id');
+        }
+        const id = parseInt(idStr ?? '', 10);
         return Number.isNaN(id) ? null : id;
     });
 
@@ -118,9 +124,11 @@ export function useEventDialog({ events, focusOn }: EventDialogOptions) {
 
     watch(
         urlEventId,
-        (id) => {
+        (id, oldId) => {
             if (id === null) {
-                close();
+                if (oldId && isOpen.value) {
+                    close();
+                }
             } else if (event.value?.id !== id) {
                 open(id);
             }

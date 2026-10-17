@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
+use App\Jobs\NotifyTaskAssignee;
 use App\Models\Column;
 use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TaskAttachment;
 use App\Models\User;
+use App\Notifications\TaskAssigned;
+use App\Notifications\TaskCommented;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -91,7 +94,7 @@ class TaskService
 
         $columnName = Column::query()->where('id', $columnId)->value('name');
 
-        return DB::transaction(function () use ($data, $user, $columnId, $order, $columnName, $tagIds, $newFiles) {
+        $task = DB::transaction(function () use ($data, $user, $columnId, $order, $columnName, $tagIds, $newFiles) {
             $task = Task::create(array_merge($data, [
                 'team_id' => $user->team_id,
                 'created_by' => $data['created_by'] ?? $user->id,
@@ -144,6 +147,10 @@ class TaskService
 
             return $task;
         });
+
+        $this->dispatchAssigneeNotification($task, $user);
+
+        return $task;
     }
 
     /**
@@ -183,6 +190,8 @@ class TaskService
                     'previous_assigned_to' => $oldAssignedTo,
                 ],
             ]);
+
+            $this->dispatchAssigneeNotification($task, $actor);
         }
 
         if (! empty($removedIds)) {
@@ -286,6 +295,16 @@ class TaskService
      */
     public function deleteTask(Task $task): ?bool
     {
+        DB::table('notifications')
+            ->whereIn('type', [TaskAssigned::class, TaskCommented::class])
+            ->where('data->task_id', $task->id)
+            ->delete();
+
         return $task->delete();
+    }
+
+    private function dispatchAssigneeNotification(Task $task, User $actor): void
+    {
+        NotifyTaskAssignee::dispatch($task, $actor);
     }
 }

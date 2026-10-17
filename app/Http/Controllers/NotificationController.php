@@ -7,6 +7,7 @@ use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Notifications\DatabaseNotification;
 
 class NotificationController extends Controller
@@ -20,7 +21,7 @@ class NotificationController extends Controller
         );
     }
 
-    public function markAsRead(Request $request, DatabaseNotification $notification): RedirectResponse
+    public function markAsRead(Request $request, DatabaseNotification $notification): RedirectResponse|Response
     {
         abort_unless(
             $notification->notifiable()->whereKey($request->user()->getKey())->exists(),
@@ -28,6 +29,10 @@ class NotificationController extends Controller
         );
 
         $notification->markAsRead();
+
+        if ($request->wantsJson()) {
+            return response()->noContent();
+        }
 
         return back();
     }

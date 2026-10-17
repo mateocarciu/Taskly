@@ -6,6 +6,7 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import {
@@ -15,19 +16,28 @@ import {
     Check,
     CheckCheck,
     ChevronDown,
+    MessageSquare,
+    UserPlus,
     X,
 } from '@lucide/vue';
 import { respond } from '@/routes/calendar/events';
-import { index, readAll } from '@/routes/notifications';
+import { index as calendarIndex } from '@/routes/calendar';
+import { index, markAsRead, readAll } from '@/routes/notifications';
+import { index as tasksIndex } from '@/routes/tasks';
 import {
     relativeTime,
     formatDateTimeRange,
+    formatDate,
+    nowIso,
 } from '@/composables/useDateFormatter';
 import { usePaginatedList } from '@/composables/usePaginatedList';
+import { useInitials } from '@/composables/useInitials';
 import type { AppNotification, NotificationType } from '@/types';
 
 const isType = (notification: AppNotification, type: NotificationType) =>
     notification.type === type;
+
+const { getInitials } = useInitials();
 
 const page = usePage();
 const unreadCount = computed(() => page.props.notifications.unreadCount);
@@ -67,13 +77,107 @@ const eventDateTime = (notification: AppNotification): string | null =>
         notification.data.end_time ?? null,
     );
 
+const isTaskNotification = (notification: AppNotification) =>
+    isType(notification, 'task_assigned') ||
+    isType(notification, 'task_commented');
+
+const iconFor = (notification: AppNotification) => {
+    if (isType(notification, 'task_assigned')) return UserPlus;
+    if (isType(notification, 'task_commented')) return MessageSquare;
+    return CalendarDays;
+};
+
+const actorNameFor = (notification: AppNotification): string | null => {
+    if (isType(notification, 'task_assigned')) {
+        return notification.data.assigner ?? null;
+    }
+    if (isType(notification, 'task_commented')) {
+        return notification.data.commenter ?? null;
+    }
+    if (isType(notification, 'event_invitation')) {
+        return notification.data.inviter ?? null;
+    }
+    return null;
+};
+
+const initialsFor = (notification: AppNotification): string =>
+    getInitials(actorNameFor(notification) ?? '');
+
+const dueDate = (notification: AppNotification): string | null =>
+    notification.data.due_date ? formatDate(notification.data.due_date) : null;
+
 const markAllAsRead = () =>
     router.post(readAll().url, {}, { preserveScroll: true });
+
+const openTask = async (notification: AppNotification) => {
+    const taskId = notification.data.task_id;
+    if (typeof taskId !== 'number') return;
+
+    notificationsLoaded.value = false;
+
+    if (!notification.read_at) {
+        notification.read_at = nowIso();
+
+        try {
+            await fetch(markAsRead({ notification: notification.id }).url, {
+                method: 'POST',
+                headers: { Accept: 'application/json' },
+            });
+            if (page.props.notifications.unreadCount > 0) {
+                page.props.notifications.unreadCount--;
+            }
+        } catch {}
+    }
+
+    const currentPath = window.location.pathname;
+    if (currentPath === '/tasks' || currentPath.startsWith('/tasks?')) {
+        window.dispatchEvent(
+            new CustomEvent('open-task', { detail: { taskId } }),
+        );
+    } else {
+        router.visit(tasksIndex({ query: { id: taskId } }).url, {
+            preserveScroll: false,
+        });
+    }
+};
+
+const openEvent = async (notification: AppNotification) => {
+    const eventId = notification.data.event_id;
+    if (typeof eventId !== 'number') return;
+
+    notificationsLoaded.value = false;
+
+    if (!notification.read_at) {
+        notification.read_at = nowIso();
+
+        try {
+            await fetch(markAsRead({ notification: notification.id }).url, {
+                method: 'POST',
+                headers: { Accept: 'application/json' },
+            });
+            if (page.props.notifications.unreadCount > 0) {
+                page.props.notifications.unreadCount--;
+            }
+        } catch {}
+    }
+
+    const currentPath = window.location.pathname;
+    if (currentPath === '/calendar' || currentPath.startsWith('/calendar?')) {
+        window.dispatchEvent(
+            new CustomEvent('open-event', { detail: { eventId } }),
+        );
+    } else {
+        router.visit(calendarIndex({ query: { id: eventId } }).url, {
+            preserveScroll: false,
+        });
+    }
+};
 
 const respondTo = (
     notification: AppNotification,
     response: 'accepted' | 'declined',
-) =>
+) => {
+    const wasUnread = !notification.read_at;
     router.post(
         respond({ event: notification.data.event_id!, response }).url,
         {},
@@ -81,10 +185,14 @@ const respondTo = (
             preserveScroll: true,
             onSuccess: () => {
                 notification.data.response = response;
-                notification.read_at = new Date().toISOString();
+                notification.read_at = nowIso();
+                if (wasUnread && page.props.notifications.unreadCount > 0) {
+                    page.props.notifications.unreadCount--;
+                }
             },
         },
     );
+};
 </script>
 
 <template>
@@ -144,16 +252,76 @@ const respondTo = (
                         v-for="notification in notifications"
                         :key="notification.id"
                         class="flex flex-col gap-2 px-4 py-3 transition-colors hover:bg-muted/50"
-                        :class="!notification.read_at ? 'bg-primary/2' : ''"
+                        :class="[
+                            !notification.read_at ? 'bg-primary/2' : '',
+                            isTaskNotification(notification) ||
+                            isType(notification, 'event_invitation')
+                                ? 'cursor-pointer'
+                                : '',
+                        ]"
+                        :role="
+                            isTaskNotification(notification) ||
+                            isType(notification, 'event_invitation')
+                                ? 'button'
+                                : undefined
+                        "
+                        :tabindex="
+                            isTaskNotification(notification) ||
+                            isType(notification, 'event_invitation')
+                                ? 0
+                                : undefined
+                        "
+                        @click="
+                            isTaskNotification(notification)
+                                ? openTask(notification)
+                                : isType(notification, 'event_invitation')
+                                  ? openEvent(notification)
+                                  : undefined
+                        "
+                        @keydown.enter="
+                            isTaskNotification(notification)
+                                ? openTask(notification)
+                                : isType(notification, 'event_invitation')
+                                  ? openEvent(notification)
+                                  : undefined
+                        "
                     >
                         <div class="flex items-start gap-3">
-                            <div
-                                class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
-                            >
-                                <CalendarDays class="size-4" />
+                            <div class="relative mt-0.5 shrink-0">
+                                <Avatar class="size-9">
+                                    <AvatarFallback
+                                        class="text-xs font-medium text-muted-foreground uppercase"
+                                    >
+                                        <template
+                                            v-if="initialsFor(notification)"
+                                        >
+                                            {{ initialsFor(notification) }}
+                                        </template>
+                                        <component
+                                            v-else
+                                            :is="iconFor(notification)"
+                                            class="size-4"
+                                        />
+                                    </AvatarFallback>
+                                </Avatar>
+                                <span
+                                    v-if="initialsFor(notification)"
+                                    class="absolute -right-1 -bottom-1 flex size-4 items-center justify-center rounded-full border border-border bg-background text-muted-foreground"
+                                >
+                                    <component
+                                        :is="iconFor(notification)"
+                                        class="size-2.5"
+                                        :stroke-width="2.5"
+                                    />
+                                </span>
                             </div>
                             <div class="min-w-0 flex-1">
-                                <p class="text-sm leading-snug text-foreground">
+                                <p
+                                    v-if="
+                                        isType(notification, 'event_invitation')
+                                    "
+                                    class="text-sm leading-snug text-foreground"
+                                >
                                     <span class="font-medium">{{
                                         notification.data.inviter
                                     }}</span>
@@ -163,10 +331,73 @@ const respondTo = (
                                     }}</span>
                                 </p>
                                 <p
-                                    v-if="eventDateTime(notification)"
+                                    v-else-if="
+                                        isType(notification, 'task_assigned')
+                                    "
+                                    class="text-sm leading-snug text-foreground"
+                                >
+                                    <span class="font-medium">{{
+                                        notification.data.assigner
+                                    }}</span>
+                                    assigned you to
+                                    <span class="font-medium">{{
+                                        notification.data.task_title
+                                    }}</span>
+                                </p>
+                                <p
+                                    v-else-if="
+                                        isType(notification, 'task_commented')
+                                    "
+                                    class="text-sm leading-snug text-foreground"
+                                >
+                                    <span class="font-medium">{{
+                                        notification.data.commenter
+                                    }}</span>
+                                    commented on
+                                    <span class="font-medium">{{
+                                        notification.data.task_title
+                                    }}</span>
+                                </p>
+                                <p
+                                    v-else
+                                    class="text-sm leading-snug text-foreground"
+                                >
+                                    {{
+                                        notification.data.title ??
+                                        'You have a new notification'
+                                    }}
+                                </p>
+
+                                <p
+                                    v-if="
+                                        isType(
+                                            notification,
+                                            'event_invitation',
+                                        ) && eventDateTime(notification)
+                                    "
                                     class="mt-0.5 text-xs text-muted-foreground"
                                 >
                                     {{ eventDateTime(notification) }}
+                                </p>
+                                <p
+                                    v-else-if="
+                                        isType(notification, 'task_assigned') &&
+                                        dueDate(notification)
+                                    "
+                                    class="mt-0.5 text-xs text-muted-foreground"
+                                >
+                                    Due {{ dueDate(notification) }}
+                                </p>
+                                <p
+                                    v-else-if="
+                                        isType(
+                                            notification,
+                                            'task_commented',
+                                        ) && notification.data.comment
+                                    "
+                                    class="mt-0.5 line-clamp-2 text-xs text-muted-foreground"
+                                >
+                                    "{{ notification.data.comment }}"
                                 </p>
                             </div>
                             <span
@@ -178,7 +409,7 @@ const respondTo = (
                         </div>
                         <div
                             v-if="isType(notification, 'event_invitation')"
-                            class="flex items-center gap-2 pl-11"
+                            class="flex items-center gap-2 pl-12"
                         >
                             <template
                                 v-if="response(notification) === 'needs_action'"
@@ -186,7 +417,9 @@ const respondTo = (
                                 <Button
                                     size="sm"
                                     class="h-8"
-                                    @click="respondTo(notification, 'accepted')"
+                                    @click.stop="
+                                        respondTo(notification, 'accepted')
+                                    "
                                 >
                                     <Check class="mr-1.5 size-3.5" />
                                     Accept
@@ -195,33 +428,58 @@ const respondTo = (
                                     size="sm"
                                     variant="outline"
                                     class="h-8 text-muted-foreground hover:text-foreground"
-                                    @click="respondTo(notification, 'declined')"
+                                    @click.stop="
+                                        respondTo(notification, 'declined')
+                                    "
                                 >
                                     <X class="mr-1.5 size-3.5" />
                                     Decline
                                 </Button>
                             </template>
-                            <span
-                                v-else
-                                class="inline-flex items-center gap-1.5 text-xs font-medium"
-                                :class="
-                                    response(notification) === 'accepted'
-                                        ? 'text-primary'
-                                        : 'text-muted-foreground'
-                                "
-                            >
-                                <Check
-                                    v-if="response(notification) === 'accepted'"
-                                    class="size-3.5"
-                                />
-                                <X v-else class="size-3.5" />
-                                You
-                                {{
-                                    response(notification) === 'accepted'
-                                        ? 'accepted'
-                                        : 'declined'
-                                }}
-                            </span>
+                            <div v-else class="flex items-center gap-2">
+                                <span
+                                    class="inline-flex items-center gap-1.5 text-xs font-medium"
+                                    :class="
+                                        response(notification) === 'accepted'
+                                            ? 'text-primary'
+                                            : 'text-muted-foreground'
+                                    "
+                                >
+                                    <Check
+                                        v-if="
+                                            response(notification) ===
+                                            'accepted'
+                                        "
+                                        class="size-3.5"
+                                    />
+                                    <X v-else class="size-3.5" />
+                                    You
+                                    {{
+                                        response(notification) === 'accepted'
+                                            ? 'accepted'
+                                            : 'declined'
+                                    }}
+                                </span>
+                                <button
+                                    type="button"
+                                    class="text-xs text-muted-foreground underline hover:text-foreground"
+                                    @click.stop="
+                                        respondTo(
+                                            notification,
+                                            response(notification) ===
+                                                'accepted'
+                                                ? 'declined'
+                                                : 'accepted',
+                                        )
+                                    "
+                                >
+                                    {{
+                                        response(notification) === 'accepted'
+                                            ? 'Decline'
+                                            : 'Accept'
+                                    }}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -237,8 +495,8 @@ const respondTo = (
                     </div>
                     <p class="text-sm font-medium">You're all caught up</p>
                     <p class="text-xs text-muted-foreground">
-                        Notifications for invitations and updates will appear
-                        here.
+                        Notifications for invitations, assignments and comments
+                        will appear here.
                     </p>
                 </div>
 

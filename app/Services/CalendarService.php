@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\NotifyEventInvitees;
 use App\Models\Calendar;
 use App\Models\Event;
 use App\Models\User;
@@ -45,12 +46,13 @@ class CalendarService
             ->where(fn ($query) => $query->where('organizer_id', $user->id)
                 ->orWhereHas('attendees', fn ($attendees) => $attendees
                     ->where(self::ATTENDEE_TABLE.'.user_id', $user->id)
-                    ->where(self::ATTENDEE_TABLE.'.participation_status', 'accepted')))
+                    ->whereIn(self::ATTENDEE_TABLE.'.participation_status', ['accepted', 'declined'])))
             ->whereDoesntHave('attendees', fn ($attendees) => $attendees
                 ->where(self::ATTENDEE_TABLE.'.user_id', $user->id)
                 ->whereNotNull(self::ATTENDEE_TABLE.'.hidden_at'))
             ->where('start_at', '<=', $end)
             ->where('end_at', '>=', $start)
+            ->with(['attendees' => fn ($query) => $query->where(self::ATTENDEE_TABLE.'.user_id', $user->id)])
             ->orderBy('start_at')
             ->get();
 
@@ -105,7 +107,7 @@ class CalendarService
         );
 
         $event->load('attendees');
-        $event->attendees->each->notify(new EventInvitation($event));
+        NotifyEventInvitees::dispatch($event, $event->attendees->pluck('id')->all());
 
         return $event;
     }
@@ -144,8 +146,7 @@ class CalendarService
         $addedIds = $attendeeIds->diff($existing->keys());
 
         if ($addedIds->isNotEmpty()) {
-            $this->teamAttendees($event->calendar->team_id, $addedIds)
-                ->each->notify(new EventInvitation($event));
+            NotifyEventInvitees::dispatch($event, $addedIds->all());
         }
 
         $this->deleteInvitationNotifications($event, $existing->keys()->diff($attendeeIds));

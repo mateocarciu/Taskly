@@ -3,6 +3,8 @@
 namespace App\Http\Resources;
 
 use App\Notifications\EventInvitation;
+use App\Notifications\TaskAssigned;
+use App\Notifications\TaskCommented;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -19,6 +21,8 @@ class NotificationResource extends JsonResource
      */
     private const TYPE_ALIASES = [
         EventInvitation::class => 'event_invitation',
+        TaskAssigned::class => 'task_assigned',
+        TaskCommented::class => 'task_commented',
     ];
 
     /**

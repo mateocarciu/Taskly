@@ -112,3 +112,23 @@ export const fromDatetimeParts = (date: string, time: string): string => {
 
     return parsed.toISOString();
 };
+
+/**
+ * Return the current time as an ISO 8601 string.
+ */
+export const nowIso = (): string => new Date().toISOString();
+
+/**
+ * Return a "HH:mm" scroll-time value offset minutes before now, clamped to
+ * midnight, so that the now-indicator is visible with context above it in
+ * FullCalendar time-grid views.
+ */
+export const scrollTimeBeforeNow = (offsetMinutes = 120): string => {
+    const now = new Date();
+    const scrollDate = new Date(now.getTime() - offsetMinutes * 60 * 1000);
+    // Clamp to midnight when the offset crosses into the previous day
+    if (scrollDate.getDate() !== now.getDate()) {
+        scrollDate.setHours(0, 0, 0, 0);
+    }
+    return toTimeInputValue(scrollDate);
+};
