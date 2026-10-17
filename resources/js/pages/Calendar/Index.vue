@@ -117,7 +117,6 @@ const { calendarOptions } = useCalendarConfig(
     },
 );
 
-
 watch(
     () => dialog.isOpen,
     (isOpen, wasOpen) => {
