@@ -20,7 +20,7 @@ class TagFactory extends Factory
     {
         return [
             'team_id' => Team::factory(),
-            'name' => $this->faker->word(),
+            'name' => $this->faker->unique()->word(),
             'color' => $this->faker->hexColor(),
         ];
     }

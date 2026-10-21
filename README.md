@@ -51,7 +51,7 @@ Short demo on YouTube: [Demo](https://youtu.be/Vk0FuN59XUE)
 Make sure you have the following installed on your local system:
 - **PHP** >= 8.4
 - **Composer**
-- **Node.js** >= 20
+- **Node.js** >= 24
 - **NPM**
 
 ### Getting Started
